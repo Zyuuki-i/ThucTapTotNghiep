@@ -1,0 +1,178 @@
+﻿@model IEnumerable<CinemaVN.Models.Banner>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="text-label text-center">QUẢN LÝ BANNER</h1>
+
+<div class="w-100 d-flex justify-content-between">
+    <a asp-action="them" class="btn btn-label btn-success">Thêm Mới</a>
+    <div class="d-flex justify-content-between" style="width: 40%">
+        <form id="frmTimKiem" class="d-flex search-group me-1" method="get" asp-action="Index">
+            <div class="input-group">
+                <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, tiêu đề" value="@ViewBag.Keyword" aria-label="Search">
+                <input type="hidden" name="trangthai" value="@(ViewBag.TrangThai.ToString().ToLower())" />
+                <button class="btn btn-search bg-black text-white" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+        @if (ViewBag.keyword != null && ViewBag.keyword != "")
+        {
+            <a asp-action="Index" class="btn btn-outline-info me-1">Quay lại</a>
+        }
+        <a asp-action="Index"
+           asp-route-trangthai="@(ViewBag.TrangThai == true? false : true)" class="btn btn-outline-secondary shadow-sm">
+            @(ViewBag.TrangThai == true ? "Banner OFF" : "Banner ON")
+        </a>
+   </div>
+</div>
+<div class="my-3">
+    @if (TempData["MessageError_Banner"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_Banner"]
+        </div>
+    }
+    @if (TempData["MessageSuccess_Banner"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold">
+            @TempData["MessageSuccess_Banner"]
+        </div>
+    }
+</div>
+<div class="mt-3">
+    <table class="table table-bordered text-center align-middle">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.MaBn)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.TieuDe)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.HinhAnh)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DuongDan)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.TrangThai)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+    @if (Model != null && Model.Count() > 0)
+    {
+            @foreach (var item in Model)
+            {
+                <tr class="align-content-center">
+                <td>
+                    @Html.DisplayFor(modelItem => item.MaBn)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TieuDe)
+                </td>
+                <td>
+                    @{
+                        var link = "~/images/banner/" + item.HinhAnh;
+                    }
+                    <img src="@Url.Content(link)" alt="@(item.TieuDe)" style="width: 150px; height: 80px;" />
+                </td>
+                <td>
+                    <a href="@item.DuongDan" class="text-decoration-none text-danger">@item.DuongDan</a>
+                </td>
+                <td>
+                    @if(item.TrangThai == true)
+                    {
+                        <span class="rounded-2 p-2 text-white bg-success">Kích hoạt</span>     
+                    }else
+                    {
+                        <span class="rounded-2 p-2 text-white bg-danger">Vô hiệu</span>
+                    }
+                </td>
+                <td>
+                    @if(item.TrangThai == true)
+                    {
+                        <a asp-action="voHieu" asp-route-id="@item.MaBn" class="btn btn-danger">Vô hiệu</a>
+                    }
+                    else
+                    {
+                        <a asp-action="kichHoat" asp-route-id="@item.MaBn" class="btn btn-success">Kích hoạt</a>
+                    }
+                    <a asp-action="sua" asp-route-id="@item.MaBn" class="btn btn-primary">Sửa</a>
+                </td>
+                </tr>
+            }
+            <tr>
+                <td colspan="6">
+                    <div class="d-flex justify-content-center mt-3">
+                        @{
+                            int trangHT = ViewBag.trangHT ?? 1;
+                            int tongTrang = ViewBag.tongTrang ?? 1;
+                            string? keyword = ViewBag.Keyword as string;
+                            bool trangthai = ViewBag.TrangThai ?? true;
+                        }
+                        @if (tongTrang > 1){
+                            <ul class="pagination">
+
+                                <!-- Prev -->
+                                <li class="page-item @(trangHT == 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                        asp-action="Index"
+                                        asp-route-keyword="@keyword"
+                                        asp-route-trangthai="@trangthai"
+                                        asp-route-trang="1"
+                                    >«</a>
+                                </li>
+
+                                <!-- Pages -->
+                                @for (int i = 1; i <= tongTrang; i++)
+                                {
+                                    <li class="page-item @(i == trangHT ? "active" : "")">
+                                        <a class="page-link"
+                                            asp-action="Index"
+                                            asp-route-keyword="@keyword"
+                                            asp-route-trangthai="@trangthai"
+                                            asp-route-trang="@i"
+                                        >@i</a>
+                                    </li>
+                                }
+
+                                <!-- Next -->
+                                <li class="page-item @(trangHT == tongTrang ? "disabled" : "")">
+                                    <a class="page-link"
+                                        asp-action="Index"
+                                        asp-route-keyword="@keyword"
+                                        asp-route-trangthai="@trangthai"
+                                        asp-route-trang="@(tongTrang)"
+                                    >»</a>
+                                </li>
+                            </ul>
+                        }
+                    </div>
+                </td>
+            </tr>
+    }
+    else
+    {
+        <tr>
+            <td colspan="6" class="text-center text-secondary">
+                    @(ViewBag.TrangThai == true ? "Banner đang hoạt động trống" : "Banner đã vô hiệu trống"), <a asp-action="Index" class="text-decoration-none"> quay lại.</a>
+            </td>
+        </tr>
+
+    }
+        </tbody>
+    </table>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 3000);
+        }
+    });
+</script>

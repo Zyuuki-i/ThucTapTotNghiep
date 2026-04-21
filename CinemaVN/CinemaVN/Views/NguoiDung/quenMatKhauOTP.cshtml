@@ -1,0 +1,63 @@
+﻿@model CinemaVN.MyModels.Register
+@{
+    ViewData["Title"] = "Xác nhận OTP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow p-4" style="width: 100%; max-width: 450px;">
+        <h3 class="text-center text-success fw-bold mb-4">Xác nhận OTP</h3>
+        <div>
+            <form asp-action="quenMatKhauVerifyOTP" method="post" class="mb-3">
+                <div class="mb-2">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" value="@(Model?.Email ?? "example@example.com")" readonly />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                    <input asp-for="Phone" type="hidden" class="form-control" value="@(Model?.Phone ?? "0000000000")" />
+                <div class="mb-2">
+                    <label asp-for="Password" class="form-label">Mật khẩu mới</label>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Nhập mật khẩu mới" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu mới" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">OTP</label>
+                    <input type="text" name="OTP" class="form-control" placeholder="Nhập mã OTP đã gửi đến email của bạn" />
+                </div>
+                <div class="mb-3">
+                    @if (TempData["MessageSuccess_OTP"] != null)
+                    {
+                        <div class="alert alert-primary text-center fw-bold">
+                            @TempData["MessageSuccess_OTP"]
+                        </div>
+                    }
+                    @if (TempData["MessageError_OTP"] != null)
+                    {
+                        <div class="alert alert-danger text-center fw-bold">
+                            @TempData["MessageError_OTP"]
+                        </div>
+                    }
+                </div>
+                <button type="submit" class="btn btn-primary mt-4 w-100">Xác nhận</button>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 3000);
+        }
+    });
+</script>

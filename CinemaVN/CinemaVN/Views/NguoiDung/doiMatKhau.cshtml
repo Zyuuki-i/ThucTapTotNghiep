@@ -1,0 +1,69 @@
+﻿@model CinemaVN.MyModels.Register
+@{
+    ViewData["Title"] = "Đổi Mật Khẩu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    if (Context.Session.GetString("UserEmail") == null)
+    {
+        <script>
+            window.location.href = '@Url.Action("Index", "Home")';
+        </script>
+    }
+}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow p-4" style="width: 100%; max-width: 450px;">
+        <h3 class="text-center text-success fw-bold mb-4">Đổi Mật Khẩu</h3>
+        <div>
+            <form asp-action="doiMatKhau" method="post" class="mb-3">
+                <div class="mb-2">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" value="@(Model?.Email ?? "")" readonly/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                    <input asp-for="Phone" type="hidden" class="form-control" value="0000000000" />
+                <div class="mb-2">
+                    <label asp-for="Password" class="form-label">Mật khẩu</label>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Nhập mật khẩu mới" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu mới" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    @if (TempData["MessageError_DoiMatKhau"] != null)
+                    {
+                        <div class="alert alert-danger text-center fw-bold">
+                            @TempData["MessageError_DoiMatKhau"]
+                        </div>
+                    }
+                    @if (TempData["MessageSuccess_DoiMatKhau"] != null)
+                    {
+                        <div class="alert alert-success text-center fw-bold">
+                            @TempData["MessageSuccess_DoiMatKhau"]
+                        </div>
+                    }
+                </div>
+                <div class="d-flex justify-content-evenly mt-4">
+                    <a href="@Url.Action("Index", "NguoiDung")" class="btn btn-secondary px-5">Quay về</a>
+                    <button type="submit" class="btn btn-primary px-5">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 30000);
+        }
+    });
+</script>
+
+

@@ -1,0 +1,65 @@
+﻿@{
+    if (Context.Session.GetString("UserEmail") != null)
+    {
+        <script>
+            window.location.href = '@Url.Action("Index", "Home")';
+        </script>
+    }
+}
+<div class="container vh-100 d-flex align-items-center justify-content-center">
+    <div class="card shadow w-50"> 
+        <div class="card-body">
+            <h3 class="text-center text-primary fw-bold mb-4">Đăng nhập</h3>
+
+            <form asp-action="dangNhap" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input name="email" type="email" class="form-control" value="@ViewBag.Email" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <input name="matkhau" type="password" class="form-control" value="@ViewBag.Matkhau" required>
+                </div>
+                <div class="mb-3">
+                    @if (TempData["MessageError_DangNhap"] != null)
+                    {
+                        <div class="alert alert-danger text-center fw-bold">
+                            @TempData["MessageError_DangNhap"]
+                        </div>
+                    }
+                    @if (TempData["MessageSuccess_DangNhap"] != null)
+                    {
+                        <div class="alert alert-success text-center fw-bold">
+                            @TempData["MessageSuccess_DangNhap"]
+                        </div>
+                    }
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+            </form>
+
+            <div class="d-flex justify-content-between mt-3">
+                <div>
+                    Bạn chưa có tài khoản?
+                    <a asp-action="dangKy" class="text-decoration-none">Đăng ký ngay</a>
+                </div>
+                <div>
+                    <a asp-action="quenMatKhau" class="text-decoration-none">Quên mật khẩu</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+</script>

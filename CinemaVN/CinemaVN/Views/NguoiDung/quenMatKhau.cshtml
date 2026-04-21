@@ -1,0 +1,56 @@
+﻿@model CinemaVN.MyModels.Register
+@{
+    ViewData["Title"] = "Quên Mật Khẩu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    if (Context.Session.GetString("UserEmail") != null)
+    {
+        <script>
+            window.location.href = '@Url.Action("Index", "Home")';
+        </script>
+    }
+}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow p-4" style="width: 100%; max-width: 450px;">
+        <h3 class="text-center text-success fw-bold mb-4">Lấy lại mật khẩu</h3>
+        <div>
+            <form asp-action="quenMatKhauOTP" method="post" class="mb-3">
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" placeholder="Nhập email của bạn" value="@(Model?.Email ?? "")" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                    <input asp-for="Phone" type="hidden" class="form-control" value="0000000000" />
+                    <input asp-for="Password" type="hidden" class="form-control" value="123456"/>
+                    <input asp-for="ConfirmPassword" type="hidden" class="form-control" value="123456" />
+                <div class="mb-3">
+                    @if (TempData["MessageError_QuenMatKhau"] != null)
+                    {
+                        <div class="alert alert-danger text-center fw-bold">
+                            @TempData["MessageError_QuenMatKhau"]
+                        </div>
+                    }
+                    @if (TempData["MessageSuccess_QuenMatKhau"] != null)
+                    {
+                        <div class="alert alert-success text-center fw-bold">
+                            @TempData["MessageSuccess_QuenMatKhau   "]
+                        </div>
+                    }
+                </div>
+                <button type="submit" class="btn btn-primary mt-4 w-100">Xác minh</button>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 30000);
+        }
+    });
+</script>

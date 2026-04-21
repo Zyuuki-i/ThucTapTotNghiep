@@ -1,0 +1,16 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+@if (TempData["MessageError_Admin"] != null)
+{
+    <div class="alert alert-danger text-center fw-bold shadow-sm fade show mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["MessageError_Admin"]
+    </div>
+}
+<div class="d-flex justify-content-center vh-100">
+    <h1 class="display-4 fw-bold align-content-center">Quản Trị Hệ Thống Rạp CinemaVN</h1>
+</div>

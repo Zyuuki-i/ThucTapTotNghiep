@@ -1,0 +1,89 @@
+﻿@using CinemaVN.MyModels
+@model CinemaVN.Models.NguoiDung
+
+@{
+    ViewData["Title"] = "hoanThienDangKy";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow p-4" style="width: 100%; max-width: 450px;">
+        <h3 class="text-center text-success fw-bold mb-4">Thiết lập hồ sơ</h3>
+        <div>
+            <form asp-action="hoanThienDangKy" method="post" class="card p-4 shadow-sm mb-3">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+                <input asp-for="MaNd" type="hidden" />
+                <input asp-for="MaVt" type="hidden" />
+                <input asp-for="MaCn" type="hidden" />
+                <input asp-for="Email" type="hidden" />
+                <input asp-for="MatKhau" type="hidden" />
+                <input asp-for="Hinh" type="hidden" />
+
+                <div class="mb-3">
+                    <label asp-for="HoTen" class="form-label fw-semibold"></label>
+                    <input asp-for="HoTen" class="form-control" placeholder="Nhập họ tên..." />
+                    <span asp-validation-for="HoTen" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NgaySinh" class="form-label fw-semibold"></label>
+                    <input asp-for="NgaySinh" type="date" class="form-control" />
+                    <span asp-validation-for="NgaySinh" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Phai" class="form-label fw-semibold d-block"></label>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="Phai" value="true" id="nam">
+                        <label class="form-check-label" for="nam">Nam</label>
+                    </div>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" asp-for="Phai" value="false" id="nu">
+                        <label class="form-check-label" for="nu">Nữ</label>
+                    </div>
+
+                    <span asp-validation-for="Phai" class="text-danger small d-block"></span>
+                </div>
+
+                <input asp-for="Sdt" type="hidden" />
+                <input asp-for="Cccd" type="hidden" />
+                <input asp-for="DiaChi" type="hidden" />
+                <input asp-for="ChucVu" type="hidden" />
+                <input asp-for="DiemHoiVien" type="hidden" />
+                <input asp-for="TrangThai" type="hidden" />
+
+                <div class="mb-3">
+                    @if (TempData["MessageError_OTP"] != null)
+                    {
+                        <div class="alert alert-danger text-center fw-bold">
+                            @TempData["MessageError_OTP"]
+                        </div>
+                    }
+                    @if (TempData["MessageSuccess_OTP"] != null)
+                    {
+                        <div class="alert alert-success text-center fw-bold">
+                            @TempData["MessageSuccess_OTP"]
+                        </div>
+                    }
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-3 fw-semibold"> Đăng ký </button>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 5000);
+        }
+    });
+</script>

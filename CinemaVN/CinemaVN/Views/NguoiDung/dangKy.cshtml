@@ -1,0 +1,69 @@
+﻿@model CinemaVN.MyModels.Register
+@{
+    ViewData["Title"] = "Đăng Ký Thành Viên";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    if (Context.Session.GetString("UserEmail") != null)
+    {
+        <script>
+            window.location.href = '@Url.Action("Index", "Home")';
+        </script>
+    }
+}
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow p-4" style="width: 100%; max-width: 450px;">
+        <h3 class="text-center text-success fw-bold mb-4">Đăng ký</h3>
+        <div>
+            <form asp-action="SendOTP" method="post" class="mb-3">
+                <div class="mb-2">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" class="form-control" placeholder="Nhập email của bạn" value="@(Model?.Email ?? "")"/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="mb-2">
+                    <label asp-for="Phone" class="form-label">Số điện thoại</label>
+                    <input asp-for="Phone" class="form-control" placeholder="Nhập số điện thoại của bạn" value="@(Model?.Phone ?? "")"/>
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+                <div class="mb-2">
+                    <label asp-for="Password" class="form-label">Mật khẩu</label>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Nhập mật khẩu của bạn"/>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu của bạn" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    @if (TempData["MessageError_DangKy"] != null)
+                    {
+                        <div class="alert alert-danger text-center fw-bold">
+                            @TempData["MessageError_DangKy"]
+                        </div>
+                    }
+                    @if (TempData["MessageSuccess_DangKy"] != null)
+                    {
+                        <div class="alert alert-success text-center fw-bold">
+                            @TempData["MessageSuccess_DangKy"]
+                        </div>
+                    }
+                </div>
+                <button type="submit" class="btn btn-primary mt-4 w-100">Xác nhận</button>
+            </form>
+        </div>
+        <div class="text-center mt-4">
+            <p>Đã có tài khoản? <a asp-action="dangNhap" class="text-decoration-none">Đăng nhập ngay</a></p>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 30000);
+        }
+    });
+</script>

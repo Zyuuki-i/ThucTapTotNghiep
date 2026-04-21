@@ -1,0 +1,184 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CinemaVN</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/CinemaVN.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
+            <div class="container-fluid row">
+                <a class="navbar-brand col-2" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/logo/CinemaVN.png" alt="CinemaVN Logo" width="80px"/>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="col-5 navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav mx-auto fs-5 mb-2 mb-lg-0 w-100 justify-content-evenly">
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-warning fs-5 text-secondary fw-semibold"
+                               asp-area="" asp-controller="Home" asp-action="muaVe">
+                                Mua vé
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Phim" asp-action="Index">Phim</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="PhongChieu" asp-action="Index">Rạp</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="KhuyenMai" asp-action="Index">Khuyến Mãi</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-2">
+                    <form class="d-flex search-group" method="post" asp-controller="Home" asp-action="timKiem">
+                        <div class="input-group">
+                            <input class="form-control" type="search" name="keyword" placeholder="Tìm phim, rạp" aria-label="Search">
+                            <button class="btn btn-search bg-black text-white" type="submit"><i class="bi bi-search"></i></button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-3 d-flex justify-content-center">
+                    @{
+                        var httpContext = HttpContextAccessor.HttpContext;
+                        var session = httpContext?.Session;
+                    }
+                    @if (session?.GetString("UserEmail") == null)
+                    {
+                        <form method="get" asp-controller="NguoiDung" asp-action="dangNhap">
+                            <button class="btn btn-login btn-outline-dark rounded-pill px-4" type="submit">
+                                <i class="bi bi-person me-1"></i> Đăng Nhập
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        string userRole = session?.GetString("UserRole") ?? "";
+                        <div class="dropdown">
+                            <a class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle fs-5 me-2"></i>
+                                <span class="fw-semibold">@session?.GetString("UserName")</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                @if (userRole == "admin")
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                            <i class="bi bi-speedometer2 me-2"></i> Quản trị hệ thống
+                                        </a>
+                                    </li>
+                                }
+                                else if (userRole == "manage")
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Manager" asp-controller="Home" asp-action="Index">
+                                            <i class="bi bi-truck me-2"></i> Quản lý chi nhánh
+                                        </a>
+                                    </li>
+                                }
+                                else if (userRole == "staff")
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Staff" asp-controller="Home" asp-action="Index">
+                                            <i class="bi bi-truck me-2"></i> Quầy bán vé
+                                        </a>
+                                    </li>
+                                }
+                                <li>
+                                    <a class="dropdown-item" asp-controller="NguoiDung" asp-action="Index">
+                                        <i class="bi bi-person-vcard me-2"></i> Hồ sơ cá nhân
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="NguoiDung" asp-action="lichSuVe">
+                                        <i class="bi bi-clock-history me-2"></i> Lịch sử đặt vé
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="NguoiDung" asp-action="doiMatKhau">
+                                        <i class="bi bi-key me-2"></i> Đổi mật khẩu
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" asp-controller="NguoiDung" asp-action="dangXuat">
+                                        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container-fluid px-0">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="pt-5 pb-3 bg-dark text-light">
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-md-4">
+                    <h5>Về CinemaVN</h5>
+                    <p class="small pe-5">
+                        CinemaVN là nền tảng đặt vé xem phim trực tuyến hiện đại, giúp người dùng dễ dàng tìm kiếm suất chiếu, chọn ghế và thanh toán nhanh chóng.
+                    </p>
+                    <div class="mt-3">
+                        <a href="#" class="me-3 fs-5"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="me-3 fs-5"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="me-3 fs-5"><i class="bi bi-tiktok"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <h5>Thông Tin Liên Hệ</h5>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><i class="bi bi-geo-alt-fill me-2 text-warning"></i> 180 Cao Lỗ, Phường 4, Quận 8, TP.HCM</li>
+                        <li class="mb-2"><i class="bi bi-telephone-fill me-2 text-warning"></i> 0869 347 040</li>
+                        <li class="mb-2"><i class="bi bi-envelope-fill me-2 text-warning"></i> dh52200473@student.stu.edu.vn</li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4">
+                    <h5>Đội Ngũ Thực Hiện</h5>
+                    <ul class="list-unstyled student-info ps-2 border-start border-secondary">
+                        <li>
+                            <strong>Lê Văn Đạt</strong><br>
+                            <span class="text-secondary">MSSV: DH52200473 - Lớp: D22_TH06</span>
+                        </li>
+                        <li class="mt-3">
+                            <strong>Nguyễn Trung Hậu</strong><br>
+                            <span class="text-secondary">MSSV: DH52200??? - Lớp: D22_TH06</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="border-secondary mt-3 mb-3" />
+            <div class="text-center small text-secondary">
+                &copy; 2026 - <strong>Cinema VN</strong>. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

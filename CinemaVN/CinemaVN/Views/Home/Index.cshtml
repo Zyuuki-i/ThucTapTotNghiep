@@ -1,0 +1,49 @@
+﻿@model IEnumerable<CinemaVN.Models.Phim>
+@{
+    ViewData["Title"] = "Home Page";
+    List<Banner> banners = ViewBag.Banners as List<Banner> ?? new List<Banner>();
+}
+
+@if(banners.Count > 0)
+{
+    <div id="sliderHome" class="carousel slide mb-5" data-bs-ride="carousel">
+
+        <div class="carousel-indicators">
+            @for (int i = 0; i < banners.Count; i++)
+            {
+                <button type="button"
+                        data-bs-target="#sliderHome"
+                        data-bs-slide-to="@i"
+                        class="@(i == 0 ? "active" : "")">
+                </button>
+            }
+        </div>
+
+        <div class="carousel-inner">
+            @for (int i = 0; i < banners.Count; i++)
+            {
+                var item = banners[i];
+
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <a href="@item.DuongDan">
+                        <img src="~/images/banner/@item.HinhAnh"
+                            class="d-block w-100"
+                            alt="@item.TieuDe">
+                    </a>
+                </div>
+            }
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#sliderHome" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+
+        <button class="carousel-control-next" type="button" data-bs-target="#sliderHome" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+
+    </div>
+}
+<div class="container bg-secondary" style="height:200px">
+    
+</div>

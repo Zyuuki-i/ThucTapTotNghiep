@@ -1,0 +1,90 @@
+﻿@model CinemaVN.MyModels.Register
+@{
+    ViewData["Title"] = "Xác nhận Email";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .resend_OTP {
+        pointer-events: none;
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow p-4" style="width: 100%; max-width: 450px;">  
+        <h3 class="text-center text-success fw-bold mb-4">Xác minh Email</h3>
+        <div>
+            <form asp-action="VerifyOTP" method="post" class="mb-3">
+                    <input asp-for="Email" type="hidden" class="form-control" value="@(Model?.Email ?? "")" />
+                    <input asp-for="Phone" type="hidden" class="form-control" value="@(Model?.Phone ?? "")" />
+                    <input asp-for="Password" type="hidden" class="form-control" value="@(Model?.Password ?? "")"/>
+                    <input asp-for="ConfirmPassword" type="hidden" class="form-control" value="@(Model?.ConfirmPassword ?? "")"/>
+                <div class="mb-3">
+                    <input type="text" name="OTP" class="form-control" placeholder="Nhập mã OTP đã gửi đến email của bạn"/>
+                </div>
+                <div class="mb-3">
+                    @if (TempData["MessageSuccess_OTP"] != null)
+                    {
+                        <div class="alert alert-primary text-center fw-bold">
+                            @TempData["MessageSuccess_OTP"]
+                        </div>
+                    }
+                    @if (TempData["MessageError_OTP"] != null)
+                    {
+                        <div class="alert alert-danger text-center fw-bold">
+                            @TempData["MessageError_OTP"]
+                        </div>
+                    }
+                </div>
+                <button type="submit" class="btn btn-primary mt-4 w-100">Xác minh</button>
+            </form>
+        </div>
+        <div class="text-center mt-4">
+            <form asp-action="ResendOTP" method="post" id="formResend">
+                <input asp-for="Email" type="hidden" />
+                <input asp-for="Phone" type="hidden" />
+                <input asp-for="Password" type="hidden" />
+                <input asp-for="ConfirmPassword" type="hidden" />
+            </form>
+            <p>Chưa nhận được mã? <a href="#" id="resendOTP" class="text-decoration-none text-muted">Gửi lại</a>
+            </p>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 3000);
+        }
+    });
+
+    //Tắt link "Gửi lại OTP" trong 30 giây
+    let time = "@ViewBag.LastSent";
+    const link = document.getElementById("resendOTP");
+
+    link.classList.add("resend_OTP");
+
+    let interval = setInterval(() => {
+        time--;
+        link.innerText = `Gửi lại OTP (${time}s)`;
+
+        if (time <= 0) {
+            clearInterval(interval);
+            link.classList.remove("resend_OTP");
+        }
+    }, 1000);
+
+    // Xử lý sự kiện click vào link "Gửi lại OTP"
+    document.getElementById("resendOTP").addEventListener("click", function (e) { 
+        e.preventDefault();
+        if (!this.classList.contains("resend_OTP")) {
+            document.getElementById("formResend").submit();
+        }
+    });
+</script>

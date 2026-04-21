@@ -1,0 +1,188 @@
+﻿@model CinemaVN.Models.NguoiDung
+
+@{
+    ViewData["Title"] = "Xem Tài Khoản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="container mt-5 mb-5" style="max-width: 900px;">
+    <div class="my-3">
+        @if (TempData["MessageError_NguoiDung"] != null)
+        {
+            <div class="alert alert-danger text-center fw-bold">
+                @TempData["MessageError_NguoiDung"]
+            </div>
+        }
+        @if (TempData["MessageSuccess_NguoiDung"] != null)
+        {
+            <div class="alert alert-success text-center fw-bold">
+                @TempData["MessageSuccess_NguoiDung"]
+            </div>
+        }
+    </div>
+    <div class="card profile-card">
+        <div class="profile-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-person-vcard me-2"></i> HỒ SƠ CÁ NHÂN</h4>
+            <span class="text-white-50 small">Quản lý thông tin bảo mật</span>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <div class="row align-items-start">
+
+                <div class="col-md-8 order-2 order-md-1">
+                    <div class="row g-3">                   
+                        <div class="col-12">
+                            <label class="profile-label"><i class="bi bi-person-fill text-warning me-1"></i> Họ và Tên</label>
+                            <input type="text" class="form-control form-control-view rounded-3" value="@Model?.HoTen" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="profile-label"><i class="bi bi-calendar-fill text-warning me-1"></i> Ngày Sinh</label>
+                            <input type="text" class="form-control form-control-view rounded-3" value="@Model?.NgaySinh?.ToShortDateString()" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            @{
+                                if (Model?.Phai == false)
+                                {
+                                    <label class="profile-label"><i class="bi bi-gender-female text-warning me-1"></i> Giới Tính</label>
+                                }
+                                else
+                                {
+                                    <label class="profile-label"><i class="bi bi-gender-male text-warning me-1"></i> Giới Tính</label>
+                                }
+                            }
+                            <input type="text" class="form-control form-control-view rounded-3" value="@(Model?.Phai == false ? "Nữ" : "Nam")" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="profile-label"><i class="bi bi-envelope-fill text-warning me-1"></i> Email</label>
+                            <input type="text" class="form-control form-control-view rounded-3" value="@Model?.Email" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="profile-label"><i class="bi bi-telephone-fill text-warning me-1"></i> Số điện thoại</label>
+                            <input type="text" class="form-control form-control-view rounded-3" value="@Model?.Sdt" readonly>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="profile-label"><i class="bi bi-geo-alt-fill text-warning me-1"></i> Địa chỉ</label>
+                            <textarea class="form-control form-control-view rounded-3" rows="2" readonly>@(Model?.DiaChi)</textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <a asp-controller="NguoiDung" asp-action="capNhat" asp-route-id="@Model?.MaNd" class="btn btn-update-profile rounded-pill me-2">
+                            <i class="bi bi-pencil-square me-2"></i> Cập nhật thông tin
+                        </a>
+                        @if(Model?.MaVt != "customer")
+                        {  
+                            <a href="#" id="moRongBtn" class="btn btn-outline-secondary rounded-pill me-2">
+                                <i class="bi bi-arrow-90deg-up"></i> Mở Rộng
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-4 order-1 order-md-2 text-center mb-4 mb-md-0 border-start-md">
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                        <div class="col-12">
+                            <label class="profile-label">
+                                <i class="bi bi-award-fill text-warning me-1"></i> Điểm Hội Viên
+                            </label>
+
+                            <div class="member-point-box">
+                                <span class="point-value">@Model?.DiemHoiVien</span>
+                                <span class="point-label">Points</span>
+                            </div>
+                        </div>
+                        <div class="avatar-wrapper my-3">
+                            @{
+                                string avatarUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                                if (Model?.Hinh != null)
+                                {
+                                    avatarUrl = "~/images/avatar/" + Model.Hinh;
+                                }
+                            }
+                            <img src="@Url.Content(avatarUrl)" class="profile-avatar-lg" alt="Avatar">
+                        </div>
+
+                        <h5 class="fw-bold text-dark text-uppercase">@Model?.HoTen</h5>
+                        <p class="text-muted small">@(Model?.MaVtNavigation?.TenVt ?? "Thành Viên") CinemaVN</p>
+
+                    </div>
+                </div>
+                <div class="col-12 mt-4 order-3 border border-dark d-none rounded" id="moRong">
+                    <div class="mt-2 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2 text-uppercase"></i> THÔNG TIN NỘI BỘ</h4>
+                    </div>
+                    <div class="row g-3 p-3">
+                        <div class="col-md-6">
+                            <label class="profile-label">
+                                <i class="bi bi-shield-lock-fill text-warning me-1"></i> Vai Trò
+                            </label>
+                            <input type="text" class="form-control form-control-view rounded-3"
+                                   value="@Model?.MaVtNavigation?.TenVt" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="profile-label">
+                                <i class="bi bi-briefcase-fill text-warning me-1"></i> Chức Vụ
+                            </label>
+                            <input type="text" class="form-control form-control-view rounded-3"
+                                   value="@Model?.ChucVu" readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="profile-label">
+                                <i class="bi bi-building text-warning me-1"></i> Chi Nhánh
+                            </label>
+                            <input type="text" class="form-control form-control-view rounded-3"
+                                   value="@Model?.MaCnNavigation?.TenCn" readonly>
+                        </div>
+                       
+                        <div class="col-md-6">
+                            <label class="profile-label">
+                                <i class="bi bi-credit-card-2-front-fill text-warning me-1"></i> Căn Cước Công Dân
+                            </label>
+                            <input type="text" class="form-control form-control-view rounded-3"
+                                   value="@Model?.Cccd" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+
+    @@media (min-width: 768px) {
+        .border-start-md {
+            border-left: 1px solid #eee;
+        }
+    }
+</style>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+
+    document.getElementById('moRongBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        var moRongSection = document.getElementById('moRong');
+        if (moRongSection.classList.contains('d-none') || moRongSection.classList.contains('')) {
+            moRongSection.classList.remove('d-none');
+            this.innerHTML = '<i class="bi bi-arrow-90deg-down"></i> Thu Gọn';
+        } else {
+            moRongSection.classList.add('d-none');
+            this.innerHTML = '<i class="bi bi-arrow-90deg-up"></i> Mở Rộng';
+        }
+    });
+</script>
