@@ -10,7 +10,7 @@
 <div class="w-100 d-flex justify-content-between">
     <a asp-action="them" class="btn btn-label btn-success">Thêm Mới</a>
     <div class="d-flex justify-content-between" style="width: 40%">
-        <form id="frmTimKiem" class="d-flex search-group me-1" method="get" asp-action="Index">
+        <form class="d-flex search-group me-1" method="get" asp-action="Index">
             <div class="input-group">
                 <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, tiêu đề" value="@ViewBag.Keyword" aria-label="Search">
                 <input type="hidden" name="trangthai" value="@(ViewBag.TrangThai.ToString().ToLower())" />
@@ -69,44 +69,43 @@
             @foreach (var item in Model)
             {
                 <tr class="align-content-center">
-                <td>
-                    @Html.DisplayFor(modelItem => item.MaBn)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TieuDe)
-                </td>
-                <td>
-                    @{
-                        var link = "~/images/banner/" + item.HinhAnh;
-                    }
-                    <img src="@Url.Content(link)" alt="@(item.TieuDe)" style="width: 150px; height: 80px;" />
-                </td>
-                <td>
-                    <a href="@item.DuongDan" class="text-decoration-none text-danger">@item.DuongDan</a>
-                </td>
-                <td>
-                    @if(item.TrangThai == true)
-                    {
-                        <span class="rounded-2 p-2 text-white bg-success">Kích hoạt</span>     
-                    }else
-                    {
-                        <span class="rounded-2 p-2 text-white bg-danger">Vô hiệu</span>
-                    }
-                </td>
-                <td>
-                    @if(item.TrangThai == true)
-                    {
-                        <a asp-action="voHieu" asp-route-id="@item.MaBn" class="btn btn-danger">Vô hiệu</a>
-                    }
-                    else
-                    {
-                        <a asp-action="kichHoat" asp-route-id="@item.MaBn" class="btn btn-success">Kích hoạt</a>
-                    }
-                    <a asp-action="sua" asp-route-id="@item.MaBn" class="btn btn-primary">Sửa</a>
-                </td>
+                    <td style="width: 35px;">
+                        @Html.DisplayFor(modelItem => item.MaBn)
+                    </td>
+                    <td class="fw-bold" style="width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        @Html.DisplayFor(modelItem => item.TieuDe)
+                    </td>
+                    <td>
+                        @{
+                            var link = "~/images/banner/" + item.HinhAnh;
+                        }
+                        <img src="@Url.Content(link)" alt="@(item.TieuDe)" style="width: 150px; height: 80px;" />
+                    </td>
+                        <td style="min-width: 200px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <a href="@item.DuongDan" class="text-decoration-none text-danger">@item.DuongDan</a>
+                    </td>
+                    <td style="width: 150px;">
+                        <form asp-action="doiTrangThai" method="post">
+                            <input type="hidden" name="id" value="@item.MaBn" />
+
+                            <select name="trangthai"
+                                    class="form-select form-select-sm text-white
+                                        @(item.TrangThai == true ? "bg-success" : "bg-danger")"
+                                    onchange="this.form.submit()">
+                                <option value="true" selected="@(item.TrangThai == true)">Kích hoạt</option>
+                                <option value="false" selected="@(item.TrangThai == false)">Vô hiệu</option>
+                            </select>
+                        </form>
+                    </td>
+                    <td>
+                        <a asp-action="xoa" asp-route-id="@item.MaBn" class="btn btn-danger" onclick="return confirm('Hành động này sẽ xóa bỏ hoàn toàn banner này! Bạn có chắc chắn muốn tiếp tục?');">Xóa</a> 
+                        <a asp-action="sua" asp-route-id="@item.MaBn" class="btn btn-primary">Sửa</a>
+                    </td>
                 </tr>
             }
             <tr>
+                @if (ViewBag.tongTrang != null && ViewBag.tongTrang > 1)
+                {
                 <td colspan="6">
                     <div class="d-flex justify-content-center mt-3">
                         @{
@@ -154,13 +153,20 @@
                         }
                     </div>
                 </td>
+                }
             </tr>
     }
     else
     {
         <tr>
             <td colspan="6" class="text-center text-secondary">
-                    @(ViewBag.TrangThai == true ? "Banner đang hoạt động trống" : "Banner đã vô hiệu trống"), <a asp-action="Index" class="text-decoration-none"> quay lại.</a>
+                @{
+                    bool trangthai = ViewBag.TrangThai as bool? ?? true;
+                }
+                @(trangthai
+                        ? "Không có banner đang hoạt động"
+                        : "Không có banner đã vô hiệu"),
+                <a asp-action="Index" class="text-decoration-none">quay lại</a>
             </td>
         </tr>
 
@@ -172,7 +178,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         const alertBox = document.querySelector(".alert");
         if (alertBox) {
-            setTimeout(() => alertBox.style.display = "none", 3000);
+            setTimeout(() => alertBox.style.display = "none", 10000);
         }
     });
 </script>

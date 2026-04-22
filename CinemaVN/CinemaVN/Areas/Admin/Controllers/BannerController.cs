@@ -40,23 +40,54 @@ namespace CinemaVN.Areas.Admin.Controllers
             return View(banners);
         }
 
-        public IActionResult voHieu(int id)
+        public IActionResult doiTrangThai(int id, bool trangthai)
         {
             Banner? banner = db.Banners.Find(id);
-            if (banner != null)
-            {
-                banner.TrangThai = false;
-                db.SaveChanges();
+            if (banner == null) {
+                TempData["MessageError_Banner"] = "Không tìm thấy banner.";
+                return RedirectToAction("Index", new { trangthai = trangthai });
             }
-            return RedirectToAction("Index", new { trangthai = true });
+            try { 
+                banner.TrangThai = trangthai;
+                db.SaveChanges();
+                
+            }catch (Exception)
+            {
+                TempData["MessageError_Banner"] = "Đã có lỗi xảy ra!";
+            }
+            int trang = timTrang(id);
+            return RedirectToAction("Index", new { trangthai = trangthai, trang = trang });
         }
-        public IActionResult kichHoat(int id)
+
+        private int timTrang(int id)
+        {
+            Banner? banner = db.Banners.Find(id);
+            if (banner == null) return 1;
+
+            int kichThuoc = 5;
+
+            int soLuongTruoc = db.Banners
+                .Where(t => t.TrangThai == banner.TrangThai && t.MaBn > banner.MaBn)
+                .Count();
+
+            return (soLuongTruoc / kichThuoc) + 1;
+        }
+
+        public IActionResult xoa(int id)
         {
             Banner? banner = db.Banners.Find(id);
             if (banner != null)
             {
-                banner.TrangThai = true;
-                db.SaveChanges();
+                try
+                {
+                    db.Banners.Remove(banner);
+                    db.SaveChanges();
+                }
+                catch (Exception)
+                {
+                    TempData["MessageError_Banner"] = "Đã có lỗi xảy ra!";
+                    return RedirectToAction("Index", new { trangthai = banner.TrangThai });
+                }
             }
             return RedirectToAction("Index", new { trangthai = false });
         }
