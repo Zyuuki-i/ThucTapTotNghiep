@@ -9,17 +9,18 @@
     int tongSucChua = Model.Sum(p => p.SucChua ?? 0);
 }
 
-<div>
-    <h2 class="text-label fw-bold mb-2"><i class="bi bi-door-closed"></i> Quản Lý Phòng Chiếu</h2>
-    <span class="badge bg-dark text-white shadow-sm fs-6 fw-normal px-3 py-2 mb-2">
-        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Chi nhánh: <strong class="text-warning">@ViewBag.TenChiNhanh</strong>
-    </span>
-    <div class="w-100 d-flex justify-content-between mb-4">
-        <a asp-action="Them" class="btn btn-label btn-success">Thêm Phòng Chiếu Mới</a>
-        <div class="d-flex justify-content-between" style="width: 40%">
-        </div>
+<div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+    <div>
+        <h2 class="text-label fw-bold mb-2"><i class="bi bi-door-closed"></i> Quản Lý Phòng Chiếu</h2>
+        <span class="badge bg-dark text-white shadow-sm fs-6 fw-normal px-3 py-2">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i> Chi nhánh: <strong class="text-warning">@ViewBag.TenChiNhanh</strong>
+        </span>
     </div>
+        <a asp-action="Them" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
+            <i class="bi bi-plus-circle me-2"></i>Thêm Phòng Chiếu
+        </a>
 </div>
+
 
 
 <div class="row mb-4 g-3">

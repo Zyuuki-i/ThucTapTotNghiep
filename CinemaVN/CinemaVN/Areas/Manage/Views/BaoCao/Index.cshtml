@@ -1,0 +1,193 @@
+﻿@{
+    ViewData["Title"] = "Báo Cáo Thống Kê";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+
+    // Format tiền tệ
+    var tongDoanhThu = ViewBag.TongDoanhThu != null ? ((decimal)ViewBag.TongDoanhThu).ToString("N0") : "0";
+    var topDichVu = ViewBag.TopDichVu as IEnumerable<dynamic>;
+}
+
+<!-- Nhúng thư viện vẽ biểu đồ Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container-fluid px-0 mt-3">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+        <div>
+            <h2 class="text-label fw-bold mb-1"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Báo Cáo Thống Kê</h2>
+            <span class="badge bg-dark text-white shadow-sm fs-6 fw-normal px-3 py-2">
+                <i class="bi bi-geo-alt-fill text-danger me-1"></i> Chi nhánh: <strong class="text-warning">@ViewBag.TenChiNhanh</strong>
+                <span class="ms-2 border-start ps-2">Tháng @DateTime.Now.Month/@DateTime.Now.Year</span>
+            </span>
+        </div>
+        <button class="btn btn-outline-primary shadow-sm fw-bold px-4 py-2" onclick="window.print()">
+            <i class="bi bi-printer-fill me-2"></i>In Báo Cáo
+        </button>
+    </div>
+
+    <!-- HÀNG 1: CÁC THẺ SỐ LIỆU KPI NHANH -->
+    <div class="row mb-4 g-3">
+        <!-- Doanh thu -->
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-lg bg-gradient-primary text-white h-100 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                <div class="card-body p-4 position-relative">
+                    <i class="bi bi-cash-coin position-absolute text-white opacity-25" style="font-size: 5rem; right: 10px; bottom: -10px;"></i>
+                    <p class="small mb-1 fw-bold text-uppercase text-light opacity-75">Tổng doanh thu tháng</p>
+                    <h2 class="mb-0 fw-bold">@tongDoanhThu đ</h2>
+                </div>
+            </div>
+        </div>
+        <!-- Tổng đơn hàng -->
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-lg bg-gradient-success text-white h-100 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
+                <div class="card-body p-4 position-relative">
+                    <i class="bi bi-receipt position-absolute text-white opacity-25" style="font-size: 5rem; right: 10px; bottom: -10px;"></i>
+                    <p class="small mb-1 fw-bold text-uppercase text-light opacity-75">Tổng hóa đơn phát sinh</p>
+                    <h2 class="mb-0 fw-bold">@ViewBag.TongDonHang <span class="fs-6 fw-normal">đơn</span></h2>
+                </div>
+            </div>
+        </div>
+        <!-- Nhân sự -->
+        <div class="col-xl-4 col-md-12">
+            <div class="card border-0 shadow-lg bg-gradient-warning text-dark h-100 rounded-4 overflow-hidden" style="background: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);">
+                <div class="card-body p-4 position-relative">
+                    <i class="bi bi-people-fill position-absolute text-dark opacity-25" style="font-size: 5rem; right: 10px; bottom: -10px;"></i>
+                    <p class="small mb-1 fw-bold text-uppercase opacity-75">Nhân sự đang hoạt động</p>
+                    <h2 class="mb-0 fw-bold">@ViewBag.TongNhanSu <span class="fs-6 fw-normal">người</span></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HÀNG 2: BIỂU ĐỒ & BẢNG XẾP HẠNG -->
+    <div class="row g-4 mb-4">
+        
+        <!-- BIỂU ĐỒ ĐƯỜNG: DOANH THU 7 NGÀY -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center rounded-top-4">
+                    <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Đường Xu Hướng Doanh Thu (7 Ngày)</h6>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Nơi hiển thị biểu đồ -->
+                    <canvas id="revenueChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- BẢNG XẾP HẠNG: TOP DỊCH VỤ -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card-header bg-white border-bottom py-3 rounded-top-4">
+                    <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-trophy-fill text-warning me-2"></i>Top 5 Dịch Vụ Bán Chạy Trong Tháng</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Sản phẩm</th>
+                                    <th class="text-center">Đã bán</th>
+                                    <th class="text-end pe-4">Doanh số</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (topDichVu != null)
+                                {
+                                    int rank = 1;
+                                    foreach (var item in topDichVu)
+                                    {
+                                        string imgUrl = string.IsNullOrEmpty(item.HinhAnh) ? "/images/default-service.png" : $"/images/dichvu/{item.HinhAnh}";
+                                        <tr>
+                                            <td class="ps-4 py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-dark rounded-circle me-2">#@rank</span>
+                                                    <img src="@imgUrl" class="rounded border shadow-sm me-2" style="width: 40px; height: 40px; object-fit: cover;" />
+                                                    <strong class="text-dark small">@item.TenDV</strong>
+                                                </div>
+                                            </td>
+                                            <td class="text-center fw-bold text-success">@item.TongSoLuong</td>
+                                            <td class="text-end pe-4 fw-bold text-primary">@item.TongTienMangLai.ToString("N0") đ</td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="3" class="text-center py-4 text-muted">Chưa có dữ liệu giao dịch trong tháng này.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+    const labels = @Html.Raw(ViewBag.ChartLabels);
+    const dataValues = @Html.Raw(ViewBag.ChartData);
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+
+    let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(13, 110, 253, 0.5)'); 
+    gradient.addColorStop(1, 'rgba(13, 110, 253, 0.0)'); 
+
+    new Chart(ctx, {
+    type: 'line', 
+    data: {
+    labels: labels, 
+    datasets: [{
+    label: 'Doanh thu (VNĐ)',
+    data: dataValues,
+    borderColor: '#0d6efd', 
+    backgroundColor: gradient, 
+    borderWidth: 3,
+    pointBackgroundColor: '#ffffff',
+    pointBorderColor: '#0d6efd',
+    pointBorderWidth: 2,
+    pointRadius: 4,
+    pointHoverRadius: 6,
+    fill: true, 
+    tension: 0.4 
+    }]
+    },
+    options: {
+    responsive: true,
+    plugins: {
+    legend: { display: false },
+    tooltip: {
+    callbacks: {
+    label: function(context) {
+
+    let value = context.raw || 0;
+    return value.toLocaleString('vi-VN') + ' đ';
+    }
+    }
+    }
+    },
+    scales: {
+    y: {
+    beginAtZero: true,
+    ticks: {
+    callback: function(value) {
+
+    if(value >= 1000000) return (value / 1000000) + ' Tr';
+    if(value >= 1000) return (value / 1000) + ' K';
+    return value;
+    }
+    }
+    },
+    x: {
+    grid: { display: false } 
+    }
+    }
+    }
+    });
+    });
+</script>
