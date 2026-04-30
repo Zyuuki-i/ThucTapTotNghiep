@@ -1,0 +1,54 @@
+﻿@model IEnumerable<CinemaVN.Models.PhongChieu>
+@{
+    ViewData["Title"] = "Quản lý Sơ đồ ghế";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div>
+    <h2 class="text-label fw-bold mb-2"><i class="bi bi-grid-3x3-gap"></i> Quản Lý Sơ Đồ Ghế </h2>
+    <span class="badge bg-dark text-white shadow-sm fs-6 fw-normal px-3 py-2 mb-2">
+        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Chi nhánh: <strong class="text-warning">@ViewBag.TenChiNhanh</strong>
+    </span>
+</div>
+
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    @foreach (var item in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 room-card">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="icon-box bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-grid-3x3-gap text-primary fs-4"></i>
+                        </div>
+                        @if (item.SucChua > 0)
+                        {
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Đã cấu hình</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Chưa có ghế</span>
+                        }
+                    </div>
+                    
+                    <h4 class="fw-bold mb-1">@item.TenPc</h4>
+                    <p class="text-muted small">Sức chứa: <strong class="text-dark">@(item.SucChua ?? 0)</strong> ghế</p>
+                    
+                    <div class="progress mb-4" style="height: 6px;">
+                        <div class="progress-bar @(item.SucChua > 0 ? "bg-primary" : "bg-secondary")" style="width: @(item.SucChua > 0 ? "100%" : "10%")"></div>
+                    </div>
+
+                    <a asp-action="CauHinhGhe" asp-route-maPc="@item.MaPc" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
+                        <i class="bi bi-magic me-2"></i>Thiết kế Sơ đồ
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .room-card { transition: all 0.3s ease; border-radius: 15px; }
+    .room-card:hover { transform: translateY(-7px); box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important; }
+</style>

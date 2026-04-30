@@ -44,7 +44,7 @@ namespace CinemaVN.Controllers
             ViewBag.Matkhau = matkhau;
 
             var tk = db.NguoiDungs.FirstOrDefault(t => t.Email == email);
-
+            var tt = db.NguoiDungs;
             if (tk == null)
             {
                 TempData["MessageError_DangNhap"] = "Email không tồn tại!";

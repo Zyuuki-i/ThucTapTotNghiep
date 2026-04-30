@@ -23,6 +23,7 @@ namespace CinemaVN.Models
         public virtual DbSet<DinhDang> DinhDangs { get; set; } = null!;
         public virtual DbSet<Ghe> Ghes { get; set; } = null!;
         public virtual DbSet<HoaDon> HoaDons { get; set; } = null!;
+        public virtual DbSet<Kho> Khos { get; set; } = null!;
         public virtual DbSet<KhuyenMai> KhuyenMais { get; set; } = null!;
         public virtual DbSet<LoaiGhe> LoaiGhes { get; set; } = null!;
         public virtual DbSet<NguoiDung> NguoiDungs { get; set; } = null!;
@@ -37,8 +38,8 @@ namespace CinemaVN.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Data Source=ZYUUKI\\SQLEXPRESS;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
+                //optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
             }
         }
 
@@ -141,8 +142,6 @@ namespace CinemaVN.Models
                     .HasMaxLength(50)
                     .HasColumnName("LoaiDV");
 
-                entity.Property(e => e.SoLuongTon).HasDefaultValueSql("((0))");
-
                 entity.Property(e => e.TenDv)
                     .HasMaxLength(50)
                     .HasColumnName("TenDV");
@@ -241,6 +240,35 @@ namespace CinemaVN.Models
                     .WithMany(p => p.HoaDons)
                     .HasForeignKey(d => d.MaNd)
                     .HasConstraintName("FK__HoaDon__MaND__6E01572D");
+            });
+
+            modelBuilder.Entity<Kho>(entity =>
+            {
+                entity.HasKey(e => new { e.MaCn, e.MaDv })
+                    .HasName("PK_KhoChiNhanh");
+
+                entity.ToTable("Kho");
+
+                entity.Property(e => e.MaCn)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("MaCN");
+
+                entity.Property(e => e.MaDv).HasColumnName("MaDV");
+
+                entity.Property(e => e.SoLuongTon).HasDefaultValueSql("((0))");
+
+                entity.HasOne(d => d.MaCnNavigation)
+                    .WithMany(p => p.Khos)
+                    .HasForeignKey(d => d.MaCn)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Kho_ChiNhanh");
+
+                entity.HasOne(d => d.MaDvNavigation)
+                    .WithMany(p => p.Khos)
+                    .HasForeignKey(d => d.MaDv)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Kho_DichVu");
             });
 
             modelBuilder.Entity<KhuyenMai>(entity =>

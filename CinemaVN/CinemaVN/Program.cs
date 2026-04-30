@@ -1,9 +1,13 @@
 using CinemaVN.DatModels;
+using CinemaVN.HauModels;
+using CinemaVN.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<CinemaVNContext>();
 
 builder.Services.AddSingleton<EmailService>();
 
@@ -16,6 +20,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
 
 var app = builder.Build();
 
@@ -42,6 +47,7 @@ app.Use(async (context, next) =>
     {
         var role = context.Session.GetString("UserRole");
 
+
         if (string.IsNullOrEmpty(role) || role.ToLower() != "admin")
         {
             context.Response.Redirect("/NguoiDung/DangNhap");
@@ -53,6 +59,7 @@ app.Use(async (context, next) =>
     {
         var role = context.Session.GetString("UserRole");
 
+
         if (string.IsNullOrEmpty(role) || role.ToLower() != "manage")
         {
             context.Response.Redirect("/NguoiDung/DangNhap");
@@ -63,6 +70,7 @@ app.Use(async (context, next) =>
     if (path.StartsWith("/staff"))
     {
         var role = context.Session.GetString("UserRole");
+
 
         if (string.IsNullOrEmpty(role) || role.ToLower() != "staff")
         {

@@ -8,6 +8,7 @@ namespace CinemaVN.Models
         public DichVu()
         {
             ChiTietDichVus = new HashSet<ChiTietDichVu>();
+            Khos = new HashSet<Kho>();
         }
 
         public int MaDv { get; set; }
@@ -15,8 +16,8 @@ namespace CinemaVN.Models
         public decimal Gia { get; set; }
         public string? LoaiDv { get; set; }
         public string? HinhAnh { get; set; }
-        public int? SoLuongTon { get; set; }
 
         public virtual ICollection<ChiTietDichVu> ChiTietDichVus { get; set; }
+        public virtual ICollection<Kho> Khos { get; set; }
     }
 }
