@@ -5,22 +5,31 @@
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 <h1 class="text-center text-label">QUẢN LÝ BANNER</h1>
-<hr />
+<div class="row mb-2">
+    <div class="col-5"><hr /></div>
+    <div class="col-2 text-center">
+        <h3 class="text-success">THÊM MỚI</h3>
+    </div>
+    <div class="col-5"><hr /></div>
+    <div class="col-12 text-center">
+        <a class="btn btn-outline-info w-25" asp-action="Index">Quay lại</a>
+    </div>
+</div>
 @if (TempData["MessageError_ThemBanner"] != null)
 {
     <div class="alert alert-danger text-center fw-bold">
         @TempData["MessageError_ThemBanner"]
     </div>
 }
-<div class="row justify-content-center">
-    <div class="col-md-4 my-4">
+<div class="border border-3 border-success p-3 rounded">
+    <div class="row">
         <form asp-action="them" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <input asp-for="MaBn" type="hidden" class="form-control" />
             </div>
             <div class="form-group">
-                <label asp-for="TieuDe" class="control-label"></label>
+                <label class="control-label">Tiêu đề</label>
                 <input asp-for="TieuDe" class="form-control" />
                 <span asp-validation-for="TieuDe" class="text-danger"></span>
             </div>
@@ -34,7 +43,7 @@
                 <input type="file" name="file" class="form-control" />
             </div>
             <div class="form-group">
-                <label asp-for="DuongDan" class="control-label"></label>
+                <label class="control-label">Đường dẫn</label>
                 <input asp-for="DuongDan" class="form-control" />
                 <span asp-validation-for="DuongDan" class="text-danger"></span>
             </div>
@@ -42,7 +51,6 @@
                 <input asp-for="TrangThai" type="hidden" value="true" class="form-control" />
             </div>
             <div class="form-group d-flex justify-content-end mt-2">
-                <a class="btn btn-outline-info me-3 " asp-action="Index">Quay lại</a>
                 <input type="submit" value="Thêm" class="btn btn-primary" />
             </div>
         </form>
@@ -55,7 +63,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         const alertBox = document.querySelector(".alert");
         if (alertBox) {
-            setTimeout(() => alertBox.style.display = "none", 3000);
+            setTimeout(() => alertBox.style.display = "none", 10000);
         }
     });
 </script>

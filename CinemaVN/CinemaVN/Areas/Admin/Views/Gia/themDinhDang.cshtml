@@ -1,0 +1,55 @@
+﻿@model CinemaVN.Models.DinhDang
+
+@{
+    ViewData["Title"] = "themDinhDang";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="text-label text-center">QUẢN LÝ GIÁ</h1>
+<div class="row mb-2">
+    <div class="col-5"><hr /></div>
+    <div class="col-2 text-center">
+        <h3 class="fs-5 text-success">THÊM ĐỊNH DẠNG</h3>
+    </div>
+    <div class="col-5"><hr /></div>
+    <div class="col-12 text-center">
+        <a class="btn btn-outline-info w-25" asp-action="dinhDang">Quay lại</a>
+    </div>
+</div>
+<div class="my-3">
+    @if (TempData["MessageError_ThemDinhDang"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_ThemDinhDang"]
+        </div>
+    }
+</div>
+<div class="border border-3 border-success p-3 rounded">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <form asp-action="ThemDinhDang" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label class="control-label">Mã Loại</label>
+                    <input asp-for="MaDd" class="form-control" required />
+                    <span asp-validation-for="MaDd" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Tên Loại</label>
+                    <input asp-for="TenDd" class="form-control" required />
+                    <span asp-validation-for="TenDd" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Phụ Thu</label>
+                    <input asp-for="PhuThu" class="form-control" required />
+                    <span asp-validation-for="PhuThu" class="text-danger"></span>
+                </div>
+                <div class="form-group text-end">
+                    <input type="submit" value="Thêm" class="btn btn-success mt-3" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,177 @@
+﻿@model IEnumerable<CinemaVN.DatModels.CNguoiDung>
+@{
+    ViewData["Title"] = "Quản Lý Người Dùng - Quản Lý";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    List<ChiNhanh> chiNhanhs = ViewBag.ChiNhanhs as List<ChiNhanh> ?? new List<ChiNhanh>();
+}
+
+<h1 class="text-label text-center">QUẢN LÝ NGƯỜI DÙNG</h1>
+<div class="w-100 d-flex justify-content-between">
+    <a asp-action="them" class="btn btn-label btn-success">Tạo tài khoản</a>
+    <div class="d-flex justify-content-between">
+        <form class="d-flex search-group me-1" method="get" asp-action="quanLy">
+            <div class="input-group">
+                <input class="form-control" type="search" name="keyword" placeholder="Tìm tên, cccd, sdt,..." value="@ViewBag.Keyword" aria-label="Search">
+                <input type="hidden" name="trangthai" value="@(ViewBag.TrangThai.ToString().ToLower())" />
+                <button class="btn btn-search bg-black text-white" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+        @if (ViewBag.keyword != null && ViewBag.keyword != "")
+        {
+            <a asp-action="quanLy" class="btn btn-outline-info me-1">Quay lại</a>
+        }
+        <form class="d-flex search-group me-1" method="get" asp-action="quanLy">
+            <div class="input-group">
+                <select class="form-select" name="macn" onchange="this.form.submit()">
+                    <option value="" selected="@(ViewBag.Macn == null ? "selected" : null)">Tất cả</option>
+                    @foreach (var item in chiNhanhs)
+                    {
+                        <option value="@item.MaCn" selected="@(ViewBag.Macn == item.MaCn ? "selected" : null)">@item.TenCn</option>
+                    }
+                </select>
+                <input type="hidden" name="trangthai" value="@(ViewBag.TrangThai.ToString().ToLower())" />
+            </div>
+        </form>
+        <a asp-action="quanLy"
+           asp-route-macn="@(ViewBag.Macn)"
+           asp-route-trangthai="@(ViewBag.TrangThai == true? false : true)" class="btn btn-outline-secondary shadow-sm">
+            @(ViewBag.TrangThai == true ? "Hiệu lực" : "Vô hiệu")
+        </a>
+    </div>
+</div>
+<div class="my-3">
+    @if (TempData["MessageError_NguoiDung"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_NguoiDung"]
+        </div>
+    }
+    @if (TempData["MessageSuccess_NguoiDung"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold">
+            @TempData["MessageSuccess_NguoiDung"]
+        </div>
+    }
+</div>
+<div class="mt-3">
+    <table class="table table-bordered text-center align-middle">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>@Html.DisplayNameFor(model => model.HoTen)</th>
+                <th>@Html.DisplayNameFor(model => model.Email)</th>
+                <th>Phone</th>
+                <th>CCCD</th>
+                <th>@Html.DisplayNameFor(model => model.ChucVu)</th>
+                <th>@Html.DisplayNameFor(model => model.TrangThai)</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.MaNd</td>
+                        <td>@item.HoTen</td>
+                        <td>@item.Email</td>
+                        <td>@item.Sdt</td>
+                        <td>@item.Cccd</td>
+                        <td>@item.ChucVu</td>
+                        <td>
+                            @if (item.TrangThai == true)
+                            {
+                                <span class="badge bg-success">Hiệu lực</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Vô hiệu</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.TrangThai == true)
+                            {
+                                <a asp-action="voHieu" asp-route-id="@item.MaNd" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa người dùng @item.HoTen không?')">Vô hiệu</a>
+                            }
+                            else
+                            {
+                                <a asp-action="kichHoat" asp-route-id="@item.MaNd" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc chắn muốn kích hoạt người dùng @item.HoTen không?')">Kích hoạt</a>
+                            }
+                            <a asp-action="sua" asp-route-id="@item.MaNd" class="btn btn-sm btn-primary">Sửa</a>
+                            <a asp-action="chiTiet" asp-route-id="@item.MaNd" class="btn btn-sm btn-info">Chi tiết</a>
+                        </td>
+                    </tr>
+                }
+                @if (ViewBag.tongTrang != null && ViewBag.tongTrang > 1)
+                {
+                    <tr>
+                        <td colspan="8">
+                            <div class="d-flex justify-content-center mt-3">
+                                @{
+                                    int trangHT = ViewBag.trangHT ?? 1;
+                                    int tongTrang = ViewBag.tongTrang ?? 1;
+                                    string? keyword = ViewBag.Keyword as string;
+                                    string? macn = ViewBag.Macn as string;
+                                    bool trangthai = ViewBag.TrangThai ?? true;
+                                }
+                                @if (tongTrang > 1)
+                                {
+                                    <ul class="pagination">
+
+                                        <!-- Prev -->
+                                        <li class="page-item @(trangHT == 1 ? "disabled" : "")">
+                                            <a class="page-link"
+                                               asp-action="quanLy"
+                                               asp-route-keyword="@keyword"
+                                               asp-route-macn="@macn"
+                                               asp-route-trangthai="@trangthai"
+                                               asp-route-trang="1">«</a>
+                                        </li>
+
+                                        <!-- Pages -->
+                                        @for (int i = 1; i <= tongTrang; i++)
+                                        {
+                                            <li class="page-item @(i == trangHT ? "active" : "")">
+                                                <a class="page-link"
+                                                   asp-action="quanLy"
+                                                   asp-route-keyword="@keyword"
+                                                   asp-route-macn="@macn"
+                                                   asp-route-trangthai="@trangthai"
+                                                   asp-route-trang="@i">@i</a>
+                                            </li>
+                                        }
+
+                                        <!-- Next -->
+                                        <li class="page-item @(trangHT == tongTrang ? "disabled" : "")">
+                                            <a class="page-link"
+                                               asp-action="quanLy"
+                                               asp-route-keyword="@keyword"
+                                               asp-route-macn="@macn"
+                                               asp-route-trangthai="@trangthai"
+                                               asp-route-trang="@(tongTrang)">»</a>
+                                        </li>
+                                    </ul>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="12">Không có người dùng nào.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+</script>

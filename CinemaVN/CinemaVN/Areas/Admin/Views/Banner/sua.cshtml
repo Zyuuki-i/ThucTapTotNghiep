@@ -5,62 +5,73 @@
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 <h1 class="text-center text-label">QUẢN LÝ BANNER</h1>
+<div class="row mb-2">
+    <div class="col-5"><hr /></div>
+    <div class="col-2 text-center">
+        <h3 class="text-primary">CHỈNH SỬA</h3>
+    </div>
+    <div class="col-5"><hr /></div>
+    <div class="col-12 text-center">
+        <a class="btn btn-outline-info w-25" asp-action="Index">Quay lại</a>
+    </div>
+</div>
 @if (TempData["MessageError_SuaBanner"] != null)
 {
     <div class="alert alert-danger text-center fw-bold">
         @TempData["MessageError_SuaBanner"]
     </div>
 }
-<div class="row justify-content-center">
-    <div class="col-md-4 my-4">
-        <form asp-action="sua" method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="MaBn" class="control-label"></label>
-                <input asp-for="MaBn" readonly class="form-control" />
-                <span asp-validation-for="MaBn" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TieuDe" class="control-label"></label>
-                <input asp-for="TieuDe" class="form-control" />
-                <span asp-validation-for="TieuDe" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label class="control-label">Tên file</label>
-                <input asp-for="HinhAnh" class="form-control" />
-                <span asp-validation-for="HinhAnh" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label class="control-label">Chọn file [PNG | JPG | JPEG]</label>
-                <input type="file" name="file" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="DuongDan" class="control-label"></label>
-                <input asp-for="DuongDan" class="form-control" />
-                <span asp-validation-for="DuongDan" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input asp-for="TrangThai" type="hidden" class="form-control" />
-                <span asp-validation-for="TrangThai" class="text-danger"></span>
-            </div>
-            <div class="form-group d-flex justify-content-end mt-2">
-                <a class="btn btn-outline-info me-3 " asp-action="Index">Quay lại</a>
-                <input type="submit" value="Cập nhật" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-    <div class="col-md-4 my-4 text-center">
-        <label class="fw-bold mb-2">Ảnh hiện tại</label>
-
-        @{
-            var link = "~/images/banner/" + Model.HinhAnh + ViewBag.PhanMoRong;
-        }
-
-        <div class="banner-preview">
-            <img src="@Url.Content(link)" class="img-fluid rounded shadow" />
+<div class="border border-3 border-primary p-3 rounded">
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="sua" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label class="control-label">Mã banner</label>
+                    <input asp-for="MaBn" readonly class="form-control" />
+                    <span asp-validation-for="MaBn" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Tiêu đề</label>
+                    <input asp-for="TieuDe" class="form-control" />
+                    <span asp-validation-for="TieuDe" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Tên file</label>
+                    <input asp-for="HinhAnh" class="form-control" />
+                    <span asp-validation-for="HinhAnh" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Chọn file [PNG | JPG | JPEG]</label>
+                    <input type="file" name="file" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Đường dẫn</label>
+                    <input asp-for="DuongDan" class="form-control" />
+                    <span asp-validation-for="DuongDan" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input asp-for="TrangThai" type="hidden" class="form-control" />
+                    <span asp-validation-for="TrangThai" class="text-danger"></span>
+                </div>
+                <div class="form-group d-flex justify-content-end mt-2">
+                    <input type="submit" value="Cập nhật" class="btn btn-primary" />
+                </div>
+            </form>
         </div>
+        <div class="col-md-4 my-4 text-center">
+            <label class="fw-bold mb-2">Ảnh hiện tại</label>
 
-        <p class="text-muted small mt-2">@Model.HinhAnh@ViewBag.PhanMoRong</p>
+            @{
+                var link = "~/images/banner/" + Model.HinhAnh + ViewBag.PhanMoRong;
+            }
+
+            <div class="banner-preview">
+                <img src="@Url.Content(link)" class="img-fluid rounded shadow" />
+            </div>
+
+            <p class="text-muted small mt-2">@Model.HinhAnh@ViewBag.PhanMoRong</p>
+        </div>
     </div>
 </div>
 @section Scripts {
@@ -70,7 +81,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         const alertBox = document.querySelector(".alert");
         if (alertBox) {
-            setTimeout(() => alertBox.style.display = "none", 3000);
+            setTimeout(() => alertBox.style.display = "none", 10000);
         }
     });
 </script>

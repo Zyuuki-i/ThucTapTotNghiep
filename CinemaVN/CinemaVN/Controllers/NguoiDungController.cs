@@ -4,7 +4,7 @@ using System.Net;
 using CinemaVN.Models;
 using System.Security.Cryptography;
 using BCrypt.Net;
-using CinemaVN.MyModels;
+using CinemaVN.DatModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace CinemaVN.Controllers
@@ -29,7 +29,7 @@ namespace CinemaVN.Controllers
             {
                 return RedirectToAction("DangNhap");
             }
-            return View(nd);
+            return View(CNguoiDung.ToCNguoiDung(nd));
         }
 
         public IActionResult dangNhap()
@@ -67,7 +67,7 @@ namespace CinemaVN.Controllers
                 }
                 else
                 {
-                    TempData["MessageError_DangNhap"] = "Mật khẩu không đúng! Vui lòng thử lại." + tk.MatKhau;
+                    TempData["MessageError_DangNhap"] = "Mật khẩu không đúng! Vui lòng thử lại.";
                 }
             }
             return View();

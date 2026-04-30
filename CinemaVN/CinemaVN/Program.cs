@@ -1,4 +1,4 @@
-using CinemaVN.MyModels;
+using CinemaVN.DatModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +42,7 @@ app.Use(async (context, next) =>
     {
         var role = context.Session.GetString("UserRole");
 
-        if (string.IsNullOrEmpty(role) || role != "admin")
+        if (string.IsNullOrEmpty(role) || role.ToLower() != "admin")
         {
             context.Response.Redirect("/NguoiDung/DangNhap");
             return;
@@ -53,7 +53,7 @@ app.Use(async (context, next) =>
     {
         var role = context.Session.GetString("UserRole");
 
-        if (string.IsNullOrEmpty(role) || role != "manage")
+        if (string.IsNullOrEmpty(role) || role.ToLower() != "manage")
         {
             context.Response.Redirect("/NguoiDung/DangNhap");
             return;
@@ -64,7 +64,7 @@ app.Use(async (context, next) =>
     {
         var role = context.Session.GetString("UserRole");
 
-        if (string.IsNullOrEmpty(role) || role != "staff")
+        if (string.IsNullOrEmpty(role) || role.ToLower() != "staff")
         {
             context.Response.Redirect("/NguoiDung/DangNhap");
             return;

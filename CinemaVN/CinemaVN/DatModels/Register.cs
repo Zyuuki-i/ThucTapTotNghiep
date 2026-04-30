@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CinemaVN.MyModels
+namespace CinemaVN.DatModels
 {
     public class Register
     {

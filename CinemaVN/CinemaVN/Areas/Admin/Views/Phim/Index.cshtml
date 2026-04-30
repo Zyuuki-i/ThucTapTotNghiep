@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CinemaVN.Models.Phim>
+﻿@model IEnumerable<CinemaVN.DatModels.CPhim>
 
 @{
     ViewData["Title"] = "Index";
@@ -9,7 +9,7 @@
 
 <div class="w-100 d-flex justify-content-between">
     <a asp-action="them" class="btn btn-label btn-success">Thêm Mới</a>
-    <div class="d-flex justify-content-between" style="width: 40%">
+    <div class="d-flex justify-content-between">
         <form class="d-flex search-group me-1" method="get" asp-action="Index">
             <div class="input-group">
                 <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, tên phim" value="@ViewBag.Keyword" aria-label="Search">
@@ -62,8 +62,6 @@
                 <th>@Html.DisplayNameFor(model => model.Poster)</th>
                 <th>@Html.DisplayNameFor(model => model.TenPhim)</th>
                 <th>@Html.DisplayNameFor(model => model.DaoDien)</th>
-                <th>@Html.DisplayNameFor(model => model.DoTuoi)</th>
-                <th>@Html.DisplayNameFor(model => model.Trailer)</th>
                 <th>@Html.DisplayNameFor(model => model.NgayChieu)</th>
                 <th>@Html.DisplayNameFor(model => model.ThoiLuong)</th>
                 <th>@Html.DisplayNameFor(model => model.TrangThai)</th>
@@ -83,35 +81,11 @@
                             }
                             <img src="@Url.Content(link)" alt="@(item.TenPhim)" style="object-fit: cover; width: 100px; height: 150px;" />
                         </td>
-                        <td class="fw-bold" style="min-width:200px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <td class="fw-bold" style="min-width:333px; max-width: 333px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             @Html.DisplayFor(modelItem => item.TenPhim)
                         </td>
                         <td style="width:100px">
                             @Html.DisplayFor(modelItem => item.DaoDien)
-                        </td>
-                        <td>
-                            @if(item.DoTuoi == 0)
-                            {
-                                <span class="rounded-2 p-2 text-white bg-success">P</span>
-                            }
-                            else if (item.DoTuoi >= 13 && item.DoTuoi < 16)
-                            {
-                                <span class="rounded-2 p-2 text-white bg-info">T13</span>
-                            }
-                            else if (item.DoTuoi >= 16 && item.DoTuoi < 18)
-                            {
-                                <span class="rounded-2 p-2 text-white bg-warning">T16</span>
-                            }
-                            else if (item.DoTuoi >= 18)
-                            {
-                                <span class="rounded-2 p-2 text-white bg-danger">T18</span>
-                            }else
-                            {
-                                <span class="rounded-2 p-2 text-white bg-danger">C</span>
-                            }
-                        </td>
-                        <td>
-                            <a href="@item.Trailer" class="text-decoration-none text-danger">[Trailer] @(item.MaPhim)</a>
                         </td>
                         <td>
                             @item.NgayChieu?.ToString("dd/MM/yyyy")
@@ -119,11 +93,11 @@
                         <td>
                             @Html.DisplayFor(modelItem => item.ThoiLuong) phút
                         </td>
-                        <td style="min-width:150px;">
+                        <td style="min-width:120px;">
                             <form asp-action="doiTrangThai" method="post">
                                 <input type="hidden" name="id" value="@item.MaPhim" />
 
-                            <select name="trangthai"
+                                <select name="trangthai"
                                     class="form-select form-select-sm text-white
                                     @(item.TrangThai == 0 ? "bg-secondary" :
                                               item.TrangThai == 1 ? "bg-success" :
@@ -138,6 +112,7 @@
                             </form>
                         </td>
                         <td>
+                            <a asp-action="xoa" asp-route-id="@item.MaPhim" class="btn btn-danger" onclick="return confirm('Hành động này sẽ xóa bỏ hoàn toàn phim @(item.MaPhim)! Bạn có chắc chắn muốn tiếp tục?');">Xóa</a>
                             <a asp-action="sua" asp-route-id="@item.MaPhim" class="btn btn-primary">Sửa</a>
                             <a asp-action="chiTiet" asp-route-id="@item.MaPhim" class="btn btn-info">Chi tiết</a>
                         </td>

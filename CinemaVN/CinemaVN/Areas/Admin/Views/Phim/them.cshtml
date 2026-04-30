@@ -1,0 +1,183 @@
+﻿@model CinemaVN.DatModels.CPhim
+
+@{
+    ViewData["Title"] = "them";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var theloais = ViewBag.TheLoais as List<CinemaVN.Models.TheLoai>;
+}
+
+<h1 class="text-label text-center">QUẢN LÝ PHIM</h1>
+<div class="row mb-2">
+    <div class="col-5"><hr /></div>
+    <div class="col-2 text-center">
+        <h3 class="text-success">THÊM MỚI</h3>
+    </div>
+    <div class="col-5"><hr /></div>
+    <div class="col-12 text-center">
+        <a class="btn btn-outline-info w-25" asp-action="Index">Quay lại</a>
+    </div>
+</div>
+@if (TempData["MessageError_ThemPhim"] != null)
+{
+    <div class="alert alert-danger text-center fw-bold">
+        @TempData["MessageError_ThemPhim"]
+    </div>
+}
+<div class="border border-3 border-success p-3 rounded">
+    <div class="row">
+        <form asp-action="them" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input asp-for="MaPhim" type="hidden" class="form-control" />
+            <div class="form-group">
+                <label asp-for="TenPhim" class="control-label"></label>
+                <input asp-for="TenPhim" class="form-control" />
+                <span asp-validation-for="TenPhim" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MoTa" class="control-label"></label>
+                <input asp-for="MoTa" class="form-control" />
+                <span asp-validation-for="MoTa" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ThoiLuong" class="control-label"></label>
+                <input asp-for="ThoiLuong" type="number" class="form-control" placeholder="Phút"/>
+                <span asp-validation-for="ThoiLuong" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NgayChieu" class="control-label"></label>
+                <input asp-for="NgayChieu" type="date" class="form-control" />
+                <span asp-validation-for="NgayChieu" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DaoDien" class="control-label"></label>
+                <input asp-for="DaoDien" class="form-control" />
+                <span asp-validation-for="DaoDien" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-6">
+                        <label asp-for="Poster" class="control-label"></label>
+                        <input asp-for="Poster" type="file" name="poster" class="form-control" id="posterInput" />  
+                        <span asp-validation-for="Poster" class="text-danger"></span>
+                    </div>
+                    <div class="col-6 text-center py-3">
+                        <img id="previewPoster" src="#" alt="Preview" style="display:none; max-width:200px; border-radius:8px;" />
+                    </div>
+                </div>          
+            </div>
+            <div class="form-group">
+                <label asp-for="Trailer" class="control-label"></label>
+                <input asp-for="Trailer" class="form-control" placeholder="Url"/>
+                <span asp-validation-for="Trailer" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DoTuoi" class="control-label"></label>
+                <select asp-for="DoTuoi" class="form-control">
+                    <option value="0" selected>P (Phù hợp với mọi lứa tuổi)</option>
+                    <option value="13">T13 (Cấm trẻ em dưới 13 tuổi)</option>
+                    <option value="16">T16 (Cấm trẻ em dưới 16 tuổi)</option>
+                    <option value="18">T18 (Cấm trẻ em dưới 18 tuổi)</option>
+                </select>
+                <span asp-validation-for="DoTuoi" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                @if(theloais != null && theloais.Count > 0)
+                {
+                    <label class="control-label">Thể loại</label>
+                    <select id="theLoaiSelect" class="form-control">
+                        <option value="" disabled selected>-- Chọn thể loại --</option>
+                        @foreach (var theloai in theloais)
+                        {
+                            <option value="@theloai.MaTl">@theloai.TenTl</option>
+                        }
+                    </select>        
+                }
+                else
+                {
+                    <div class="alert alert-warning text-center">
+                        Không có thể loại nào khả dụng!
+                    </div>
+                }
+            </div>
+            <div id="theLoaiSelected" class="mt-2 d-flex flex-wrap gap-2"></div>
+                <input asp-for="TrangThai" type="hidden" value="0" class="form-control" />
+            <div class="form-group d-flex justify-content-between mt-2">
+                <button type="button" class="btn btn-secondary mt-2" id="chonTl">Chọn</button>
+                <div>
+                    <input type="submit" value="Thêm" class="btn btn-primary" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+
+     document.getElementById("chonTl").addEventListener("click", function () {
+        const select = document.getElementById("theLoaiSelect");
+        const selectedValue = select.value;
+        const selectedText = select.options[select.selectedIndex].text;
+        const container = document.getElementById("theLoaiSelected");
+
+        if (!selectedValue) {
+            alert("Vui lòng chọn một thể loại!");
+            return;
+        }
+
+        const exists = [...container.querySelectorAll("input")]
+            .some(i => i.value === selectedValue);
+
+        if (exists) {
+            return;
+        }
+
+        const tag = document.createElement("span");
+        tag.className = "tag-tl";
+
+        tag.innerHTML = `
+            ${selectedText}
+            <button type="button">&times;</button>
+        `;
+
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "theLoaiChon";
+        hiddenInput.value = selectedValue;
+
+        tag.appendChild(hiddenInput);
+
+        tag.querySelector("button").addEventListener("click", function () {
+            tag.remove();
+        });
+
+        container.appendChild(tag);
+    });
+
+    document.getElementById("posterInput").addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById("previewPoster");
+
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.style.display = "inline";
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = "none";
+        }
+    });
+</script>

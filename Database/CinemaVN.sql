@@ -46,9 +46,19 @@ CREATE TABLE DichVu (
     Gia DECIMAL(18, 2) NOT NULL,
     LoaiDV NVARCHAR(50),
     HinhAnh VARCHAR(255),
-    SoLuongTon INT DEFAULT 0,
 	CONSTRAINT CK_DV_Gia CHECK (Gia >= 0)
 );
+
+CREATE TABLE Kho (
+    MaCN VARCHAR(10) NOT NULL,
+    MaDV INT NOT NULL,
+    SoLuongTon INT DEFAULT 0,
+    CONSTRAINT PK_KhoChiNhanh PRIMARY KEY (MaCN, MaDV),
+    CONSTRAINT FK_Kho_ChiNhanh FOREIGN KEY (MaCN) REFERENCES ChiNhanh(MaCN),
+    CONSTRAINT FK_Kho_DichVu FOREIGN KEY (MaDV) REFERENCES DichVu(MaDV),
+    CONSTRAINT CK_Kho_Ton CHECK (SoLuongTon >= 0)
+);
+GO
 
 CREATE TABLE NguoiDung (
     MaND INT PRIMARY KEY IDENTITY(1000,8), 
@@ -292,7 +302,25 @@ INSERT [dbo].[KhuyenMai] ([MaKM], [Code], [MoTa], [DieuKien], [SoDiem], [PhanTra
 SET IDENTITY_INSERT [dbo].[KhuyenMai] OFF
 GO
 
-
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ1', 100, 30)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ1', 111, 40)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ1', 122, 100)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ1', 133, 20)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ1', 144, 25)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ1', 155, 10)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ7', 100, 40)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ7', 111, 30)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ7', 122, 50)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ7', 133, 15)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ7', 144, 20)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ7', 155, 10)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ8', 100, 35)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ8', 111, 30)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ8', 122, 50)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ8', 133, 15)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ8', 144, 25)
+INSERT [dbo].[Kho] ([MaCN], [MaDV], [SoLuongTon]) VALUES ('CNQ8', 155, 10)
+GO
 
 
 

@@ -1,0 +1,85 @@
+﻿@model IEnumerable<CinemaVN.Models.DinhDang>
+@{
+    ViewData["Title"] = "Quản Lý Giá - Định Dạng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+<h1 class="text-label text-center">QUẢN LÝ GIÁ</h1>
+<a asp-action="themDinhDang" class="btn btn-label btn-success">Thêm Định Dạng</a>
+<div class="my-3">
+    @if (TempData["MessageError_DinhDang"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_DinhDang"]
+        </div>
+    }
+    @if (TempData["MessageSuccess_DinhDang"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold">
+            @TempData["MessageSuccess_DinhDang"]
+        </div>
+    }
+</div>
+<div class="mt-3">
+    <table class="table table-bordered text-center align-middle">
+        <thead>
+            <tr>
+                <th>Mã Định Dạng</th>
+                <th>Loại Định Dạng</th>
+                <th>Phụ Thu</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.MaDd</td>
+                        <td><input type="text" class="form-control" value="@item.TenDd" id="tenDd-@item.MaDd" /></td>
+                        <td>
+                            <input type="number" class="form-control" value="@item.PhuThu" id="phuThu-@item.MaDd" />
+                        </td>
+                        <td>
+                            <a asp-action="xoaDinhDang" asp-route-id="@item.MaDd" class="btn btn-sm btn-danger" onclick="return confirm('Hành động này sẽ xóa bỏ hoàn toàn định dạng @(item.MaDd)! Bạn có chắc chắn muốn tiếp tục?');">Xóa</a>
+                            <a href="#" id="luu-@item.MaDd" class="btn btn-sm btn-primary">Lưu thay đổi</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="12">Không có định dạng nào.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+    document.querySelectorAll("a[id^='luu-']").forEach(button => {
+    button.addEventListener("click", function (e) {
+        e.preventDefault();
+            const maDd = this.id.replace("luu-", "");
+            const tenDd = document.getElementById(`tenDd-${maDd}`).value;
+            const phuThu = document.getElementById(`phuThu-${maDd}`).value;
+            fetch(`/Admin/Gia/capNhatDinhDang?maDd=${maDd}&tenDd=${tenDd}&phuThu=${phuThu}`, {
+                method: "POST"
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Cập nhật thành công!");
+            })
+            .catch(() => {
+                alert("Lỗi! Vui lòng thử lại.");
+            });
+        });
+    });
+</script>
+

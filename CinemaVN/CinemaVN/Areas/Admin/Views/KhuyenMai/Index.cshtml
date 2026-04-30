@@ -1,4 +1,4 @@
-﻿@* @model IEnumerable<CinemaVN.Models.Phim> *@
+﻿@model IEnumerable<CinemaVN.DatModels.CKhuyenMai>
 
 @{
     ViewData["Title"] = "Index";
@@ -9,15 +9,19 @@
 
 <div class="w-100 d-flex justify-content-between">
     <a asp-action="them" class="btn btn-label btn-success">Thêm Mới</a>
-    <div class="d-flex justify-content-between" style="width: 40%">
-        @* <form class="d-flex search-group me-1" method="get" asp-action="Index">
+    <div class="d-flex justify-content-evenly" style="width:450px">
+        <span class="fs-5 text-warning me-2">Sắp diễn ra: @ViewBag.demSapDienRa</span>
+        <span class="fs-5 text-success me-2">Hiệu lực: @ViewBag.demHieuLuc</span>
+        <span class="fs-5 text-danger">Hết hạn: @ViewBag.demHetHan</span>
+    </div>
+    <div class="d-flex justify-content-between">
+        <form class="d-flex search-group me-1" method="get" asp-action="Index">
             <div class="input-group">
-                <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, tên khuyến mãi" value="@ViewBag.Keyword" aria-label="Search">
-                <input type="hidden" name="trangthai" value="@(ViewBag.TrangThai.ToString().ToLower())" />
+                <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, code" value="@ViewBag.Keyword" aria-label="Search">
                 <button class="btn btn-search bg-black text-white" type="submit"><i class="bi bi-search"></i></button>
             </div>
-        </form> *@
-        @* @if (ViewBag.keyword != null && ViewBag.keyword != "")
+        </form>
+        @if (ViewBag.Keyword != null && ViewBag.Keyword != "")
         {
             <a asp-action="Index" class="btn btn-outline-info me-1">Quay lại</a>
         }
@@ -29,16 +33,16 @@
                     var trangThai = ViewBag.TrangThai?.ToString();
                 }
                 <option value="0" selected="@(trangThai == "0" ? "selected" : null)">
-                    Sắp chiếu
+                    Sắp diễn ra
                 </option>
                 <option value="1" selected="@(trangThai == "1" ? "selected" : null)">
-                    Đang chiếu
+                    Hiệu lực
                 </option>
                 <option value="2" selected="@(trangThai == "2" ? "selected" : null)">
-                    Ngừng chiếu
+                    Hết hạn
                 </option>
             </select>
-        </form> *@
+        </form>
     </div>
 </div>
 <div class="my-3">
@@ -59,44 +63,104 @@
     <table class="table table-bordered text-center align-middle">
         <thead>
             <tr>
-                @* <th>@Html.DisplayNameFor(model => model.Poster)</th>
-                <th>@Html.DisplayNameFor(model => model.TenPhim)</th>
-                <th>@Html.DisplayNameFor(model => model.DaoDien)</th>
-                <th>@Html.DisplayNameFor(model => model.DoTuoi)</th>
-                <th>@Html.DisplayNameFor(model => model.Trailer)</th>
-                <th>@Html.DisplayNameFor(model => model.NgayChieu)</th>
-                <th>@Html.DisplayNameFor(model => model.ThoiLuong)</th>
+                <th>@Html.DisplayNameFor(model => model.MaKm)</th>
+                <th>@Html.DisplayNameFor(model => model.Code)</th>
+                <th>@Html.DisplayNameFor(model => model.DieuKien)</th>
+                <th>@Html.DisplayNameFor(model => model.SoDiem)</th>
+                <th>Quyền lợi</th>
+                <th>Thời gian</th>
                 <th>@Html.DisplayNameFor(model => model.TrangThai)</th>
-                <th></th> *@
+                <th>@Html.DisplayNameFor(model => model.MoTa)</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @* @if (Model != null && Model.Count() > 0)
+            @if (Model != null && Model.Any())
             {
-                @foreach (var item in Model)
+                foreach (var item in Model)
                 {
-                    <tr class="align-content-center"> 
+                    <tr>
+                        <td>@item.MaKm</td>
+                        <td>@item.Code</td>
+                        <td>@item.DieuKien?.ToString("N0")đ</td>
+                        <td>@item.SoDiem</td>
+                        <td>@(item.PhanTramGiam)% tối đa @item.GiamToiDa?.ToString("N0")đ</td>
+                        <td>@item.NgayBd?.ToShortDateString() - @item.NgayKt?.ToShortDateString()</td>
+                        <td>
+                            <form method="post" asp-action="doiTrangThai" asp-route-id="@item.MaKm">
+                                <select name="trangthai" onchange="this.form.submit()"
+                                        class="form-select form-select-sm 
+                                        @(item.TrangThai == 0 ? "bg-warning" : item.TrangThai == 1 ? "bg-success" : "bg-danger")">
+                                    <option value="0" selected="@(item.TrangThai == 0 ? "selected" : null)">Sắp diễn ra</option>
+                                    <option value="1" selected="@(item.TrangThai == 1 ? "selected" : null)">Hiệu lực</option>
+                                    <option value="2" selected="@(item.TrangThai == 2 ? "selected" : null)">Hết hạn</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td style="min-width:150px; max-width:150px; height:50px; overflow:hidden; text-overflow:ellipsis;">@item.MoTa</td>
+                        <td>
+                            <a asp-action="xoa" asp-route-id="@item.MaKm" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa khuyến mãi @(item.Code ?? "này")?');">Xóa</a>
+                            <a asp-action="sua" asp-route-id="@item.MaKm" class="btn btn-sm btn-primary">Sửa</a>
+                        </td>
                     </tr>
+                }
+                @if (ViewBag.tongTrang != null && ViewBag.tongTrang > 1)
+                {
+                    <tr>
+                        <td colspan="9">
+                            <div class="d-flex justify-content-center mt-3">
+                                @{
+                                    int trangHT = ViewBag.trangHT ?? 1;
+                                    int tongTrang = ViewBag.tongTrang ?? 1;
+                                    string? keyword = ViewBag.Keyword as string;
+                                    int trangthai = ViewBag.TrangThai ?? 1;
+                                }
+                                @if (tongTrang > 1)
+                                {
+                                    <ul class="pagination">
+
+                                        <!-- Prev -->
+                                        <li class="page-item @(trangHT == 1 ? "disabled" : "")">
+                                            <a class="page-link"
+                                               asp-action="Index"
+                                               asp-route-keyword="@keyword"
+                                               asp-route-trangthai="@trangthai"
+                                               asp-route-trang="1">«</a>
+                                        </li>
+
+                                        <!-- Pages -->
+                                        @for (int i = 1; i <= tongTrang; i++)
+                                        {
+                                            <li class="page-item @(i == trangHT ? "active" : "")">
+                                                <a class="page-link"
+                                                   asp-action="Index"
+                                                   asp-route-keyword="@keyword"
+                                                   asp-route-trangthai="@trangthai"
+                                                   asp-route-trang="@i">@i</a>
+                                            </li>
+                                        }
+
+                                        <!-- Next -->
+                                        <li class="page-item @(trangHT == tongTrang ? "disabled" : "")">
+                                            <a class="page-link"
+                                               asp-action="Index"
+                                               asp-route-keyword="@keyword"
+                                               asp-route-trangthai="@trangthai"
+                                               asp-route-trang="@(tongTrang)">»</a>
+                                        </li>
+                                    </ul>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
             }
             else
             {
                 <tr>
-                    <td colspan="11" class="text-center text-secondary">
-                        @{
-                            int trangthai = ViewBag.TrangThai as int? ?? -1;
-                        }
-
-                    @(trangthai switch
-                    {
-                    0 => "Không có phim sắp chiếu",
-                    1 => "Không có phim đang chiếu",
-                    2 => "Không có phim ngừng chiếu",
-                    _ => "Không có phim"
-                    }),
-                    <a asp-action="Index" class="text-decoration-none">quay lại</a>
-                </td>
-            </tr>
-            } *@
+                    <td colspan="12">Không có khuyến mãi nào.</td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>

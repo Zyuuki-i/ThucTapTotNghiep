@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CinemaVN.Models.Banner>
+﻿@model IEnumerable<CinemaVN.DatModels.CBanner>
 
 @{
     ViewData["Title"] = "Index";
@@ -9,7 +9,7 @@
 
 <div class="w-100 d-flex justify-content-between">
     <a asp-action="them" class="btn btn-label btn-success">Thêm Mới</a>
-    <div class="d-flex justify-content-between" style="width: 40%">
+    <div class="d-flex justify-content-between">
         <form class="d-flex search-group me-1" method="get" asp-action="Index">
             <div class="input-group">
                 <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, tiêu đề" value="@ViewBag.Keyword" aria-label="Search">
@@ -22,6 +22,7 @@
             <a asp-action="Index" class="btn btn-outline-info me-1">Quay lại</a>
         }
         <a asp-action="Index"
+           asp-route-keyword="@(ViewBag.Keyword)"
            asp-route-trangthai="@(ViewBag.TrangThai == true? false : true)" class="btn btn-outline-secondary shadow-sm">
             @(ViewBag.TrangThai == true ? "Banner OFF" : "Banner ON")
         </a>
@@ -98,7 +99,7 @@
                         </form>
                     </td>
                     <td>
-                        <a asp-action="xoa" asp-route-id="@item.MaBn" class="btn btn-danger" onclick="return confirm('Hành động này sẽ xóa bỏ hoàn toàn banner này! Bạn có chắc chắn muốn tiếp tục?');">Xóa</a> 
+                        <a asp-action="xoa" asp-route-id="@item.MaBn" class="btn btn-danger" onclick="return confirm('Hành động này sẽ xóa bỏ hoàn toàn banner @(item.MaBn)! Bạn có chắc chắn muốn tiếp tục?');">Xóa</a> 
                         <a asp-action="sua" asp-route-id="@item.MaBn" class="btn btn-primary">Sửa</a>
                     </td>
                 </tr>

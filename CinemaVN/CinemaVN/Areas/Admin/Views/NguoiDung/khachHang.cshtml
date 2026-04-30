@@ -1,38 +1,41 @@
-﻿@model IEnumerable<CinemaVN.DatModels.CChiNhanh>
-
+﻿@model IEnumerable<CinemaVN.DatModels.CNguoiDung>
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Quản Lý Người Dùng - Khách Hàng";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h1 class="text-label text-center">QUẢN LÝ CHI NHÁNH</h1>
-
+<h1 class="text-label text-center">QUẢN LÝ NGƯỜI DÙNG</h1>
 <div class="w-100 d-flex justify-content-between">
-    <a asp-action="them" class="btn btn-label btn-success">Thêm Mới</a>
+    <a asp-action="them" class="btn btn-label btn-success">Tạo tài khoản</a>
     <div class="d-flex justify-content-between">
-        <form class="d-flex search-group me-1" method="get" asp-action="Index">
+        <form class="d-flex search-group me-1" method="get" asp-action="khachHang">
             <div class="input-group">
-                <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, tên, địa chỉ chi nhánh" value="@ViewBag.Keyword" aria-label="Search">
+                <input class="form-control" type="search" name="keyword" placeholder="Tìm tên, email, sdt,..." value="@ViewBag.Keyword" aria-label="Search">
+                <input type="hidden" name="trangthai" value="@(ViewBag.TrangThai.ToString().ToLower())" />
                 <button class="btn btn-search bg-black text-white" type="submit"><i class="bi bi-search"></i></button>
             </div>
         </form>
         @if (ViewBag.keyword != null && ViewBag.keyword != "")
         {
-            <a asp-action="Index" class="btn btn-outline-info me-1">Quay lại</a>
+            <a asp-action="khachHang" class="btn btn-outline-info me-1">Quay lại</a>
         }
+        <a asp-action="khachHang"
+           asp-route-trangthai="@(ViewBag.TrangThai == true? false : true)" class="btn btn-outline-secondary shadow-sm">
+            @(ViewBag.TrangThai == true ? "Hiệu lực" : "Vô hiệu")
+        </a>
     </div>
 </div>
 <div class="my-3">
-    @if (TempData["MessageError_ChiNhanh"] != null)
+    @if (TempData["MessageError_NguoiDung"] != null)
     {
         <div class="alert alert-danger text-center fw-bold">
-            @TempData["MessageError_ChiNhanh"]
+            @TempData["MessageError_NguoiDung"]
         </div>
     }
-    @if (TempData["MessageSuccess_ChiNhanh"] != null)
+    @if (TempData["MessageSuccess_NguoiDung"] != null)
     {
         <div class="alert alert-success text-center fw-bold">
-            @TempData["MessageSuccess_ChiNhanh"]
+            @TempData["MessageSuccess_NguoiDung"]
         </div>
     }
 </div>
@@ -40,39 +43,60 @@
     <table class="table table-bordered text-center align-middle">
         <thead>
             <tr>
-                <th>@Html.DisplayNameFor(model => model.MaCn)</th>
-                <th>@Html.DisplayNameFor(model => model.TenCn)</th>
-                <th>@Html.DisplayNameFor(model => model.DiaChi)</th>
-                <th>@Html.DisplayNameFor(model => model.Sdt)</th>
+                <th>ID</th>
+                <th>@Html.DisplayNameFor(model => model.HoTen)</th>
+                <th>@Html.DisplayNameFor(model => model.Email)</th>
+                <th>Phone</th>
+                <th>@Html.DisplayNameFor(model => model.DiemHoiVien)</th>
+                <th>@Html.DisplayNameFor(model => model.TrangThai)</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-           @if(Model != null && Model.Any())
+            @if (Model != null && Model.Any())
             {
                 foreach (var item in Model)
                 {
                     <tr>
-                        <td>@item.MaCn</td>
-                        <td>@item.TenCn</td>
-                        <td>@item.DiaChi</td>
+                        <td>@item.MaNd</td>
+                        <td>@item.HoTen</td>
+                        <td>@item.Email</td>
                         <td>@item.Sdt</td>
+                        <td>@item.DiemHoiVien</td>
                         <td>
-                            <a asp-action="xoa" asp-route-id="@item.MaCn" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa chi nhánh @(item.TenCn??"này")?');">Xóa</a>
-                            <a asp-action="sua" asp-route-id="@item.MaCn" class="btn btn-sm btn-primary">Sửa</a>
-                            <a asp-action="chiTiet" asp-route-id="@item.MaCn" class="btn btn-sm btn-info">Chi Tiết</a>
+                            @if (item.TrangThai == true)
+                            {
+                                <span class="badge bg-success">Hiệu lực</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Vô hiệu</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.TrangThai == true)
+                            {
+                                <a asp-action="voHieu" asp-route-id="@item.MaNd" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa người dùng @item.HoTen không?')">Vô hiệu</a>
+                            }
+                            else
+                            {
+                                <a asp-action="kichHoat" asp-route-id="@item.MaNd" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc chắn muốn kích hoạt người dùng @item.HoTen không?')">Kích hoạt</a>
+                            }
+                            <a asp-action="sua" asp-route-id="@item.MaNd" class="btn btn-sm btn-primary">Sửa</a>
+                            <a asp-action="chiTiet" asp-route-id="@item.MaNd" class="btn btn-sm btn-info">Chi tiết</a>
                         </td>
                     </tr>
                 }
                 @if (ViewBag.tongTrang != null && ViewBag.tongTrang > 1)
                 {
                     <tr>
-                        <td colspan="5">
+                        <td colspan="7">
                             <div class="d-flex justify-content-center mt-3">
                                 @{
                                     int trangHT = ViewBag.trangHT ?? 1;
                                     int tongTrang = ViewBag.tongTrang ?? 1;
                                     string? keyword = ViewBag.Keyword as string;
+                                    bool trangthai = ViewBag.TrangThai ?? true;
                                 }
                                 @if (tongTrang > 1)
                                 {
@@ -81,8 +105,9 @@
                                         <!-- Prev -->
                                         <li class="page-item @(trangHT == 1 ? "disabled" : "")">
                                             <a class="page-link"
-                                               asp-action="Index"
+                                               asp-action="khachHang"
                                                asp-route-keyword="@keyword"
+                                               asp-route-trangthai="@trangthai"
                                                asp-route-trang="1">«</a>
                                         </li>
 
@@ -91,8 +116,9 @@
                                         {
                                             <li class="page-item @(i == trangHT ? "active" : "")">
                                                 <a class="page-link"
-                                                   asp-action="Index"
+                                                   asp-action="khachHang"
                                                    asp-route-keyword="@keyword"
+                                                   asp-route-trangthai="@trangthai"
                                                    asp-route-trang="@i">@i</a>
                                             </li>
                                         }
@@ -100,8 +126,9 @@
                                         <!-- Next -->
                                         <li class="page-item @(trangHT == tongTrang ? "disabled" : "")">
                                             <a class="page-link"
-                                               asp-action="Index"
+                                               asp-action="khachHang"
                                                asp-route-keyword="@keyword"
+                                               asp-route-trangthai="@trangthai"
                                                asp-route-trang="@(tongTrang)">»</a>
                                         </li>
                                     </ul>
@@ -114,7 +141,7 @@
             else
             {
                 <tr>
-                    <td colspan="5">Không có chi nhánh nào.</td>
+                    <td colspan="12">Không có người dùng nào.</td>
                 </tr>
             }
         </tbody>

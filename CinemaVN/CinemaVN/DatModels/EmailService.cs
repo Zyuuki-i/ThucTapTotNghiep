@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Mail;
 
-namespace CinemaVN.MyModels
+namespace CinemaVN.DatModels
 {
     public class EmailService
     {

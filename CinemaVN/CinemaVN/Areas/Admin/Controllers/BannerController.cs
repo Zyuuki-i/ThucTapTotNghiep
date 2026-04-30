@@ -1,4 +1,5 @@
 ﻿using CinemaVN.Models;
+using CinemaVN.DatModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -14,7 +15,7 @@ namespace CinemaVN.Areas.Admin.Controllers
             keyword = keyword?.Trim();
 
             var query = db.Banners.AsQueryable();
-
+            
             query = query.Where(t => t.TrangThai == trangthai);
 
             if (!string.IsNullOrEmpty(keyword))
@@ -37,14 +38,20 @@ namespace CinemaVN.Areas.Admin.Controllers
             ViewBag.Keyword = keyword;
             ViewBag.TrangThai = trangthai;
 
-            return View(banners);
+            List<CBanner> cbanners = new();
+            foreach (var item in banners)
+            {
+                cbanners.Add(CBanner.ToCBanner(item));
+            }
+
+            return View(cbanners);
         }
 
         public IActionResult doiTrangThai(int id, bool trangthai)
         {
             Banner? banner = db.Banners.Find(id);
             if (banner == null) {
-                TempData["MessageError_Banner"] = "Không tìm thấy banner.";
+                TempData["MessageError_Banner"] = "Lỗi, không tìm thấy banner!";
                 return RedirectToAction("Index", new { trangthai = trangthai });
             }
             try { 
@@ -53,7 +60,8 @@ namespace CinemaVN.Areas.Admin.Controllers
                 
             }catch (Exception)
             {
-                TempData["MessageError_Banner"] = "Đã có lỗi xảy ra!";
+                TempData["MessageError_Banner"] = "Lỗi, không thể cập nhật trạng thái!";
+                return RedirectToAction("Index", new { trangthai = trangthai });
             }
             int trang = timTrang(id);
             return RedirectToAction("Index", new { trangthai = trangthai, trang = trang });
@@ -85,7 +93,7 @@ namespace CinemaVN.Areas.Admin.Controllers
                 }
                 catch (Exception)
                 {
-                    TempData["MessageError_Banner"] = "Đã có lỗi xảy ra!";
+                    TempData["MessageError_Banner"] = "Lỗi, không thể xóa banner!";
                     return RedirectToAction("Index", new { trangthai = banner.TrangThai });
                 }
             }
@@ -162,7 +170,7 @@ namespace CinemaVN.Areas.Admin.Controllers
                 banner.HinhAnh = Path.GetFileNameWithoutExtension(banner.HinhAnh);
                 return View(banner);
             }
-            TempData["MessageError_Banner"] = "Không tìm thấy banner.";
+            TempData["MessageError_Banner"] = "Lỗi, không tìm thấy banner!";
             return RedirectToAction("Index", new { trangthai = true });
         }
 
@@ -172,7 +180,7 @@ namespace CinemaVN.Areas.Admin.Controllers
             Banner? bn = db.Banners.Find(banner.MaBn);
             if (bn == null)
             {
-                TempData["MessageError_Banner"] = "Không tìm thấy banner.";
+                TempData["MessageError_Banner"] = "Lỗi, không tìm thấy banner!";
                 return RedirectToAction("Index", new { trangthai = true });
             }
 
@@ -236,13 +244,23 @@ namespace CinemaVN.Areas.Admin.Controllers
                     TempData["MessageError_SuaBanner"] = "Tên file đã tồn tại!";
                     return View(banner);
                 }
+                try
+                {
+                    bn.HinhAnh = anhMoi;
+                    db.SaveChanges();
+                }
+                catch (Exception)
+                {
+                    ViewBag.PhanMoRong = Path.GetExtension(bn.HinhAnh);
+                    banner.HinhAnh = Path.GetFileNameWithoutExtension(bn.HinhAnh);
+                    TempData["MessageError_SuaBanner"] = "Lỗi, không thể cập nhật banner!";
+                    return View(banner);
+                }
 
                 using (FileStream f = new FileStream(duongDan, FileMode.Create))
                 {
                     file.CopyTo(f);
                 }
-
-                bn.HinhAnh = anhMoi;
 
                 if (!string.IsNullOrEmpty(anhXoa))
                 {
@@ -253,8 +271,6 @@ namespace CinemaVN.Areas.Admin.Controllers
                     }
                 }
             }
-
-            db.SaveChanges();
             TempData["MessageSuccess_Banner"] = "Cập nhật banner thành công";
             return RedirectToAction("Index", new { trangthai = true });
         }

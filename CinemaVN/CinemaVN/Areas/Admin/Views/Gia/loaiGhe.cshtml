@@ -1,0 +1,85 @@
+﻿@model IEnumerable<CinemaVN.Models.LoaiGhe>
+@{
+    ViewData["Title"] = "Quản Lý Giá - Loại Ghế";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+<h1 class="text-label text-center">QUẢN LÝ GIÁ</h1>
+<a asp-action="themLoaiGhe" class="btn btn-label btn-success">Thêm Loại Ghế</a>
+<div class="my-3">
+    @if (TempData["MessageError_LoaiGhe"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_LoaiGhe"]
+        </div>
+    }
+    @if (TempData["MessageSuccess_LoaiGhe"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold">
+            @TempData["MessageSuccess_LoaiGhe"]
+        </div>
+    }
+</div>
+<div class="mt-3">
+    <table class="table table-bordered text-center align-middle">
+        <thead>
+            <tr>
+                <th>Mã Loại</th>
+                <th>Loại Ghế</th>
+                <th>Phụ Thu</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.MaLg</td>
+                        <td><input type="text" class="form-control" value="@item.TenLg" id="tenLg-@item.MaLg" /></td>
+                        <td>
+                            <input type="number" class="form-control" value="@item.PhuThu" id="phuThu-@item.MaLg" />
+                        </td>
+                        <td>
+                            <a asp-action="xoaLoaiGhe" asp-route-id="@item.MaLg" class="btn btn-sm btn-danger" onclick="return confirm('Hành động này sẽ xóa bỏ hoàn toàn loại ghế @(item.MaLg)! Bạn có chắc chắn muốn tiếp tục?');">Xóa</a>
+                            <a href="#" id="luu-@item.MaLg" class="btn btn-sm btn-primary">Lưu thay đổi</a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="12">Không có loại ghế nào.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+    document.querySelectorAll("a[id^='luu-']").forEach(button => {
+    button.addEventListener("click", function (e) {
+        e.preventDefault();
+            const maLg = this.id.replace("luu-", "");
+            const tenLg = document.getElementById(`tenLg-${maLg}`).value;
+            const phuThu = document.getElementById(`phuThu-${maLg}`).value;
+            fetch(`/Admin/Gia/capNhatLoaiGhe?maLg=${maLg}&tenLg=${tenLg}&phuThu=${phuThu}`, {
+                method: "POST"
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Cập nhật thành công!");
+            })
+            .catch(() => {
+                alert("Lỗi! Vui lòng thử lại.");
+            });
+        });
+    });
+</script>
+
