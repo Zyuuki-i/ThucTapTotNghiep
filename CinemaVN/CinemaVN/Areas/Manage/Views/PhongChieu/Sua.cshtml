@@ -1,0 +1,91 @@
+﻿@model CinemaVN.Models.PhongChieu
+
+@{
+    ViewData["Title"] = "Cập nhật Phòng Chiếu";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-label text-uppercase mb-0"><i class="bi bi-pencil-square me-2 text-warning"></i>CẬP NHẬT PHÒNG CHIẾU</h2>
+            <p class="text-muted mb-0">Mã phòng: <span class="fw-bold">@Model.MaPc</span></p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary shadow-sm"><i class="bi bi-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-dark text-white fw-bold py-3">
+                    <i class="bi bi-info-circle me-2"></i>Thông tin cơ bản
+                </div>
+                <div class="card-body bg-light p-4">
+                    <form asp-action="Sua" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <input type="hidden" asp-for="MaPc" />
+                        <input type="hidden" asp-for="MaCn" />
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Tên Phòng Chiếu <span class="text-danger">*</span></label>
+                            <input asp-for="TenPc" class="form-control form-control-lg shadow-sm border-warning" placeholder="Nhập tên phòng mới..." required />
+                            <span asp-validation-for="TenPc" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted">Sức chứa (Tự động cập nhật từ sơ đồ ghế)</label>
+                            <input asp-for="SucChua" class="form-control bg-white shadow-sm" readonly />
+                            <div class="form-text mt-2">
+                                <i class="bi bi-info-circle me-1"></i> Để thay đổi sức chứa, vui lòng sử dụng chức năng <strong>Cấu hình sơ đồ ghế</strong>.
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning px-5 py-2 fw-bold shadow">
+                                <i class="bi bi-save me-2"></i>Lưu Thay Đổi
+                            </button>
+                            <a asp-action="Index" class="btn btn-light border px-4 py-2">Hủy bỏ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 mb-4 h-100">
+                <div class="card-header bg-secondary text-white fw-bold py-3">
+                    <i class="bi bi-activity me-2"></i>Tình trạng phòng
+                </div>
+                <div class="card-body p-4 text-center d-flex flex-column justify-content-center">
+                    <div class="mb-4">
+                        <div class="display-1 text-primary fw-bold mb-0">@Model.SucChua</div>
+                        <p class="text-uppercase text-muted fw-bold">Ghế hiện có</p>
+                    </div>
+
+                    <div class="alert alert-warning border-0 shadow-sm text-start mb-4">
+                        <h6 class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Lưu ý quan trọng</h6>
+                        <ul class="small mb-0 ps-3">
+                            <li>Việc đổi tên phòng sẽ cập nhật ngay lập tức trên lịch chiếu.</li>
+                            <li>Tọa độ và loại ghế (VIP, Thường) sẽ không bị ảnh hưởng khi bạn đổi tên phòng.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-auto">
+                        <p class="small text-muted">Bạn muốn thiết kế lại vị trí ghế?</p>
+                        <a asp-controller="Ghe" asp-action="CauHinhGhe" asp-route-maPc="@Model.MaPc" class="btn btn-outline-primary btn-lg w-100 shadow-sm">
+                            <i class="bi bi-grid-3x3 me-2"></i>Đi đến Cấu hình ghế
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

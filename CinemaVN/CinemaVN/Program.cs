@@ -1,9 +1,12 @@
+using CinemaVN.Models;
 using CinemaVN.MyModels;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<CinemaVNContext>();
 
 builder.Services.AddSingleton<EmailService>();
 
@@ -16,6 +19,7 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
 
 var app = builder.Build();
 

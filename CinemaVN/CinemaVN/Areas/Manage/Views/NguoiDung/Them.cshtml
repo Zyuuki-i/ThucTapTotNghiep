@@ -1,0 +1,236 @@
+﻿@model CinemaVN.Models.NguoiDung
+@{
+    ViewData["Title"] = "Cấp Tài Khoản Staff";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div class="container mt-4" style="max-width: 900px;">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-label text-uppercase mb-0 fw-bold">
+            <i class="bi bi-person-badge text-primary me-2"></i>CẤP TÀI KHOẢN NHÂN VIÊN
+        </h2>
+        <a asp-action="Index" class="btn btn-outline-secondary shadow-sm fw-bold">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden mb-5">
+        <div class="card-header bg-dark text-white fw-bold py-3 d-flex align-items-center">
+            <i class="bi bi-shield-lock fs-5 me-2 text-warning"></i> Thiết lập Hồ sơ & Đăng nhập
+        </div>
+        <div class="card-body p-4 p-md-5 bg-light">
+            <form asp-action="Them" method="post" enctype="multipart/form-data">
+                <div class="col-md-12 mb-5 text-center">
+                    <div class="position-relative d-inline-block">
+                        <!-- Ảnh xem trước (để sẵn 1 ảnh mặc định hoặc placeholder) -->
+                        <img id="avatarPreview" src="https://ui-avatars.com/api/?name=NV&background=e9ecef&color=6c757d&size=150"
+                             class="rounded-circle shadow border border-4 border-white"
+                             style="width: 140px; height: 140px; object-fit: cover;" alt="Avatar" />
+            
+                        <!-- Nút bấm chọn ảnh đè lên góc của Avatar -->
+                        <label for="HinhAnh" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle shadow-sm"
+                               style="cursor: pointer; padding: 10px; transform: translate(-10px, -10px);" title="Tải ảnh lên">
+                            <i class="bi bi-camera-fill fs-5"></i>
+                        </label>
+            
+                        <!-- Thẻ input file bị ẩn đi -->
+                        <input type="file" id="HinhAnh" name="HinhAnh" class="d-none" accept="image/*" onchange="previewImage(event)" />
+                    </div>
+                    <div class="small text-muted mt-2 fw-bold">Ảnh đại diện (Tùy chọn)</div>
+                </div>
+                <!-- KHỐI 1: THÔNG TIN CÁ NHÂN -->
+                <h6 class="fw-bold text-secondary mb-3 border-bottom pb-2">
+                    <i class="bi bi-person-vcard text-primary me-2"></i>Hồ sơ nhân viên
+                </h6>
+                <div class="row g-3 mb-4">
+                    <!-- Họ Tên (Chiếm 6 cột) -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Họ và Tên <span class="text-danger">*</span></label>
+                        <input asp-for="HoTen" class="form-control form-control-lg shadow-sm" placeholder="Ví dụ: Nguyễn Văn A" required />
+                    </div>
+
+                    <!-- Ngày Sinh (Chiếm 3 cột) - MỚI THÊM -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Ngày sinh <span class="text-danger">*</span></label>
+                        <input asp-for="NgaySinh" type="date" class="form-control form-control-lg shadow-sm text-center" required />
+                    </div>
+
+                    <!-- Phái (Chiếm 3 cột) -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Giới tính <span class="text-danger">*</span></label>
+                        <select asp-for="Phai" class="form-select form-select-lg shadow-sm" required>
+                            <option value="" disabled selected>-- Chọn --</option>
+                            <!-- Sửa value thành true/false để khớp với kiểu dữ liệu trong Database -->
+                            <option value="true">Nam</option>
+                            <option value="false">Nữ</option>
+                        </select>
+                    </div>
+
+                    <!-- CCCD (Chiếm 6 cột) -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Số Căn cước công dân <span class="text-danger">*</span></label>
+                        <input asp-for="Cccd" class="form-control shadow-sm" placeholder="Nhập 12 số CCCD" maxlength="12" required pattern="[0-9]{12}" title="CCCD phải bao gồm 12 chữ số" />
+                    </div>
+
+                    <!-- SĐT (Chiếm 6 cột) -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                        <input asp-for="Sdt" class="form-control shadow-sm" maxlength="10" placeholder="Nhập số điện thoại liên lạc" required />
+                    </div>
+
+                    <!-- Địa Chỉ (Chiếm 12 cột - Rộng toàn màn) -->
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Địa chỉ thường trú <span class="text-danger">*</span></label>
+                        <input asp-for="DiaChi" class="form-control shadow-sm" placeholder="Nhập địa chỉ cư trú hiện tại" required />
+                    </div>
+                </div>
+
+                <!-- KHỐI 2: TÀI KHOẢN & VỊ TRÍ CÔNG TÁC -->
+                <h6 class="fw-bold text-secondary mb-3 border-bottom pb-2 mt-4">
+                    <i class="bi bi-briefcase-fill text-warning me-2"></i>Công việc & Tài khoản truy cập
+                </h6>
+                <div class="row g-3">
+                    
+                    <!-- Ô NHẬP VỊ TRÍ CÔNG TÁC (TÍCH HỢP GỢI Ý THÔNG MINH) -->
+                    <div class="col-md-12 mb-2">
+                        <label class="form-label fw-bold text-primary">Vị trí công tác cụ thể <span class="text-danger">*</span></label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-primary text-white border-primary"><i class="bi bi-person-workspace"></i></span>
+                            <!-- Sử dụng list để liên kết với datalist bên dưới -->
+                            <input asp-for="ChucVu" list="danhSachChucVu" class="form-control border-primary fw-bold" placeholder="VD: NV Soát vé, NV Thanh toán..." required />
+                        </div>
+                        <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle me-1"></i>Chọn từ danh sách gợi ý hoặc tự gõ chức vụ mới.</small>
+                        
+                        <!-- Danh sách gợi ý -->
+                        <datalist id="danhSachChucVu">
+                            <option value="NV Bán vé / Thanh toán"></option>
+                            <option value="NV Soát vé"></option>
+                            <option value="NV Chăm sóc khách hàng"></option>
+                            <option value="NV Pha chế (Concession)"></option>
+                            <option value="NV Kỹ thuật phòng chiếu"></option>
+                            <option value="NV Vệ sinh / Buồng phòng"></option>
+                        </datalist>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Email (Dùng làm Tài khoản) <span class="text-danger">*</span></label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" type="email" class="form-control border-start-0 text-dark fw-bold" placeholder="staff@cinemavn.vn" required />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-danger">Mật khẩu khởi tạo <span class="text-danger">*</span></label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-shield-lock"></i></span>
+                            <input asp-for="MatKhau" type="password" class="form-control border-start-0 border-danger" placeholder="Thiết lập mật khẩu" required />
+                        </div>
+                        <small class="text-muted mt-1 d-block"><i class="bi bi-check-circle-fill me-1 text-success"></i>Bảo mật chuẩn BCrypt Hashing.</small>
+                    </div>
+                </div>
+
+                <!-- KHỐI THÔNG TIN AUTO-ASSIGN -->
+                <div class="alert alert-info mt-5 mb-0 border-0 shadow-sm d-flex align-items-center rounded-3">
+                    <i class="bi bi-shield-check fs-1 me-3 text-info"></i>
+                    <div>
+                        <strong class="text-dark">Hệ thống phân quyền tự động:</strong>
+                        <br />
+                        <span class="small text-muted">
+                            Dù ở vị trí nào, tài khoản này sẽ tự động bị giới hạn ở quyền hạn <b>Nhân viên (Staff)</b> và chỉ được truy cập dữ liệu của chi nhánh <b>@ViewBag.TenChiNhanh</b>.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-4 text-end border-top">
+                    <button type="submit" class="btn btn-primary px-5 py-2 fw-bold shadow-lg rounded-3">
+                        <i class="bi bi-person-check-fill me-2"></i>CẤP TÀI KHOẢN NGAY
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 1. Modal Thông Báo Thành Công -->
+@if (TempData["MessageSuccess_NV"] != null)
+{
+    <div class="modal fade" id="successModalNV" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-body text-center py-4 px-3">
+                    <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 4rem;"></i>
+                    <h5 class="fw-bold text-success mb-2">THÀNH CÔNG!</h5>
+                    <p class="text-muted small mb-0">@TempData["MessageSuccess_NV"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 2. Modal Thông Báo Thất Bại / Lỗi -->
+@if (TempData["MessageError_NV"] != null)
+{
+    <div class="modal fade" id="errorModalNV" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-danger text-white py-3 border-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>CẢNH BÁO LỖI</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-x-circle-fill text-danger mb-3" style="font-size: 4rem;"></i>
+                    <h5 class="text-dark fw-bold mb-2">THAO TÁC THẤT BẠI</h5>
+                    <p class="text-muted fs-6 mb-0">@TempData["MessageError_NV"]</p>
+                </div>
+                <div class="modal-footer justify-content-center bg-light border-0 rounded-bottom-4 py-3">
+                    <button type="button" class="btn btn-dark px-5 fw-bold shadow-sm" data-bs-dismiss="modal">Đã hiểu & Kiểm tra lại</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        
+        // Kích hoạt Modal Thành công (Tự động ẩn sau 2.5 giây)
+        @if (TempData["MessageSuccess_NV"] != null)
+        {
+                <text>
+                    var successElement = document.getElementById('successModalNV');
+                    if (successElement) {
+                        var successModal = new bootstrap.Modal(successElement);
+                        successModal.show();
+                        // Hẹn giờ tự động tắt cho mượt
+                        setTimeout(function () {
+                            successModal.hide();
+                        }, 2500);
+                    }
+                </text>
+        }
+
+        // Kích hoạt Modal Báo lỗi (Bắt người dùng bấm nút mới tắt)
+        @if (TempData["MessageError_NV"] != null)
+        {
+                <text>
+                    var errorElement = document.getElementById('errorModalNV');
+                    if (errorElement) {
+                        var errorModal = new bootstrap.Modal(errorElement);
+                        errorModal.show();
+                    }
+                </text>
+        }
+    });
+
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function(){
+            var output = document.getElementById('avatarPreview');
+            output.src = reader.result;
+        };
+        // Đọc file vừa chọn và chuyển thành dạng URL để hiển thị
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>

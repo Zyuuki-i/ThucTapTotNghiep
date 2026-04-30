@@ -1,0 +1,220 @@
+﻿@model CinemaVN.Models.SuatChieu
+@{
+    ViewData["Title"] = "Cập nhật Suất Chiếu";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-label text-uppercase mb-0"><i class="bi bi-pencil-square me-2 text-warning"></i>CẬP NHẬT SUẤT CHIẾU</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary shadow-sm"><i class="bi bi-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <form asp-action="Sua" method="post">
+        <input type="hidden" asp-for="MaSc" />
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body bg-light p-4">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Phim</label>
+                                <select asp-for="MaPhim" class="form-select" id="movieSelect" required>
+                                    @foreach (var p in ViewBag.Phims)
+                                    {
+                                        <option value="@p.MaPhim" data-thoiluong="@p.ThoiLuong">@p.TenPhim</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Phòng Chiếu</label>
+                                <select asp-for="MaPc" class="form-select" required>
+                                    @foreach (var p in ViewBag.Phongs)
+                                    {
+                                        <option value="@p.MaPc">@p.TenPc</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ngày Chiếu</label>
+                                <input type="date" asp-for="NgayChieu" class="form-control"
+                                       value="@Model.NgayChieu?.ToString("yyyy-MM-dd")"
+                                       min="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Giờ Bắt Đầu</label>
+                                <input type="time" asp-for="GioBd" id="timeStart" class="form-control"
+                                       value="@Model.GioBd?.ToString(@"hh\:mm")" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Giá Vé Gốc</label>
+                                <input type="number" asp-for="GiaGoc" class="form-control" step="1000" required />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100 mt-4 fw-bold shadow">LƯU THAY ĐỔI</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow border-0 p-3 text-center bg-warning text-dark" style="position: sticky; top: 20px;">
+                    <p class="mb-1 small">Giờ kết thúc dự kiến</p>
+                    <h1 class="fw-bold mb-3" id="timeEndPreview">--:--</h1>
+                    <ul class="list-group list-group-flush small border rounded text-start">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Phim:</span> <strong id="movieDurationPreview">0 phút</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center text-muted">
+                            <span>Dọn vệ sinh:</span> <strong>+ 15 phút</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            
+
+        </div>
+    </form>
+</div>
+
+@if (TempData["MessageError_SC"] != null)
+{
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">LỖI CẬP NHẬT</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-x-circle-fill text-danger fs-1"></i>
+                    <p class="mt-3 fs-6">@TempData["MessageError_SC"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@* hiển thị danh sách suất chiếu *@
+<div class="row mt-4 mb-5">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 border-top border-4 border-info">
+            <div class="card-header bg-white fw-bold py-3 d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="bi bi-view-list text-info me-2"></i>
+                    ĐỐI CHIẾU LỊCH: <span id="lblRoomPreview" class="text-primary">Chưa chọn phòng</span>
+                    | <span id="lblDatePreview" class="text-danger">Chưa chọn ngày</span>
+                </span>
+                <span class="badge bg-secondary" id="totalShowtimes">0 suất chiếu</span>
+            </div>
+            <div class="card-body bg-light">
+                <div id="scheduleTimeline" class="d-flex flex-wrap gap-3">
+                    <p class="text-muted small w-100 text-center my-4">
+                        <i class="bi bi-search me-1"></i> Vui lòng chọn Phòng chiếu và Ngày chiếu ở trên để xem lịch đối chiếu...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const movieSelect = document.getElementById("movieSelect");
+        const timeStart = document.getElementById("timeStart");
+        const timeEndPreview = document.getElementById("timeEndPreview");
+        const durationPreview = document.getElementById("movieDurationPreview");
+
+        function updatePreview() {
+            if (!movieSelect.value || !timeStart.value) {
+                timeEndPreview.innerText = "--:--";
+                if (durationPreview) durationPreview.innerText = "0 phút";
+                return;
+            }
+            const duration = parseInt(movieSelect.options[movieSelect.selectedIndex].dataset.thoiluong);
+
+            if (durationPreview) {
+                durationPreview.innerText = duration + " phút";
+            }
+
+            const [h, m] = timeStart.value.split(":").map(Number);
+            const totalMins = h * 60 + m + duration + 15;
+                
+            const endH = Math.floor(totalMins / 60) % 24;
+            const endM = totalMins % 60;
+            
+            timeEndPreview.innerText = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+        }
+
+        movieSelect.addEventListener("change", updatePreview);
+        timeStart.addEventListener("input", updatePreview);
+        
+        updatePreview(); 
+
+        @if (TempData["MessageError_SC"] != null)
+        {
+                <text>
+                    var errorModalEl = document.getElementById('errorModal');
+                    if (errorModalEl) {
+                        new bootstrap.Modal(errorModalEl).show();
+                    }
+                </text>
+        }
+    });
+    //hiển thị ds suất chiếu
+    const roomSelect = document.getElementById("MaPc");
+    const dateInput = document.getElementById("NgayChieu");
+    const lblRoom = document.getElementById("lblRoomPreview");
+    const lblDate = document.getElementById("lblDatePreview");
+    const scheduleTimeline = document.getElementById("scheduleTimeline");
+    const totalShowtimes = document.getElementById("totalShowtimes");
+    const currentMaSc = document.getElementById("MaSc") ? document.getElementById("MaSc").value : null;
+
+    async function fetchScheduleData() {
+        const roomId = roomSelect.value;
+        const dateVal = dateInput.value;
+
+        if (!roomId || !dateVal) return;
+
+        lblRoom.innerText = roomSelect.options[roomSelect.selectedIndex].text.split('(')[0];
+    
+        const dateObj = new Date(dateVal);
+        lblDate.innerText = dateObj.toLocaleDateString('vi-VN');
+
+        try {
+            const response = await fetch(`/Manage/SuatChieu/LayLichChieuTheoNgay?maPc=${roomId}&ngayChieu=${dateVal}`);
+            const data = await response.json();
+            scheduleTimeline.innerHTML = "";
+            totalShowtimes.innerText = `${data.length} suất chiếu`;
+
+            if (data.length === 0) {
+                scheduleTimeline.innerHTML = `<div class="alert alert-success w-100 text-center py-3 mb-0 border-0"><i class="bi bi-check-circle-fill me-2"></i>Phòng chiếu này đang trống trọn ngày. Bạn có thể thoải mái xếp lịch!</div>`;
+                return;
+            }
+            data.forEach(item => {
+                const isCurrent = currentMaSc == item.maSc;
+                const bgClass = isCurrent ? "bg-warning text-dark border-warning" : "bg-white border-secondary";
+            
+                const cardHtml = `
+                    <div class="card shadow-sm border ${bgClass}" style="width: 220px;">
+                        <div class="card-body p-3 text-center">
+                            <div class="fw-bold text-truncate mb-2" title="${item.tenPhim}">${item.tenPhim}</div>
+                            <div class="d-flex justify-content-center align-items-center bg-light rounded p-2 border">
+                                <span class="fs-5 text-success fw-bold">${item.gioBd}</span>
+                                <i class="bi bi-arrow-right mx-2 text-muted"></i>
+                                <span class="fs-5 text-danger fw-bold">${item.gioKt}</span>
+                            </div>
+                            ${isCurrent ? '<div class="badge bg-dark mt-2 w-100">Đang sửa suất này</div>' : ''}
+                        </div>
+                    </div>
+                `;
+                scheduleTimeline.innerHTML += cardHtml;
+            });
+
+        } catch (error) {
+            console.error("Lỗi khi tải lịch chiếu:", error);
+        }
+    }
+
+    roomSelect.addEventListener("change", fetchScheduleData);
+    dateInput.addEventListener("change", fetchScheduleData);
+    fetchScheduleData();
+</script>

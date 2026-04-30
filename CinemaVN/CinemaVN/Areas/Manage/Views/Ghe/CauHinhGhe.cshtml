@@ -1,0 +1,285 @@
+﻿@model IEnumerable<CinemaVN.Models.Ghe>
+@{
+    var phong = ViewBag.Phong as CinemaVN.Models.PhongChieu;
+    var loaiGhes = ViewBag.DanhSachLoaiGhe as List<CinemaVN.Models.LoaiGhe>;
+    ViewData["Title"] = "Thiết kế sơ đồ - " + phong.TenPc;
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+
+    // Palette màu chuyên nghiệp cho Cinema
+    var colorMap = new Dictionary<string, string> {
+        { "THUONG", "#adb5bd" }, { "VIP", "#ffc107" }, { "DOI", "#f82249" }
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex gap-3">
+        <div class="card border-0 shadow-sm px-3 py-2 bg-white d-flex flex-row align-items-center">
+            <div class="text-end me-3">
+                <small class="text-muted d-block">Đã thiết kế</small>
+                <strong class="fs-5 text-primary">@Model.Count()</strong> <small>/ @(phong.SucChua ?? 0)</small>
+            </div>
+            <i class="bi bi-pie-chart-fill text-primary fs-3"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 mb-4 sticky-top" style="top: 20px;">
+            <div class="card-header bg-dark text-white fw-bold py-3">BẢNG ĐIỀU KHIỂN</div>
+            <div class="card-body bg-light">
+                <form asp-action="LuuHangGhe" method="post" id="formLuuHang">
+                    <input type="hidden" name="maPc" value="@phong.MaPc" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Tên Hàng (A, B...)</label>
+                        <input type="text" name="hang" class="form-control form-control-lg text-uppercase fw-bold" maxlength="1" placeholder="A" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Số lượng khối ghế (Block)</label>
+                        <input type="number" name="soLuong" class="form-control" value="10" min="1" max="30" required />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">Loại ghế hàng này</label>
+                        @foreach(var lg in loaiGhes) {
+                            <div class="form-check p-2 border rounded mb-2 bg-white">
+                                <input class="form-check-input ms-0 me-2" type="radio" name="maLg" value="@lg.MaLg" id="lg_@lg.MaLg" required>
+                                <label class="form-check-label d-flex justify-content-between w-100" for="lg_@lg.MaLg">
+                                    <span>@lg.TenLg</span>
+                                    <strong style="color: @colorMap[lg.MaLg]">■</strong>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow">
+                        <i class="bi bi-plus-circle me-2"></i>XÁC NHẬN HÀNG GHẾ
+                    </button>
+                </form>
+
+                <hr class="my-4">
+                <div class="d-flex gap-2">
+                    <input type="text" id="inputXoaHang" class="form-control text-uppercase" placeholder="Hàng (VD: A)" />
+                    <button class="btn btn-outline-danger px-3" onclick="openDeleteRowModal()">Xóa</button>
+                </div>
+                <button class="btn btn-link text-danger btn-sm w-100 mt-3 text-decoration-none" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+                    <i class="bi bi-trash"></i> Reset sơ đồ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body bg-dark p-0 position-relative overflow-hidden" style="border-radius: 10px; min-height: 600px;">
+                
+                <div class="screen-container pt-5">
+                    <div class="screen-curve"></div>
+                    <p class="text-center text-white-50 small mt-2 letter-spacing-2">MÀN HÌNH CHIẾU</p>
+                </div>
+
+                <div class="seat-map-preview p-5">
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        @if (Model.Any())
+                        {
+                            string currentRow = "";
+                            bool skipNext = false;
+
+                            foreach (var ghe in Model)
+                            {
+                                if (skipNext) { skipNext = false; if (ghe.MaLg == "DOI") continue; }
+                                if (ghe.Hang != currentRow) { currentRow = ghe.Hang; skipNext = false; <div class="w-100 mt-3"></div> }
+
+                                string customClass = (ghe.MaLg == "DOI") ? "seat-double" : "seat-single";
+                                string color = colorMap.ContainsKey(ghe.MaLg) ? colorMap[ghe.MaLg] : "#fff";
+
+                                <div class="seat-item @customClass" style="--seat-color: @color" title="Hàng @ghe.Hang">
+                                    @if (ghe.MaLg == "DOI") {
+                                        <span>@ghe.Hang@ghe.SoGhe | @ghe.Hang@(ghe.SoGhe + 1)</span>
+                                        skipNext = true;
+                                    } else {
+                                        @ghe.Hang@ghe.SoGhe
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="position-absolute bottom-0 w-100 p-3 bg-black bg-opacity-50 border-top border-secondary border-opacity-25">
+                    <div class="d-flex justify-content-center gap-4 text-white-50 small">
+                        @foreach(var lg in loaiGhes) {
+                            <div class="d-flex align-items-center">
+                                <span class="me-2" style="color: @colorMap[lg.MaLg]">■</span> @lg.TenLg
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-spacing-2 { letter-spacing: 4px; }
+    
+    /* Hiệu ứng màn hình */
+    .screen-curve {
+        margin: 0 auto;
+        width: 70%;
+        height: 15px;
+        background: #fff;
+        border-radius: 50% / 100% 100% 0 0;
+        box-shadow: 0 10px 30px rgba(255,255,255,0.4);
+    }
+
+    /* Định dạng ghế */
+    .seat-item {
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: bold;
+        color: #222;
+        background-color: var(--seat-color);
+        border-radius: 4px;
+        cursor: default;
+        transition: transform 0.2s;
+    }
+    .seat-single { width: 35px; }
+    .seat-double { width: 80px; position: relative; border: 2px solid rgba(0,0,0,0.1); }
+    .seat-double::after { 
+        content: ""; position: absolute; height: 70%; width: 1px; 
+        background: rgba(0,0,0,0.2); left: 50%;
+    }
+    .seat-item:hover { transform: scale(1.1); z-index: 5; }
+
+    /* Điều chỉnh scroll cho container sơ đồ */
+    .seat-map-preview {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+</style>
+
+@* thông báo xóa  *@
+        <div class="modal fade" id="deleteRowModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa hàng ghế</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="fs-5 mb-1">Bạn có chắc chắn muốn xóa sạch hàng ghế này?</p>
+                <p class="display-5 fw-bold text-danger my-2" id="displayRowName"></p>
+                <p class="text-muted small mb-0">Hành động này sẽ xóa toàn bộ ghế thuộc hàng này khỏi sơ đồ.</p>
+            </div>
+            <div class="modal-footer justify-content-center bg-light">
+                <form method="post" asp-action="XoaHang">
+                    <input type="hidden" name="maPc" value="@phong.MaPc" />
+                    <input type="hidden" name="hang" id="hiddenRowName" />
+                    <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-bold">Đồng ý xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@* thông báo qusa sức chứa *@
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold"><i class="bi bi-shield-exclamation me-2"></i>Cảnh báo Sức chứa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-x-circle-fill text-danger mb-3" style="font-size: 4rem;"></i>
+                <h4 class="fw-bold text-danger mb-2">KHÔNG THỂ LƯU!</h4>
+                <p class="text-dark mb-0 fs-6">@TempData["MessageError_Ghe"]</p>
+            </div>
+            <div class="modal-footer justify-content-center bg-light">
+                <button type="button" class="btn btn-dark px-5 fw-bold" data-bs-dismiss="modal">Đã hiểu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-check-circle-fill text-success mb-2" style="font-size: 4rem;"></i>
+                <h5 class="fw-bold text-success mt-2 mb-1">THÀNH CÔNG!</h5>
+                <p class="text-muted small mb-0">@TempData["MessageSuccess_Ghe"]</p>
+            </div>
+        </div>
+    </div>
+</div>
+@* thông báo xóa tất cả *@
+<div class="modal fade" id="deleteAllModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon-fill me-2"></i>CẢNH BÁO NGUY HIỂM</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="fs-5 mb-2">Bạn đang yêu cầu <b class="text-danger">XÓA SẠCH TOÀN BỘ</b> sơ đồ ghế của phòng này?</p>
+                <p class="text-muted small">Mọi vị trí ghế đơn, ghế đôi và các thiết lập tọa độ sẽ biến mất vĩnh viễn.</p>
+            </div>
+            <div class="modal-footer justify-content-center bg-light">
+                <form method="post" asp-action="XoaTatCa">
+                    @* Đảm bảo tên tham số 'maPc' khớp với tham số trong Action của Controller *@
+                    <input type="hidden" name="maPc" value="@phong.MaPc" />
+                    
+                    <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-bold">Xác nhận Reset</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Hàm mở Modal xác nhận xóa hàng
+    function openDeleteRowModal() {
+        var rowInput = document.getElementById("inputXoaHang").value.trim().toUpperCase();
+        
+        if (!rowInput) {
+            document.getElementById("inputXoaHang").focus();
+            alert("Vui lòng nhập tên Hàng cần xóa (VD: A, B, C...) vào ô bên cạnh nút Xóa.");
+            return;
+        }
+
+        document.getElementById("displayRowName").textContent = "Hàng " + rowInput;
+        document.getElementById("hiddenRowName").value = rowInput;
+
+        var myModal = new bootstrap.Modal(document.getElementById('deleteRowModal'));
+        myModal.show();
+    }
+
+    // Tự động kích hoạt Modal khi có thông báo từ Controller
+    document.addEventListener("DOMContentLoaded", function () {
+        
+        // Bắt lỗi: Thêm quá sức chứa
+        @if (TempData["MessageError_Ghe"] != null)
+        {
+            <text>
+            var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
+            </text>
+        }
+        @if (TempData["MessageSuccess_Ghe"] != null)
+        {
+            <text>
+            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+            
+            // UX Thông minh: Tự động tắt bảng thành công sau 2 giây để người dùng làm việc tiếp
+            setTimeout(function() {
+                successModal.hide();
+            }, 2000);
+            </text>
+        }
+    });
+</script>
