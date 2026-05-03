@@ -1,0 +1,127 @@
+﻿@model CinemaVN.Models.Phim
+
+@{
+    ViewData["Title"] = Model?.TenPhim ?? "Chi tiết phim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var suats = ViewBag.SuatChieus as IEnumerable<CinemaVN.Models.SuatChieu>;
+}
+
+<div class="container my-5" style="min-height: 60vh;">
+
+    @if (Model == null)
+    {
+        <div class="alert alert-danger text-center">Không tìm thấy thông tin bộ phim này!</div>
+    }
+    else
+    {
+        <div class="mb-4">
+            <a href="javascript:history.back()" class="text-decoration-none text-muted">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+        </div>
+
+        <!-- THÔNG TIN PHIM -->
+        <div class="row">
+            <div class="col-md-4 col-lg-3 text-center mb-4 mb-md-0">
+                <img src="/images/posters/@(Model.Poster ?? "default.png")"
+                     class="img-fluid rounded shadow-sm"
+                     alt="@Model.TenPhim"
+                     style="width: 100%; object-fit: cover;">
+            </div>
+
+            <div class="col-md-8 col-lg-9">
+                <h2 class="fw-bold mb-3">@Model.TenPhim</h2>
+
+                <div class="mb-3">
+                    <span class="badge bg-danger fs-6 me-2">
+                        @(Model.TrangThai == 1 ? "Đang chiếu" : "Sắp chiếu")
+                    </span>
+                    <span class="badge bg-secondary fs-6">@Model.ThoiLuong phút</span>
+                </div>
+
+                <ul class="list-unstyled mb-4 lh-lg">
+                    <li><strong>Đạo diễn: </strong> @(string.IsNullOrEmpty(Model.DaoDien) ? "Đang cập nhật" : Model.DaoDien)</li>
+                    <li><strong>Ngày khởi chiếu: </strong> @(Model.NgayChieu?.ToString("dd/MM/yyyy") ?? "Đang cập nhật")</li>
+                    <li>
+                        <strong>Độ tuổi: </strong>
+                        @if (Model.DoTuoi == 0)
+                        {
+                            <span class="badge bg-success">P - Mọi lứa tuổi</span>
+                        }
+                        else if (Model.DoTuoi > 0)
+                        {
+
+                            <span class="badge bg-warning">T@(Model.DoTuoi) - Dành cho khán giả từ @Model.DoTuoi tuổi</span>
+                        }
+                        else
+                        {
+
+                            <span>Chưa phân loại</span>
+                        }
+                    </li>
+                </ul>
+
+                <div class="d-flex gap-3 mt-4">
+                    @if (!string.IsNullOrEmpty(Model.Trailer))
+                    {
+                        <a href="@Model.Trailer" target="_blank" class="btn btn-outline-dark btn-lg px-4">
+                            <i class="bi bi-play-circle"></i> XEM TRAILER
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <!-- NỘI DUNG PHIM -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h4 class="fw-bold mb-3 border-start border-danger border-4 ps-2">Nội Dung Phim</h4>
+                <p class="text-justify" style="line-height: 1.8;">
+                    @(string.IsNullOrEmpty(Model.MoTa) ? "Nội dung phim đang được cập nhật." : Model.MoTa)
+                </p>
+            </div>
+        </div>
+
+        <!-- LỊCH CHIẾU PHIM -->
+        <div class="row">
+            <div class="col-12">
+                <h4 class="fw-bold mb-4 border-start border-primary border-4 ps-2">Lịch Chiếu</h4>
+
+                @if (suats != null && suats.Any())
+                {
+                    var groupNgay = suats.GroupBy(s => s.NgayChieu);
+
+                    foreach (var ngay in groupNgay)
+                    {
+                        <div class="mb-4 bg-light p-3 rounded border">
+                            <h5 class="fw-bold text-dark mb-3">
+                                <i class="bi bi-calendar-event text-danger me-2"></i>
+                                @(ngay.Key?.ToString("dd/MM/yyyy") ?? "Ngày chưa xác định")
+                            </h5>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var sc in ngay)
+                                {
+                                    <a asp-controller="HoaDon" asp-action="chonGhe" asp-route-masc="@sc.MaSc"
+                                       class="btn btn-outline-danger fw-bold px-4 py-2">
+                                        @sc.GioBd?.ToString(@"hh\:mm")
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-secondary text-center">
+                        <i class="bi bi-calendar-x fs-3 d-block mb-2"></i>
+                        Hiện tại chưa có suất chiếu nào cho bộ phim này.
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

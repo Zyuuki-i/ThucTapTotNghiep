@@ -1,0 +1,104 @@
+﻿@model CinemaVN.DatModels.SearchResultViewModel
+
+@{
+    ViewData["Title"] = "Kết quả tìm kiếm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5" style="min-height: 60vh;">
+
+    <div class="mb-5 border-bottom pb-3">
+        <h3 class="fw-bold">
+            Tìm kiếm: <span class="text-danger">"@Model.Keyword"</span>
+        </h3>
+        <p class="text-muted">Tìm thấy <strong>@Model.tongKQ</strong> kết quả phù hợp.</p>
+    </div>
+
+    @if (Model.tongKQ == 0)
+    {
+        <div class="text-center py-5 my-5">
+            <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-4 text-muted">Không tìm thấy Phim hoặc Rạp nào với từ khóa này.</h4>
+            <p class="text-muted">Vui lòng thử lại với từ khóa khác (Ví dụ: tên phim, tên rạp...).</p>
+            <a href="/" class="btn btn-outline-danger mt-3">Quay về Trang chủ</a>
+        </div>
+    }
+    else
+    {
+
+        @if (Model.DanhSachPhim.Any())
+        {
+            <div class="mb-5">
+                <h4 class="fw-bold mb-4 border-start border-danger border-4 ps-2">Phim (@Model.DanhSachPhim.Count)</h4>
+
+                <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+                    @foreach (var p in Model.DanhSachPhim)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm border-0 bg-transparent">
+                                <a href="/Phim/ChiTiet?id=@p.MaPhim" class="text-decoration-none overflow-hidden rounded position-relative">
+                                    <img src="/images/posters/@(p.Poster ?? "default.jpg")"
+                                         class="card-img-top img-fluid movie-img"
+                                         alt="@p.TenPhim"
+                                         style="transition: transform 0.3s ease;"
+                                         onmouseover="this.style.transform='scale(1.05)'"
+                                         onmouseout="this.style.transform='scale(1)'">
+
+                                    <span class="badge @(p.TrangThai == 1 ? "bg-danger" : "bg-warning text-dark") position-absolute top-0 end-0 m-2">
+                                        @(p.TrangThai == 1 ? "Đang chiếu" : "Sắp chiếu")
+                                    </span>
+                                </a>
+
+                                <div class="card-body text-center">
+                                    <h5 class="card-title fw-bold text-dark text-truncate" title="@p.TenPhim">@p.TenPhim</h5>
+                                    <p class="text-muted small mb-2">Thời lượng: @p.ThoiLuong phút</p>
+
+                                    @if (p.TrangThai == 1)
+                                    {
+                                        <a href="/HoaDon/Index?maPhim=@p.MaPhim" class="btn btn-danger w-100 fw-bold rounded-pill">MUA VÉ</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="/Phim/ChiTiet?id=@p.MaPhim" class="btn btn-outline-secondary w-100 fw-bold rounded-pill">CHI TIẾT</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (Model.DanhSachPhim.Any() && Model.DanhSachRap.Any())
+        {
+            <hr class="my-5" />
+        }
+
+        @if (Model.DanhSachRap.Any())
+        {
+            <div class="mb-5">
+                <h4 class="fw-bold mb-4 border-start border-primary border-4 ps-2">Rạp / Chi Nhánh (@Model.DanhSachRap.Count)</h4>
+
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var r in Model.DanhSachRap)
+                    {
+                        <div class="col">
+                            <div class="card shadow-sm border-0 h-100 rounded-3">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="bg-light rounded p-3 me-4">
+                                        <i class="bi bi-building text-primary" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-1">@r.TenCn</h5>
+                                        <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill text-danger"></i> @r.DiaChi</p>
+                                        <a href="/Rap/ChiTiet?id=@r.MaCn" class="btn btn-sm btn-outline-primary rounded-pill px-3">Xem lịch chiếu tại đây</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

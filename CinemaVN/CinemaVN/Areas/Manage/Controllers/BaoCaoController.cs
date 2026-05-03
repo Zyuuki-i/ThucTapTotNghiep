@@ -38,7 +38,7 @@ namespace CinemaVN.Areas.Manage.Controllers
             var hoaDonsTrongThang = _db.HoaDons
                 .Where(hd => hd.MaCn == currentUser.MaCn && hd.NgayLap >= firstDayOfMonth && hd.NgayLap <= lastDayOfMonth)
                 .ToList();
-=
+
             ViewBag.TongDoanhThu = hoaDonsTrongThang.Sum(hd => hd.TongTien) ?? 0;
             ViewBag.TongDonHang = hoaDonsTrongThang.Count;
 

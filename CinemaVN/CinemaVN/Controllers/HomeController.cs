@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using CinemaVN.DatModels;
 using CinemaVN.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,29 @@ namespace CinemaVN.Controllers
                 .ToList();
 
             return View();
+        }
+
+
+        public IActionResult Search(string keyword)
+        {
+            var model = new SearchResultViewModel();
+            model.Keyword = keyword;
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+
+                string key = keyword.ToLower();
+
+                model.DanhSachPhim = db.Phims
+                    .Where(p => p.TenPhim.ToLower().Contains(key))
+                    .ToList();
+
+                model.DanhSachRap = db.ChiNhanhs
+                    .Where(r => r.TenCn.ToLower().Contains(key) || r.DiaChi.ToLower().Contains(key) || r.MaCn.ToLower().Contains(key))
+                    .ToList();
+            }
+            model.tongKQ = model.DanhSachRap.Count + model.DanhSachPhim.Count;
+            return View(model);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

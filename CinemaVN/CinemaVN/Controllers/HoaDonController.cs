@@ -44,6 +44,10 @@ namespace CinemaVN.Controllers
 
         public IActionResult chonGhe(int masc)
         {
+            var nd = db.NguoiDungs.FirstOrDefault(n => n.MaNd == HttpContext.Session.GetInt32("UserId"));
+            if (nd == null)
+                return RedirectToAction("Index", "NguoiDung");
+
             string? sessionKey = HttpContext.Session.GetString("SessionKey");
             if (string.IsNullOrEmpty(sessionKey))
             {

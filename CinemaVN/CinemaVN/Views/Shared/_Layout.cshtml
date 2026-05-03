@@ -34,7 +34,7 @@
                             <a class="nav-link" asp-area="" asp-controller="Phim" asp-action="Index">Phim</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="PhongChieu" asp-action="Index">Rạp</a>
+                            <a class="nav-link" asp-area="" asp-controller="ChiNhanh" asp-action="Index">Rạp</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="KhuyenMai" asp-action="Index">Khuyến Mãi</a>
@@ -42,7 +42,7 @@
                     </ul>
                 </div>
                 <div class="col-2">
-                    <form class="d-flex search-group" method="post" asp-controller="Home" asp-action="timKiem">
+                    <form class="d-flex search-group" method="get" asp-controller="Home" asp-action="Search">
                         <div class="input-group">
                             <input class="form-control" type="search" name="keyword" placeholder="Tìm phim, rạp" aria-label="Search">
                             <button class="btn btn-search bg-black text-white" type="submit"><i class="bi bi-search"></i></button>
@@ -82,7 +82,7 @@
                                 else if (userRole == "manage")
                                 {
                                     <li>
-                                        <a class="dropdown-item" asp-area="Manager" asp-controller="Home" asp-action="Index">
+                                        <a class="dropdown-item" asp-area="Manage" asp-controller="Home" asp-action="Index">
                                             <i class="bi bi-truck me-2"></i> Quản lý chi nhánh
                                         </a>
                                     </li>

@@ -38,8 +38,8 @@ namespace CinemaVN.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                //optionsBuilder.UseSqlServer("Data Source=ZYUUKI\\SQLEXPRESS;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
-                optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
+                optionsBuilder.UseSqlServer("Data Source=ZYUUKI\\SQLEXPRESS;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
+                //optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
             }
         }
 

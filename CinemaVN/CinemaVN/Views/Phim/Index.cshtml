@@ -1,0 +1,61 @@
+﻿@model IEnumerable<CinemaVN.Models.Phim>
+
+@{
+    ViewData["Title"] = "Danh sách phim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string currentTab = ViewBag.CurrentTab as string ?? "dang-chieu";
+}
+
+<div class="container my-5">
+
+    <ul class="nav nav-pills mb-4 justify-content-center" style="font-size: 1.2rem; font-weight: bold;">
+        <li class="nav-item">
+            <a class="nav-link @(currentTab == "dang-chieu" ? "active bg-danger text-white" : "text-dark")"
+               href="/Phim/Index?tab=dang-chieu&keyword=@ViewBag.Keyword">Phim Đang Chiếu</a>
+        </li>
+        <li class="nav-item ms-3">
+            <a class="nav-link @(currentTab == "sap-chieu" ? "active bg-danger text-white" : "text-dark")"
+               href="/Phim/Index?tab=sap-chieu&keyword=@ViewBag.Keyword">Phim Sắp Chiếu</a>
+        </li>
+    </ul>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 justify-content-center">
+            @foreach (var p in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <a href="/Phim/ChiTiet?id=@p.MaPhim" class="text-decoration-none">
+                            <img src="/images/posters/@(p.Poster ?? "default.jpg")"
+                                 class="card-img-top movie-img"
+                                 alt="@p.TenPhim">
+                        </a>
+
+                        <div class="card-body text-center">
+                            <h5 class="card-title fw-bold text-truncate" title="@p.TenPhim">@p.TenPhim</h5>
+                            <p class="text-muted small mb-3">Thời lượng: @p.ThoiLuong phút</p>
+
+                            @if (currentTab == "dang-chieu")
+                            {
+                                <a href="/DatVe/Index?maPhim=@p.MaPhim" class="btn btn-danger w-100 fw-bold">MUA VÉ</a>
+                            }
+                            else
+                            {
+
+                                <a href="@p.Trailer" target="_blank" class="btn btn-outline-info w-100 fw-bold">XEM TRAILER</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <h4 class="text-muted">Không tìm thấy bộ phim nào phù hợp.</h4>
+        </div>
+    }
+</div>

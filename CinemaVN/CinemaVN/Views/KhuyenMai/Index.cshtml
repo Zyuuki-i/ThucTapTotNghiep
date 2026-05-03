@@ -1,0 +1,83 @@
+﻿@model IEnumerable<CinemaVN.Models.KhuyenMai>
+
+@{
+    ViewData["Title"] = "Chương trình Khuyến Mãi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5" style="min-height: 60vh;">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-uppercase text-danger">Khuyến Mãi & Ưu Đãi</h2>
+        <p class="text-muted">Săn ngay các mã giảm giá hấp dẫn để tận hưởng những bộ phim đỉnh cao!</p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var km in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden position-relative">
+
+                        <div class="@(km.TrangThai == 1 ? "bg-danger" : "bg-secondary") text-white text-center py-3">
+                            <h4 class="fw-bold mb-0" style="letter-spacing: 2px;">@km.Code</h4>
+                        </div>
+
+                        <div class="position-absolute" style="top: 15px; right: 15px;">
+                            @if (km.TrangThai == 1)
+                            {
+                                <span class="badge bg-warning text-dark shadow-sm">Đang diễn ra</span>
+                            }
+                            else if (km.TrangThai == 0)
+                            {
+                                <span class="badge bg-light text-dark shadow-sm">Sắp diễn ra</span>
+                            }
+                        </div>
+
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-bold text-dark mb-3">
+                                GIẢM @(km.PhanTramGiam)%
+                                @if (km.GiamToiDa > 0)
+                                {
+                                    <span class="text-danger fs-6 mt-1">
+                                        (Tối đa @string.Format("{0:#,##0}", km.GiamToiDa)đ)
+                                    </span>
+                                }
+                            </h5>
+
+                            <p class="card-text text-muted small mb-4" style="min-height: 40px;">
+                                @(string.IsNullOrEmpty(km.MoTa) ? "Áp dụng cho khách hàng mua vé tại hệ thống." : km.MoTa)
+                            </p>
+
+                            <ul class="list-unstyled small mb-0 lh-lg">
+                                <li>
+                                    <i class="bi bi-cart-check text-success me-2"></i>
+                                    <strong>Đơn tối thiểu: </strong> @(km.DieuKien > 0 ? string.Format("{0:#,##0}đ", km.DieuKien) : "Không yêu cầu")
+                                </li>
+                                @if (km.SoDiem > 0)
+                                {
+                                    <li>
+                                        <i class="bi bi-star-fill text-warning me-2"></i>
+                                        <strong>Đổi bằng: </strong> @km.SoDiem điểm hội viên
+                                    </li>
+                                }
+                                <li>
+                                    <i class="bi bi-calendar3 text-primary me-2"></i>
+                                    <strong>Thời gian: </strong>
+                                    @(km.NgayBd?.ToString("dd/MM/yyyy") ?? "") - @(km.NgayKt?.ToString("dd/MM/yyyy") ?? "Vô thời hạn")
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-gift text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3 text-muted">Hiện tại chưa có chương trình khuyến mãi nào.</h4>
+        </div>
+    }
+</div>
