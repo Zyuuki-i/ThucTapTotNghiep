@@ -20,15 +20,15 @@
 @if(Model != null)
 {
     <div class="row g-3 px-2 justify-content-between align-content-center">
-        <div class="col col-3 border border-3 border-info rounded shadow text-center align-content-center py-4">
+        <div class="col col-3 border border-info rounded shadow text-center align-content-center py-4">
             @{
                 var anh = Model.Poster != null ? Model.Poster : "default.png";
-                var linkAnh = Url.Content("~/images/poster/" + anh);
+                var linkAnh = Url.Content("~/images/posters/" + anh);
             }
             <img src="@Url.Content(linkAnh)" alt="@Model.MaPhim Image" class="img-fluid">
             <a class="btn btn-outline-danger mt-3" asp-action="xoaAnh" asp-route-id="@Model.MaPhim">Xóa ảnh</a>
         </div>
-        <div class="col col-9 border border-3 border-info rounded shadow py-2 ps-5 align-content-center">
+        <div class="col col-9 border border-info rounded shadow py-2 ps-5 align-content-center">
             <dl class="row mb-0">
                 <dt class="col-sm-3">Mã Phim</dt>
                 <dd class="col-sm-9">@Model.MaPhim</dd>
@@ -116,7 +116,7 @@
                 <dt class="col-sm-10"></dt>
             </dl>
         </div>
-        <div class="col col-12 border border-3 border-info rounded shadow text-center py-2">
+        <div class="col col-12 border border-info rounded shadow text-center py-2">
             <p>
                 <strong>MÔ TẢ</strong>
             </p>

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CinemaVN.DatModels.CPhim>
+﻿@model IEnumerable<CinemaVN.Models.Phim>
 @{
     ViewData["Title"] = "Home Page";
     List<Banner> banners = ViewBag.Banners as List<Banner> ?? new List<Banner>();
@@ -26,7 +26,7 @@
 
                 <div class="carousel-item @(i == 0 ? "active" : "")">
                     <a href="@item.DuongDan">
-                        <img src="~/images/banner/@item.HinhAnh"
+                        <img src="~/images/banners/@item.HinhAnh"
                             class="d-block w-100"
                             alt="@item.TieuDe">
                     </a>
@@ -44,6 +44,62 @@
 
     </div>
 }
-<div class="container bg-secondary" style="height:200px">
-    
+<div class="container">
+
+    <h4 class="movie-title">Phim đang chiếu</h4>
+    <div class="row">
+        @foreach (var phim in ViewBag.PhimDangChieu)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card movie-card shadow-sm">
+
+                    <div class="position-relative">
+                        <img src="@Url.Content("~/images/posters/" + phim.Poster)" class="movie-img">
+
+                        <div class="movie-overlay">
+                            <a asp-controller="HoaDon" asp-action="Index" asp-route-phim="@phim.MaPhim"
+                               class="btn btn-warning fw-bold">
+                                Mua vé
+                            </a>
+                            <a class="btn btn-info fw-bold ms-4" href="@phim.Trailer" target="_blank">Trailer</a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <h6 class="fw-bold text-dark">
+                            @phim.TenPhim
+                        </h6>
+                    </div>
+
+                </div>
+            </div>
+        }
+    </div>
+    <div class="row">
+        <div class="col-12 align-content-center text-center">
+            <a asp-controller="Phim" asp-action="Index" class="btn text-warning">Xem thêm</a>
+        </div>
+    </div>
+
+    <h4 class="movie-title mt-4">Phim sắp chiếu</h4>
+    <div class="row">
+        @foreach (var phim in ViewBag.PhimSapChieu)
+        {
+            <div class="col-3 mb-3">
+                <div class="card movie-card shadow-sm">
+                    <div class="position-relative">
+                        <img src="@Url.Content("~/images/posters/" + phim.Poster)" class="movie-img">
+
+                        <div class="movie-overlay">
+                            <a class="btn btn-info fw-bold ms-4" href="@phim.Trailer">Trailer</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h6>@phim.TenPhim</h6>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
 </div>

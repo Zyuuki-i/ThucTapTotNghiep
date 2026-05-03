@@ -1,0 +1,90 @@
+﻿@model CinemaVN.DatModels.CDichVu
+
+@{
+    ViewData["Title"] = "Sửa Dịch Vụ";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<h1 class="text-label text-center">QUẢN LÝ GIÁ</h1>
+<div class="row mb-2">
+    <div class="col-5"><hr /></div>
+    <div class="col-2 text-center">
+        <h3 class="text-primary">CẬP NHẬT</h3>
+    </div>
+    <div class="col-5"><hr /></div>
+    <div class="col-12 text-center">
+        <a class="btn btn-outline-info w-25" asp-action="dichVu">Quay lại</a>
+    </div>
+</div>
+@if (TempData["MessageError_SuaDichVu"] != null)
+{
+    <div class="alert alert-danger text-center fw-bold">
+        @TempData["MessageError_SuaDichVu"]
+    </div>
+}
+<div class="border border-3 border-primary p-3 rounded">
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="suaDichVu" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="MaDv" class="control-label"></label>
+                    <input asp-for="MaDv" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label asp-for="TenDv" class="control-label"></label>
+                    <input asp-for="TenDv" class="form-control" />
+                    <span asp-validation-for="TenDv" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Gia" class="control-label"></label>
+                    <input asp-for="Gia" class="form-control" />
+                    <span asp-validation-for="Gia" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="LoaiDv" class="control-label"></label>
+                    <input asp-for="LoaiDv" class="form-control" />
+                    <span asp-validation-for="LoaiDv" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="HinhAnh" class="control-label"></label>
+                    <input type="file" name="file" class="form-control" />
+                    <span asp-validation-for="HinhAnh" class="text-danger"></span>
+                </div>
+                <div class="form-group d-flex justify-content-end mt-2">
+                    <input type="submit" value="Cập nhật" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4 my-4 text-center">
+            <label class="fw-bold mb-2">Ảnh hiện tại</label>
+
+            @{
+                var hinh = "default.png";
+                if (Model.HinhAnh != null) hinh = Model.HinhAnh + ViewBag.PhanMoRong;
+                var link = "~/images/snacks/" + hinh;
+            }
+
+            <div class="banner-preview">
+                <img src="@Url.Content(link)" class="img-fluid rounded shadow" />
+            </div>
+
+            <p class="text-muted small mt-2">@hinh</p>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+</script>
+

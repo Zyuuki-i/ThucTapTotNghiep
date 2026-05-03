@@ -76,15 +76,122 @@ namespace CinemaVN.Areas.Admin.Controllers
                 db.SaveChanges();
             }catch (Exception)
             {
-                TempData["MessageError_KhuyenMai"] = "Lỗi, không thể đổi trạng thái khuyến mãi";
+                TempData["MessageError_KhuyenMai"] = "Lỗi, không thể đổi trạng thái khuyến mãi!";
                 return RedirectToAction("Index", new { trang = timTrang(id), trangthai = trangthai });
             }
             return RedirectToAction("Index", new { trang = timTrang(id), trangthai = trangthai });
         }
 
 
+        public IActionResult xoa(int id)
+        {
+            KhuyenMai? km = db.KhuyenMais.Find(id);
+            if (km == null)
+            {
+                TempData["MessageError_KhuyenMai"] = "Lỗi, không tìm thấy khuyến mãi";
+                return RedirectToAction("Index", new { trang = timTrang(id)});
+            }
+            try
+            {
+                db.KhuyenMais.Remove(km);
+                db.SaveChanges();
+                TempData["MessageSuccess_KhuyenMai"] = "Xóa khuyến mãi thành công!";
+                return RedirectToAction("Index", new {trangthai = km.TrangThai });
+            }
+            catch (Exception)
+            {
+                TempData["MessageError_KhuyenMai"] = "Lỗi, không thể xóa!";
+                return RedirectToAction("Index", new { trang = timTrang(km.MaKm), trangthai = km.TrangThai });
+            }
+        }
 
+        public IActionResult them()
+        {
+            return View();
+        }
 
-        
+        [HttpPost]
+        public IActionResult them(CKhuyenMai x)
+        {
+            if (x == null)
+            {
+                TempData["MessageError_ThemKhuyenMai"] = "Lỗi, dữ liệu không hợp lệ!";
+                return View(x);
+            }
+            try
+            {
+                KhuyenMai km = new KhuyenMai()
+                {
+                    Code = x.Code,
+                    MoTa = x.MoTa,
+                    DieuKien = x.DieuKien,
+                    SoDiem = x.SoDiem,
+                    PhanTramGiam = x.PhanTramGiam,
+                    GiamToiDa = x.GiamToiDa,
+                    NgayBd = x.NgayBd,
+                    NgayKt = x.NgayKt,
+                    TrangThai = x.NgayBd > DateTime.Now ? 0 : 1
+                };
+                db.KhuyenMais.Add(km);
+                db.SaveChanges();
+                TempData["MessageSuccess_KhuyenMai"] = "Thêm mới thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception)
+            {
+                TempData["MessageError_ThemKhuyenMai"] = "Lỗi, không thể thêm!";
+                return View(x);
+            }
+        }
+
+        public IActionResult sua(int id)
+        {
+            KhuyenMai? km = db.KhuyenMais.Find(id);
+            if (km == null)
+            {
+                TempData["MessageError_KhuyenMai"] = "Lỗi, không tìm thấy khuyến mãi";
+                return RedirectToAction("Index", new { trang = timTrang(id) });
+            }
+            return View(CKhuyenMai.ToCKhuyenMai(km));
+        }
+
+        [HttpPost]
+        public IActionResult sua(CKhuyenMai x)
+        {
+            if (x == null)
+            {
+                TempData["MessageError_SuaKhuyenMai"] = "Lỗi, dữ liệu không hợp lệ!";
+                return View(x);
+            }
+            KhuyenMai? km = db.KhuyenMais.Find(x.MaKm);
+            if (km == null)
+            {
+                TempData["MessageError_KhuyenMai"] = "Lỗi, không tìm thấy khuyến mãi!";
+                return RedirectToAction("Index");
+            }
+            try
+            {
+                km.Code = x.Code;
+                km.MoTa = x.MoTa;
+                km.DieuKien = x.DieuKien;
+                km.SoDiem = x.SoDiem;
+                km.PhanTramGiam = x.PhanTramGiam;
+                km.GiamToiDa = x.GiamToiDa;
+                km.NgayBd = x.NgayBd;
+                km.NgayKt = x.NgayKt;
+
+                db.KhuyenMais.Update(km);
+                db.SaveChanges();
+                TempData["MessageSuccess_KhuyenMai"] = "Cập nhật thành công!";
+                return RedirectToAction("Index", new { trang = timTrang(km.MaKm), trangthai = km.TrangThai });
+            }
+            catch (Exception)
+            {
+                TempData["MessageError_SuaKhuyenMai"] = "Lỗi, không thể cập nhật!";
+                return View(x);
+            }
+        }
+
+        //end
     }
 }

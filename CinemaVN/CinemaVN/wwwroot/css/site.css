@@ -36,6 +36,55 @@ body {
     background: linear-gradient(190deg, #000, #1a1a2e, #16213e);
 }
 
+/* ===== SEAT =====*/
+.seat {
+    width: 35px;
+    height: 35px;
+    margin: 4px;
+    background: #ccc;
+    border-radius: 6px;
+    text-align: center;
+    line-height: 35px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.seat:hover {
+    background: #aaa;
+}
+
+.seat.vip {
+    background: gold;
+}
+
+.seat.doi {
+    width: 75px;
+    background: pink;
+}
+
+.seat.booked {
+    background: red;
+    cursor: not-allowed;
+}
+
+.seat.selected {
+    background: orange;
+}
+
+.screen {
+    background: #ddd;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+/* ===== KHUYEN MAI ===== */
+
+.km-item:hover {
+    transform: scale(1.03);
+    transition: 0.2s;
+}
+
 /* ===== CAROUSEL ===== */
 .carousel-item img {
     width: 100%;
@@ -314,6 +363,54 @@ header {
 .point-label {
     font-size: 13px;
     color: #888;
+}
+
+/* ===== MOVIE HOME ===== */
+
+.movie-card {
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s;
+    position: relative;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+}
+
+.movie-title {
+    width: 100%;
+    border: 1px solid gray;
+    border-radius: 20px 20px 5px 5px;
+    background: linear-gradient(135deg, #fff, #16213e);
+    padding: 10px;
+    font-style: italic;
+    text-transform: uppercase;
+}
+
+.movie-img {
+    width: 100%;
+    height: 500px; 
+    object-fit: cover;
+}
+
+.movie-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.movie-card:hover .movie-overlay {
+    opacity: 1;
 }
 
 /* ===== RESPONSIVE ===== */

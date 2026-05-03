@@ -1,10 +1,163 @@
-﻿
+﻿@model IEnumerable<CinemaVN.DatModels.CDichVu>
+
 @{
     ViewData["Title"] = "Quản Lý Giá - Dịch Vụ";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 <h1 class="text-label text-center">QUẢN LÝ GIÁ</h1>
-<div class="d-flex justify-content-center vh-100">
-    <h1 class="display-4 fw-bold align-content-center">404 - PAGE NOT FOUND</h1>
+<div class="w-100 d-flex justify-content-between">
+    <a asp-action="themDichVu" class="btn btn-label btn-success">Thêm Mới</a>
+    <div class="d-flex justify-content-between">
+        <form class="d-flex search-group me-1" method="get" asp-action="dichVu">
+            <div class="input-group">
+                <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, tên" value="@ViewBag.Keyword" aria-label="Search">
+                <button class="btn btn-search bg-black text-white" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+        </form>
+        @if (ViewBag.keyword != null && ViewBag.keyword != "")
+        {
+            <a asp-action="dichVu" class="btn btn-outline-info me-1">Quay lại</a>
+        }
+        <a asp-action="dichVu"
+           asp-route-keyword="@(ViewBag.Keyword)"
+           asp-route-sapxep="@(ViewBag.SapXep == true? false : true)" class="btn btn-outline-secondary shadow-sm">
+            @(ViewBag.SapXep == true ? "Tăng" : "Giảm")
+        </a>
+    </div>
 </div>
+<div class="my-3">
+    @if (TempData["MessageError_DichVu"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_DichVu"]
+        </div>
+    }
+    @if (TempData["MessageSuccess_DichVu"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold">
+            @TempData["MessageSuccess_DichVu"]
+        </div>
+    }
+</div>
+<div class="mt-3">
+    <table class="table table-bordered text-center align-middle">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.HinhAnh)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.MaDv)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.TenDv)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Gia)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.LoaiDv)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Count() > 0)
+            {
+                @foreach (var item in Model)
+                {
+                    <tr class="align-content-center">
+                        <td>
+                            @{
+                                var hinh = item.HinhAnh ?? "default.png";
+                                var link = "~/images/snacks/" + hinh;
+                            }
+                            <img src="@Url.Content(link)" alt="@(item.TenDv)" style="width: 150px; height: 80px;" />
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.MaDv)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TenDv)
+                        </td>   
+                        <td>
+                            @(item.Gia.ToString("N0") + " ₫")
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.LoaiDv)
+                        </td>
+                        <td>
+                            <a asp-action="xoaDichVu" asp-route-id="@item.MaDv" class="btn btn-danger" onclick="return confirm('Hành động này sẽ xóa bỏ hoàn toàn dịch vụ @(item.MaDv)! Bạn có chắc chắn muốn tiếp tục?');">Xóa</a>
+                            <a asp-action="suaDichVu" asp-route-id="@item.MaDv" class="btn btn-primary">Sửa</a>
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    @if (ViewBag.tongTrang != null && ViewBag.tongTrang > 1)
+                    {
+                        <td colspan="6">
+                            <div class="d-flex justify-content-center mt-3">
+                                @{
+                                    int trangHT = ViewBag.trangHT ?? 1;
+                                    int tongTrang = ViewBag.tongTrang ?? 1;
+                                    string? keyword = ViewBag.Keyword as string;
+                                    bool sapxep = ViewBag.SapXep ?? true;
+                                }
+                                @if (tongTrang > 1)
+                                {
+                                    <ul class="pagination">
+
+                                        <!-- Prev -->
+                                        <li class="page-item @(trangHT == 1 ? "disabled" : "")">
+                                            <a class="page-link"
+                                               asp-action="dichVu"
+                                               asp-route-keyword="@keyword"
+                                               asp-route-sapxep="@sapxep"
+                                               asp-route-trang="1">«</a>
+                                        </li>
+
+                                        <!-- Pages -->
+                                        @for (int i = 1; i <= tongTrang; i++)
+                                        {
+                                            <li class="page-item @(i == trangHT ? "active" : "")">
+                                                <a class="page-link"
+                                                   asp-action="dichVu"
+                                                   asp-route-keyword="@keyword"
+                                                   asp-route-sapxep="@sapxep"
+                                                   asp-route-trang="@i">@i</a>
+                                            </li>
+                                        }
+
+                                        <!-- Next -->
+                                        <li class="page-item @(trangHT == tongTrang ? "disabled" : "")">
+                                            <a class="page-link"
+                                               asp-action="dichVu"
+                                               asp-route-keyword="@keyword"
+                                               asp-route-sapxep="@sapxep"
+                                               asp-route-trang="@(tongTrang)">»</a>
+                                        </li>
+                                    </ul>
+                                }
+                            </div>
+                        </td>
+                    }
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6">Không có dịch vụ nào.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+</script>
 

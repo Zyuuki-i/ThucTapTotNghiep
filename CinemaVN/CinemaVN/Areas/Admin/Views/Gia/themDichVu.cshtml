@@ -1,0 +1,70 @@
+﻿@model CinemaVN.DatModels.CDichVu
+
+@{
+    ViewData["Title"] = "Thêm Dịch Vụ";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<h1 class="text-label text-center">QUẢN LÝ GIÁ</h1>
+<div class="row mb-2">
+    <div class="col-5"><hr /></div>
+    <div class="col-2 text-center">
+        <h3 class="text-success">THÊM MỚI</h3>
+    </div>
+    <div class="col-5"><hr /></div>
+    <div class="col-12 text-center">
+        <a class="btn btn-outline-info w-25" asp-action="dichVu">Quay lại</a>
+    </div>
+</div>
+@if (TempData["MessageError_ThemDichVu"] != null)
+{
+    <div class="alert alert-danger text-center fw-bold">
+        @TempData["MessageError_ThemDichVu"]
+    </div>
+}
+<div class="border border-3 border-success p-3 rounded">
+    <div class="row">
+        <form asp-action="themDichVu" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input asp-for="MaDv" class="form-control" type="hidden"/>
+            <div class="form-group">
+                <label asp-for="TenDv" class="control-label"></label>
+                <input asp-for="TenDv" class="form-control" />
+                <span asp-validation-for="TenDv" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Gia" class="control-label"></label>
+                <input asp-for="Gia" class="form-control" />
+                <span asp-validation-for="Gia" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LoaiDv" class="control-label"></label>
+                <input asp-for="LoaiDv" class="form-control" />
+                <span asp-validation-for="LoaiDv" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HinhAnh" class="control-label"></label>
+                <input type="file" name="file" class="form-control" />
+                <span asp-validation-for="HinhAnh" class="text-danger"></span>
+            </div>
+            <div class="form-group d-flex justify-content-end mt-2">
+                <input type="submit" value="Thêm" class="btn btn-sucess" />
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+</script>
+

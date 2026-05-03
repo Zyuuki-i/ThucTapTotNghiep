@@ -126,7 +126,7 @@ namespace CinemaVN.Areas.Admin.Controllers
                 }
             }
 
-            string thuMuc = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "banner");
+            string thuMuc = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "banners");
 
             string? fileName = banner.HinhAnh?.Trim().ToLower();
             if (string.IsNullOrEmpty(fileName) || !Regex.IsMatch(fileName, @"^[a-zA-Z0-9_-]+$"))
@@ -210,7 +210,7 @@ namespace CinemaVN.Areas.Admin.Controllers
                     }
                 }
 
-                string thuMuc = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "banner");
+                string thuMuc = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "banners");
 
                 string? fileName = banner.HinhAnh?.Trim().ToLower();
                 if (string.IsNullOrEmpty(fileName) || !Regex.IsMatch(fileName, @"^[a-zA-Z0-9_-]+$"))

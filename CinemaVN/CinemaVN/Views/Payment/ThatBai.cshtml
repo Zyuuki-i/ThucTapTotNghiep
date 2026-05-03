@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Thanh toán thất bại";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container text-center my-5">
+    <div class="card shadow p-5 border-danger">
+        <div class="mb-4">
+            <i class="fas fa-times-circle text-danger" style="font-size: 80px;"></i>
+        </div>
+        <h2 class="text-danger text-uppercase">Thanh toán không thành công</h2>
+        <p class="lead">Giao dịch đã bị hủy hoặc có lỗi xảy ra trong quá trình xử lý.</p>
+        <hr />
+        <p class="text-muted">Lưu ý: Ghế bạn đã chọn đã được giải phóng. Vui lòng thực hiện đặt lại từ đầu.</p>
+
+        <div class="mt-4">
+            <a href="/" class="btn btn-danger btn-lg">Quay lại trang chủ</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,152 @@
+﻿@model CinemaVN.DatModels.CNguoiDung
+
+@{
+    ViewData["Title"] = "Cập Nhật Tài Khoản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5 mb-5" style="max-width: 900px;">
+
+    <form asp-action="capNhat" method="post" enctype="multipart/form-data">
+        <input asp-for="MaNd" type="hidden" />
+        <input asp-for="MaVt" type="hidden" />
+        <input asp-for="MaCn" type="hidden" />
+        <input asp-for="MatKhau" type="hidden" />
+        <input asp-for="Hinh" type="hidden" />
+        <input asp-for="Cccd" type="hidden" />
+        <input asp-for="ChucVu" type="hidden" />
+        <input asp-for="DiemHoiVien" type="hidden" />
+        <input asp-for="TrangThai" type="hidden" />
+
+        <div class="my-3">
+            @if (TempData["MessageError_CapNhatNguoiDung"] != null)
+            {
+                <div class="alert alert-danger text-center fw-bold">
+                    @TempData["MessageError_CapNhatNguoiDung"]
+                </div>
+            }
+            @if (TempData["MessageSuccess_CapNhatNguoiDung"] != null)
+            {
+                <div class="alert alert-success text-center fw-bold">
+                    @TempData["MessageSuccess_CapNhatNguoiDung"]
+                </div>
+            }
+        </div>
+
+        <div class="card profile-card">
+            <div class="profile-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold">
+                    <i class="bi bi-person-vcard me-2"></i> HỒ SƠ CÁ NHÂN
+                </h4>
+                <span class="text-white-50 small">Quản lý thông tin bảo mật</span>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <div class="row align-items-start">
+
+                    <div class="col-md-8 order-2 order-md-1">
+                        <div class="row g-3">
+
+                            <div class="col-12">
+                                <label>Họ và Tên</label>
+                                <input asp-for="HoTen" class="form-control" />
+                                <span asp-validation-for="HoTen" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Ngày Sinh</label>
+                                <input asp-for="NgaySinh" type="date" class="form-control" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Giới Tính</label>
+                                <select asp-for="Phai" class="form-control">
+                                    <option value="true">Nam</option>
+                                    <option value="false">Nữ</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>Email</label>
+                                <input asp-for="Email" class="form-control" readonly />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label>SĐT</label>
+                                <input asp-for="Sdt" class="form-control" />
+                            </div>
+
+                            <div class="col-12">
+                                <label>Địa chỉ</label>
+                                <textarea asp-for="DiaChi" class="form-control"></textarea>
+                            </div>
+
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-info rounded-pill">
+                                <i class="bi bi-save me-2"></i> Lưu thay đổi
+                            </button>
+                            <a class="btn btn-primary rounded-pill" asp-controller="NguoiDung" asp-action="Index">Quay lại</a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 order-1 order-md-2 text-center">
+                        <div class="d-flex flex-column align-items-center">
+
+                            <div class="my-3">
+                                @{
+                                    string url = "~/images/avatars/" + (Model?.Hinh ?? "default.png");
+                                }
+                                <img id="previewImg"
+                                     src="@Url.Content(url)"
+                                     style="width:120px; height:120px; object-fit:cover; border-radius:50%; cursor:pointer;"
+                                     onclick="document.getElementById('avatarInput').click()" />
+
+                                <input type="file" name="avatarFile" id="avatarInput" accept="image/*" hidden />
+
+                                <div class="mt-2">
+                                    <span class="text-muted">Click ảnh để đổi avatar</span>
+                                </div>
+                                @if(Model?.Hinh != null)
+                                {
+                                    <a class="btn btn-sm btn-outline-danger mt-2" asp-controller="NguoiDung" asp-action="xoaAvatar" asp-route-id="@Model?.MaNd">Xóa ảnh</a>
+                                }
+                            </div>
+
+                            <h5>@Model?.HoTen</h5>
+                            <p class="text-muted small">
+                                @(Model?.MaVtNavigation?.TenVt ?? "Thành Viên")
+                            </p>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+
+     const input = document.getElementById("avatarInput");
+     const preview = document.getElementById("previewImg");
+
+     input.addEventListener("change", function () {
+         const file = this.files[0];
+         if (file) {
+             preview.src = URL.createObjectURL(file);
+         }
+     });
+</script>

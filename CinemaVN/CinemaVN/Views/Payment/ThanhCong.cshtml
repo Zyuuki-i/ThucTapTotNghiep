@@ -1,0 +1,23 @@
+﻿
+@{
+    ViewData["Title"] = "Thanh toán thành công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container text-center my-5">
+    <div class="card shadow p-5">
+        <div class="mb-4">
+            <i class="fas fa-check-circle text-success" style="font-size: 80px;"></i>
+        </div>
+        <h2 class="text-success text-uppercase">Thanh toán thành công!</h2>
+        <p class="lead">Cảm ơn bạn đã sử dụng dịch vụ của CinemaVN.</p>
+        <hr />
+        <p>Thông tin vé đã được cập nhật vào hệ thống. Bạn có thể kiểm tra trong mục <strong>Lịch sử đặt vé</strong></p>
+
+        <div class="mt-4">
+            <a href="/" class="btn btn-primary btn-lg">Quay về trang chủ</a>
+            <a asp-controller="NguoiDung" asp-action="lichSuVe" class="btn btn-outline-info btn-lg">Xem vé của tôi</a>
+        </div>
+    </div>
+</div>
+

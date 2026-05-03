@@ -542,6 +542,12 @@ namespace CinemaVN.Models
 
                 entity.Property(e => e.MaSc).HasColumnName("MaSC");
 
+                entity.Property(e => e.SessionKey)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ThoiGianGiu).HasColumnType("datetime");
+
                 entity.Property(e => e.TrangThai).HasDefaultValueSql("((0))");
 
                 entity.HasOne(d => d.MaGheNavigation)

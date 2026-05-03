@@ -15,10 +15,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.18" />
+    <PackageReference Include="QRCoder" Version="1.8.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\images\banner\" />
+    <Folder Include="wwwroot\images\banners\" />
   </ItemGroup>
 
 </Project>

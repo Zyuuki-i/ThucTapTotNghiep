@@ -1,5 +1,10 @@
-﻿using CinemaVN.Models;
+﻿using CinemaVN.DatModels;
+using CinemaVN.Models;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace CinemaVN.Areas.Admin.Controllers
 {
@@ -183,18 +188,215 @@ namespace CinemaVN.Areas.Admin.Controllers
         }
         //END ĐỊNH DẠNG
 
-        //SUẤT CHIẾU
-        public IActionResult suatChieu()
-        {
-            return View();
-        }
-        //END SUẤT CHIẾU
-
         //DỊCH VỤ
-        public IActionResult dichVu()
+        public IActionResult dichVu(string? keyword, int trang = 1, bool sapxep = true)
         {
-            return View();
+            keyword = keyword?.Trim();
+
+            var query = db.DichVus.AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(t =>
+                    (t.TenDv != null && t.TenDv.Contains(keyword)) ||
+                    t.MaDv.ToString() == keyword
+                );
+            }
+            int tongDS = query.Count();
+            int kichThuoc = 5;
+            List<DichVu> dichVus = new List<DichVu>();
+            if(sapxep)
+            {
+                 dichVus = query
+                .OrderByDescending(t => t.Gia)
+                .Skip((trang - 1) * kichThuoc)
+                .Take(kichThuoc)
+                .ToList();
+            }
+            else
+            {
+                dichVus = query
+                .OrderBy(t => t.MaDv)
+                .Skip((trang - 1) * kichThuoc)
+                .Take(kichThuoc)
+                .ToList();
+            }
+
+
+            ViewBag.trangHT = trang;
+            ViewBag.tongTrang = (int)Math.Ceiling((double)tongDS / kichThuoc);
+            ViewBag.Keyword = keyword;
+            ViewBag.SapXep = sapxep;
+
+            List<CDichVu> cDichVus = new();
+            foreach (var item in dichVus)
+            {
+                cDichVus.Add(CDichVu.toCDichVu(item));
+            }
+
+            return View(cDichVus);
         }
+
+        public IActionResult xoaDichVu(int id)
+        {
+            DichVu? dv = db.DichVus.Find(id);
+            if (dv != null)
+            {
+                try
+                {
+                    string anh = dv.HinhAnh??"";
+                    db.DichVus.Remove(dv);
+                    db.SaveChanges();
+                    string anhPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "snacks", anh);
+                    if (System.IO.File.Exists(anhPath))
+                    {
+                        System.IO.File.Delete(anhPath);
+                    }
+                    TempData["MessageSuccess_DichVu"] = "Xóa dịch vụ '" + id + "' thành công.";
+                    return RedirectToAction("dichVu");
+                }catch(Exception)
+                {
+                    TempData["MessageError_DichVu"] = "Lỗi, không thể xóa!";
+                    return RedirectToAction("dichVu");
+                }
+            }
+            TempData["MessageError_DichVu"] = "Lỗi, không tìm thấy dịch vụ!";
+            return RedirectToAction("dichVu");
+        }
+
+        public IActionResult themDichVu(CDichVu? x)
+        {
+            x ??= new CDichVu();
+            return View(x);
+        }
+
+        [HttpPost]
+        public IActionResult themDichVu(CDichVu? x, IFormFile file)
+        {
+            if(x == null)
+            {
+                TempData["MessageError_ThemDichVu"] = "Lỗi, dữ liệu không hợp lệ!";
+                return RedirectToAction("themDichVu",x);
+            }
+
+            try
+            {
+                DichVu dv = new DichVu() { 
+                    TenDv = x.TenDv,
+                    Gia = x.Gia,
+                    LoaiDv = x.LoaiDv,
+                };
+
+                if (file != null && file.Length > 0)
+                {
+                    if (file.Length > 10 * 1024 * 1024)
+                    {
+                        TempData["MessageError_ThemDichVu"] = "Lỗi, kích thước ảnh không được vượt quá 10MB!";
+                        return RedirectToAction("themDichVu", x);
+                    }
+                    if (!new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(file.FileName).ToLower()))
+                    {
+                        TempData["MessageError_ThemDichVu"] = "Lỗi, định dạng ảnh không hợp lệ! Chỉ chấp nhận file .jpg, .jpeg, .png.";
+                        return RedirectToAction("themDichVu", x);
+                    }
+                    string snackName = "cinemavn-snacks-" + DateTime.Now.Ticks + Path.GetExtension(file.FileName);
+                    string snackPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "snacks", snackName);
+                    using (var stream = new FileStream(snackPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+                    dv.HinhAnh = snackName;
+                }
+                db.DichVus.Add(dv);
+                db.SaveChanges();
+
+                TempData["MessageSuccess_DichVu"] = "Thêm mới thành công!";
+                return RedirectToAction("dichVu");
+            }
+            catch (Exception)
+            {
+                TempData["MessageError_ThemDichVu"] = "Lỗi, không thể thêm!";
+                return RedirectToAction("themDichVu", x);
+            }
+
+        }
+
+        public IActionResult suaDichVu(int id)
+        {
+            DichVu? dv = db.DichVus.Find(id);
+            if (dv != null)
+            {
+               return View(CDichVu.toCDichVu(dv));
+            }
+            TempData["MessageError_DichVu"] = "Lỗi, không tìm thấy dịch vụ!";
+            return RedirectToAction("dichVu");
+        }
+
+        [HttpPost]
+        public IActionResult suaDichVu(CDichVu? x, IFormFile file)
+        {
+            if (x == null)
+            {
+                TempData["MessageError_SuaDichVu"] = "Lỗi, dữ liệu không hợp lệ!";
+                return RedirectToAction("suaDichVu", x);
+            }
+            DichVu? dv = db.DichVus.Find(x.MaDv);
+            if (dv == null)
+            {
+                TempData["MessageError_DichVu"] = "Lỗi, không tìm thấy dịch vụ!";
+                return RedirectToAction("dichVu");
+            }
+            try
+            {
+                dv.TenDv = x.TenDv;
+                dv.Gia = x.Gia;
+                dv.LoaiDv = x.LoaiDv;
+
+                if (file != null && file.Length > 0)
+                {
+                    if (file.Length > 10 * 1024 * 1024)
+                    {
+                        TempData["MessageError_SuaDichVu"] = "Lỗi, kích thước ảnh không được vượt quá 10MB!";
+                        return RedirectToAction("suaDichVu", x);
+                    }
+                    if (!new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(file.FileName).ToLower()))
+                    {
+                        TempData["MessageError_SuaDichVu"] = "Lỗi, định dạng ảnh không hợp lệ! Chỉ chấp nhận file .jpg, .jpeg, .png.";
+                        return RedirectToAction("suaDichVu", x);
+                    }
+                    string snackName = "cinemavn-snacks-" + DateTime.Now.Ticks + Path.GetExtension(file.FileName);
+                    string snackPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "snacks", snackName);
+                    using (var stream = new FileStream(snackPath, FileMode.Create))
+                    {
+                        file.CopyTo(stream);
+                    }
+
+                    string anhXoa = dv.HinhAnh??"";
+                    dv.HinhAnh = snackName;
+
+                    if(anhXoa != "")
+                    {
+                        string anhPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "snacks", anhXoa);
+                        if (System.IO.File.Exists(anhPath))
+                        {
+                            System.IO.File.Delete(anhPath);
+                        }
+                    }
+                }
+                db.DichVus.Update(dv);
+                db.SaveChanges();
+
+                TempData["MessageSuccess_DichVu"] = "Cập nhật thành công!";
+                return RedirectToAction("dichVu");
+            }
+            catch (Exception)
+            {
+                TempData["MessageError_ThemDichVu"] = "Lỗi, không thể cập nhật!";
+                return RedirectToAction("suaDichVu", x);
+            }
+
+        }
+
         //END DỊCH VỤ
     }
 }

@@ -7,7 +7,7 @@
 
 <h1 class="text-label text-center">QUẢN LÝ NGƯỜI DÙNG</h1>
 <div class="w-100 d-flex justify-content-between">
-    <a asp-action="them" class="btn btn-label btn-success">Tạo tài khoản</a>
+    <a asp-action="them" asp-route-role="staff" class="btn btn-label btn-success">Tạo tài khoản</a>
     <div class="d-flex justify-content-between">
         <form class="d-flex search-group me-1" method="get" asp-action="nhanVien">
             <div class="input-group">
@@ -35,7 +35,7 @@
         <a asp-action="nhanVien"
            asp-route-macn="@(ViewBag.Macn)"
            asp-route-trangthai="@(ViewBag.TrangThai == true? false : true)" class="btn btn-outline-secondary shadow-sm">
-            @(ViewBag.TrangThai == true ? "Hiệu lực" : "Vô hiệu")
+            @(ViewBag.TrangThai == false ? "Hiệu lực" : "Vô hiệu")
         </a>
     </div>
 </div>
@@ -92,14 +92,14 @@
                         <td>
                             @if (item.TrangThai == true)
                             {
-                                <a asp-action="voHieu" asp-route-id="@item.MaNd" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa người dùng @item.HoTen không?')">Vô hiệu</a>
+                                <a asp-action="voHieu" asp-route-id="@item.MaNd" asp-route-role="staff" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa người dùng @item.HoTen không?')">Vô hiệu</a>
                             }
                             else
                             {
-                                <a asp-action="kichHoat" asp-route-id="@item.MaNd" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc chắn muốn kích hoạt người dùng @item.HoTen không?')">Kích hoạt</a>
+                                <a asp-action="kichHoat" asp-route-id="@item.MaNd" asp-route-role="staff" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc chắn muốn kích hoạt người dùng @item.HoTen không?')">Kích hoạt</a>
                             }
-                            <a asp-action="sua" asp-route-id="@item.MaNd" class="btn btn-sm btn-primary">Sửa</a>
-                            <a asp-action="chiTiet" asp-route-id="@item.MaNd" class="btn btn-sm btn-info">Chi tiết</a>
+                            <a asp-action="sua" asp-route-id="@item.MaNd" asp-route-role="staff" class="btn btn-sm btn-primary">Sửa</a>
+                            <a asp-action="chiTiet" asp-route-id="@item.MaNd" asp-route-role="staff" class="btn btn-sm btn-info">Chi tiết</a>
                         </td>
                     </tr>
                 }

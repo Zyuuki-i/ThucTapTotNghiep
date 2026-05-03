@@ -96,13 +96,15 @@
                         </div>
                         <div class="avatar-wrapper my-3">
                             @{
-                                string avatarUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                                string url = "~/images/avatars/";
+                                string hinh = "default.png";
                                 if (Model?.Hinh != null)
                                 {
-                                    avatarUrl = "~/images/avatar/" + Model.Hinh;
+                                    hinh = Model.Hinh;
                                 }
+                                url = url + hinh;
                             }
-                            <img src="@Url.Content(avatarUrl)" class="profile-avatar-lg" alt="Avatar">
+                            <img src="@Url.Content(url)" class="profile-avatar-lg" alt="Avatar">
                         </div>
 
                         <h5 class="fw-bold text-dark text-uppercase">@Model?.HoTen</h5>

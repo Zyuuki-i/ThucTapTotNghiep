@@ -395,7 +395,145 @@ namespace CinemaVN.Controllers
             }
         }
 
+        public IActionResult capNhat(int id)
+        {
+            NguoiDung? nd = db.NguoiDungs.Find(id);
+            if(nd == null)
+            {
+                TempData["MessageError_NguoiDung"] = "Lỗi, người dùng không xác định!";
+                return RedirectToAction("Index");
+            }
+            return View(CNguoiDung.ToCNguoiDung(nd));
+        }
 
+        [HttpPost]
+        public IActionResult capNhat(CNguoiDung x, IFormFile avatarFile)
+        {
+            NguoiDung? nd = db.NguoiDungs.Find(x.MaNd);
+            if (nd == null)
+            {
+                TempData["MessageError_CapNhatNguoiDung"] = "Lỗi, người dùng không xác định!";
+                return View(x);
+            }
+            try
+            {
+                if(avatarFile != null && avatarFile.Length > 0)
+                {
+                    if (avatarFile.Length > 10 * 1024 * 1024)
+                    {
+                        TempData["MessageError_CapNhatNguoiDung"] = "Lỗi, kích thước ảnh không được vượt quá 10MB!";
+                        return View(x);
+                    }
+                    if (!new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(avatarFile.FileName).ToLower()))
+                    {
+                        TempData["MessageError_CapNhatNguoiDung"] = "Lỗi, định dạng ảnh không hợp lệ! Chỉ chấp nhận file .jpg, .jpeg, .png.";
+                        return View(x);
+                    }
+                    string avatarName = "cinemavn-avatar-" + DateTime.Now.Ticks + Path.GetExtension(avatarFile.FileName);
+                    string avatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "avatars", avatarName);
+                    using (var stream = new FileStream(avatarPath, FileMode.Create))
+                    {
+                        avatarFile.CopyTo(stream);
+                    }
+                    nd.Hinh = avatarName;
+
+                    string avatarOldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "avatars", x.Hinh??"");
+                    if (System.IO.File.Exists(avatarOldPath))
+                    {
+                        System.IO.File.Delete(avatarOldPath);
+                    }
+                    x.Hinh = avatarName;
+                }
+                nd.HoTen = x.HoTen;
+                nd.DiaChi = x.DiaChi;
+                nd.NgaySinh = x.NgaySinh;
+                nd.Phai = x.Phai;
+                nd.Sdt = x.Sdt;
+                db.NguoiDungs.Update(nd);
+                db.SaveChanges();
+                TempData["MessageSuccess_CapNhatNguoiDung"] = "Cập nhật thông tin thành công!";
+                return View(x);
+            }
+            catch (Exception) {
+                TempData["MessageError_CapNhatNguoiDung"] = "Lỗi, không xác định!";
+                return View(x);
+            }
+        }
+
+        public IActionResult xoaAvatar(int id)
+        {
+            NguoiDung? nd = db.NguoiDungs.Find(id);
+            if (nd == null)
+            {
+                TempData["MessageError_CapNhatNguoiDung"] = "Lỗi, người dùng không xác định!";
+                return RedirectToAction("capNhat", new { id = id });
+            }
+            try
+            {
+                string avatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "avatars", nd.Hinh ?? "");
+                if (System.IO.File.Exists(avatarPath))
+                {
+                    System.IO.File.Delete(avatarPath);
+                }
+                nd.Hinh = null;
+                db.NguoiDungs.Update(nd);
+                db.SaveChanges();
+                TempData["MessageSuccess_CapNhatNguoiDung"] = "Xóa ảnh thành công!";
+                return RedirectToAction("capNhat", new { id = id });
+            }
+            catch (Exception)
+            {
+                TempData["MessageError_CapNhatNguoiDung"] = "Lỗi, không xác định!";
+                return RedirectToAction("capNhat", new { id = id });
+            }
+        }
+
+        public IActionResult lichSuVe()
+        {
+            NguoiDung? nd = db.NguoiDungs.FirstOrDefault(n => n.MaNd == HttpContext.Session.GetInt32("UserId"));
+            if (nd == null)
+            {
+                TempData["MessageError_NguoiDung"] = "Lỗi, người dùng không xác định!";
+                return RedirectToAction("Index");
+            }
+            List<HoaDon> dsHd = db.HoaDons
+                .Where(t => t.MaNd == nd.MaNd)
+                .Include(t => t.MaCnNavigation)
+                .Include(t => t.ChiTietDichVus)
+                    .ThenInclude(ct => ct.MaDvNavigation)
+                .Include(t => t.Ves)
+                    .ThenInclude(v => v.MaScNavigation)
+                        .ThenInclude(sc => sc.MaPhimNavigation)
+                .Include(t => t.Ves)
+                    .ThenInclude(v => v.MaScNavigation)
+                        .ThenInclude(sc => sc.MaDdNavigation)
+                .OrderByDescending(t => t.MaHd)
+                .Take(10)
+                .ToList();
+            return View(dsHd);
+        }
+
+        public IActionResult chiTietVe(int id)
+        {
+            var Hd = db.HoaDons
+                .Where(t => t.MaHd == id)
+                .Include(t => t.MaKmNavigation)
+                .Include(t => t.MaCnNavigation)
+                .Include(t => t.ChiTietDichVus)
+                    .ThenInclude(ct => ct.MaDvNavigation)
+                .Include(t => t.Ves)
+                    .ThenInclude(v => v.MaScNavigation)
+                        .ThenInclude(sc => sc.MaPhimNavigation)
+                .Include(t => t.Ves)
+                    .ThenInclude(v => v.MaScNavigation)
+                        .ThenInclude(sc => sc.MaDdNavigation)
+                .Include (t => t.Ves)
+                    .ThenInclude(v => v.MaGheNavigation)
+                        .ThenInclude(mg => mg.MaLgNavigation)
+                .FirstOrDefault();
+            Hd ??= new HoaDon();
+            return PartialView(Hd);
+        }
 
     }
 }

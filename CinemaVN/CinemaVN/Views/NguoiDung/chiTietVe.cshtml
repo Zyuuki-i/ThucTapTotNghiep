@@ -1,0 +1,149 @@
+﻿@model CinemaVN.Models.HoaDon
+
+@if (Model != null)
+{
+    <div class="p-3">
+        <div class="row align-items-center mb-3">
+
+            <div class="col-md-4">
+                <h5 class="mb-0">Hóa đơn #@Model.MaHd</h5>
+            </div>
+
+            <div class="col-md-4 text-center">
+                <h6>Mã QR Vé Của Bạn</h6>
+                <img src="/QR/GenerateQR?mahd=@Model.MaHd"
+                     alt="QR Code"
+                     class="img-thumbnail"
+                     width="180"
+                     height="180" />
+                <div class="text-muted small mt-2">
+                    Đưa mã này cho nhân viên soát vé
+                </div>
+            </div>
+
+            <div class="col-md-4 text-end">
+                @if (Model.TrangThai == 0)
+                {
+                    <span class="badge bg-secondary">Chưa thanh toán</span>
+                }
+                else if (Model.TrangThai == 1)
+                {
+                    <span class="badge bg-success">Đã thanh toán</span>
+                }
+                else if (Model.TrangThai == 2)
+                {
+                    <span class="badge bg-danger">Đã hủy</span>
+                }
+                else if (Model.TrangThai == 3)
+                {
+                    <span class="badge bg-warning text-dark">Hoàn tiền</span>
+                }
+            </div>
+
+        </div>
+        <hr />
+
+        <p><b>Chi nhánh:</b> @Model.MaCnNavigation?.TenCn</p>
+        <p><b>Ngày:</b> @Model.NgayLap?.ToString("dd/MM/yyyy HH:mm")</p>
+
+        @if (Model.Ves != null && Model.Ves.Any())
+        {
+            <hr />
+            <h6>Vé phim</h6>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Phim</th>
+                        <th>Suất</th>
+                        <th>Định dạng</th>
+                        <th>Ghế</th>
+                        <th>Loại</th>
+                        <th>Giá</th>
+                        <th>Tình trạng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ve in Model.Ves)
+                    {
+                        <tr>
+                            <td>@ve.MaScNavigation?.MaPhimNavigation?.TenPhim</td>
+                            <td>
+                                @ve.MaScNavigation?.GioBd - @ve.MaScNavigation?.NgayChieu?.ToString("dd/MM/yyyy")
+                            </td>
+                            <td>@ve.MaScNavigation?.MaDdNavigation?.TenDd</td>
+                            <td>@ve.MaGheNavigation?.Hang@ve.MaGheNavigation?.SoGhe</td>
+                            <td>@ve.MaGheNavigation?.MaLgNavigation?.TenLg</td>
+                            <td>@ve.Gia?.ToString("N0") đ</td>
+                            <td>
+                                @if (ve.TrangThai == 0)
+                                {
+                                    <span>Chưa thanh toán</span>
+                                }
+                                else if (ve.TrangThai == 1)
+                                {
+                                    <span>Đã thanh toán</span>
+
+                                }
+                                else if (ve.TrangThai == 2)
+                                {
+                                    <span>Đã dùng</span>
+
+                                }
+                                else if (ve.TrangThai == 3)
+                                {
+                                    <span>Hết hạn</span>
+                                }
+                                else if (ve.TrangThai == 4)
+                                {
+                                    <span>Đã hủy</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Model.ChiTietDichVus != null && Model.ChiTietDichVus.Any())
+        {
+            <hr />
+            <h6>Dịch vụ</h6>
+
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Tên</th>
+                        <th>SL</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dv in Model.ChiTietDichVus)
+                    {
+                        <tr>
+                            <td>@dv.MaDvNavigation?.TenDv</td>
+                            <td>@dv.SoLuong</td>
+                            <td>@dv.DonGia?.ToString("N0") đ</td>
+                            @{
+                                var tong = dv.SoLuong * dv.DonGia;
+                            }
+                            <td>@tong?.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        <hr />
+        <div class="row justify-content-between">
+            <h6 class="col-7">Tổng tiền: <b>@Model.TongTien?.ToString("N0") đ</b></h6>
+            <span class="col-3 text-warning text-center align-content-center">Point: @((int)(Model.TongTien.HasValue ? Model.TongTien / 1000 : 0))</span>
+        </div>
+
+    </div>
+}
+else
+{
+    <div class="p-3">Không có dữ liệu</div>
+}

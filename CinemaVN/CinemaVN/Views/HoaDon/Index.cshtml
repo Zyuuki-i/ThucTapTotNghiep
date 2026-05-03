@@ -1,0 +1,101 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Đặt Vé";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var phims = ViewBag.Phims;
+    var suats = ViewBag.SuatChieus as List<SuatChieu>;
+    var query = HttpContextAccessor.HttpContext.Request.Query;
+}
+<div class="my-3">
+    @if (TempData["MessageError_DatVe"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_DatVe"]
+        </div>
+    }
+    @if (TempData["MessageSuccess_DatVe"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold">
+            @TempData["MessageSuccess_DatVe"]
+        </div>
+    }
+</div>
+<div class="container border shadow my-4 py-4" style="width: 1024px;min-height:500px">
+
+    <div class="mb-3">
+        <select class="form-control" onchange="locPhim(this.value)">
+            <option value="">-- Chọn phim --</option>
+            @foreach (var p in phims)
+            {
+                <option value="@p.MaPhim" selected="@((ViewBag.PhimChon != null && ViewBag.PhimChon == p.MaPhim)?true:false)">@p.TenPhim</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <select class="form-control" onchange="locRap(this.value)">
+            <option value="">-- Tất cả rạp --</option>
+            @foreach (var cn in ViewBag.ChiNhanhs)
+            {
+                <option value="@cn.MaCn" selected="@((ViewBag.ChiNhanhChon != null && ViewBag.ChiNhanhChon == cn.MaCn) ? true : false)">@cn.TenCn</option>
+            }
+        </select>
+    </div>
+    @if (!query.ContainsKey("phim"))
+    {
+        <div class="text-center text-muted py-5">
+            <h5>Vui lòng chọn phim để xem suất chiếu</h5>
+        </div>
+    }
+    else if (suats != null && suats.Any())
+    {
+        var groupNgay = suats.GroupBy(s => s.NgayChieu);
+
+        foreach (var ngay in groupNgay)
+        {
+            <div class="mb-4">
+                <h5 class="fw-bold">
+                    @ngay.Key?.ToString("dd/MM/yyyy")
+                </h5>
+
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var sc in ngay)
+                    {
+                        <a asp-controller="HoaDon" asp-action="chonGhe" asp-route-masc="@sc.MaSc"
+                           class="btn btn-outline-primary">
+                            @sc.GioBd?.ToString(@"hh\:mm")
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p>Không có suất chiếu</p>
+    }
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+
+    function locPhim(maPhim) {
+        let url = new URL(window.location.href);
+        url.searchParams.set("phim", maPhim);
+        window.location.href = url.toString();
+    }
+
+    function locRap(maCn) {
+        let url = new URL(window.location.href);
+        url.searchParams.set("macn", maCn);
+        window.location.href = url.toString();
+    }
+
+</script>

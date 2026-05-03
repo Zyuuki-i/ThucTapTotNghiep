@@ -94,9 +94,15 @@ namespace CinemaVN.Areas.Admin.Controllers
             }
             try
             {
+                string anh = phim.Poster??"";
                 phim.MaTls.Clear();
                 db.Phims.Remove(phim);
                 db.SaveChanges();
+                string posterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "posters", anh);
+                if (System.IO.File.Exists(posterPath))
+                {
+                    System.IO.File.Delete(posterPath);
+                }
                 TempData["MessageSuccess_Phim"] = "Xóa phim thành công!";
                 return RedirectToAction("Index");
             }
@@ -130,7 +136,7 @@ namespace CinemaVN.Areas.Admin.Controllers
             }
             try
             {
-                string posterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "poster", phim.Poster ?? "");
+                string posterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "posters", phim.Poster ?? "");
                 if (System.IO.File.Exists(posterPath))
                 {
                     System.IO.File.Delete(posterPath);
@@ -138,9 +144,7 @@ namespace CinemaVN.Areas.Admin.Controllers
                 phim.Poster = null;
                 db.Phims.Update(phim);
                 db.SaveChanges();
-                TempData["MessageSuccess_Phim"] = "Xóa poster thành công!";
-                int trang = timTrang(id);
-                return RedirectToAction("Index", new { trang = trang });
+                return RedirectToAction("chiTiet", id);
             }
             catch (Exception)
             {
@@ -190,7 +194,7 @@ namespace CinemaVN.Areas.Admin.Controllers
                         return RedirectToAction("them", x);
                     }
                     string posterName = "cinemavn-poster-" + DateTime.Now.Ticks + Path.GetExtension(poster.FileName);
-                    string posterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "poster", posterName);
+                    string posterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "posters", posterName);
                     using (var stream = new FileStream(posterPath, FileMode.Create))
                     {
                         poster.CopyTo(stream);
@@ -259,7 +263,7 @@ namespace CinemaVN.Areas.Admin.Controllers
                         return RedirectToAction("sua", new { id = x.MaPhim });
                     }
                     string posterName = "cinemavn-poster-" + DateTime.Now.Ticks + Path.GetExtension(poster.FileName);
-                    string posterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "poster", posterName);
+                    string posterPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "posters", posterName);
                     using (var stream = new FileStream(posterPath, FileMode.Create))
                     {
                         poster.CopyTo(stream);

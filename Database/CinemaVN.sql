@@ -187,7 +187,9 @@ CREATE TABLE Ve (
     MaSC INT FOREIGN KEY REFERENCES SuatChieu(MaSC),
     MaGhe INT FOREIGN KEY REFERENCES Ghe(MaGhe),
     Gia DECIMAL(18,2),
-    TrangThai INT DEFAULT 0
+    TrangThai INT DEFAULT 0,
+	ThoiGianGiu DATETIME,
+	SessionKey VARCHAR(100)
 	-- 0: Chưa thanh toán (giữ ghế)
 	-- 1: Đã thanh toán (chưa soát vé)
 	-- 2: Đã dùng (đã soát vé)

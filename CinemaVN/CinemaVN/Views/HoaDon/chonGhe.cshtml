@@ -1,0 +1,159 @@
+﻿@using CinemaVN.DatModels
+@{
+    ViewData["Title"] = "Chọn Ghế";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var ghes = ViewBag.Ghes as List<Ghe>;
+    var gheData = ViewBag.GheData as List<GheStatus>; 
+    var gheCuaToi = ViewBag.GheCuaToi as List<int>;
+    var sessionKey = ViewBag.SessionKey as string;
+}
+
+<div class="container text-center">
+    <h4 class="my-5 text-uppercase text-info">Chọn ghế</h4>
+
+    <div class="row mb-4 justify-content-evenly">
+        <div class="col-6">
+            <div class="screen mb-4">MÀN HÌNH</div>
+
+            @if (ghes != null)
+            {
+                foreach (var hang in ghes.GroupBy(g => g.Hang))
+                {
+                    <div class="d-flex justify-content-center mb-2">
+                        <span style="width:30px">@hang.Key</span>
+
+                        @foreach (var ghe in hang)
+                        {
+                            var ve = gheData?.FirstOrDefault(g => g.MaGhe == ghe.MaGhe);
+
+                            bool isMine = ve != null && ve?.SessionKey?.Trim() == sessionKey?.Trim();
+                            bool isBooked = ve != null && ve?.SessionKey?.Trim() != sessionKey?.Trim() && ve?.SessionKey != null;
+                            string css = "seat";
+
+                            if (isBooked) css += " booked";
+                            if (isMine) css += " selected";
+                            if (ghe.MaLg == "VIP") css += " vip";
+                            if (ghe.MaLg == "DOI") css += " doi";
+
+                            <div class="@css"
+                                 data-id="@ghe.MaGhe"
+                                 onclick="chonGhe(this)"
+                                 style="@(isBooked ? "pointer-events:none;opacity:0.5;" : "")">
+                                @ghe.SoGhe
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            <button class="btn btn-danger mt-3" onclick="tiepTuc()">
+                Tiếp tục
+            </button>
+        </div>
+        <div class="col-3">
+            <div class="m-2 d-flex flex-column align-items-center">
+                <div class="my-4 p-2 border rounded bg-light small">
+                    @{
+                        SuatChieu? sc = ViewBag.Suat as SuatChieu;
+                        var loaiGhes = ViewBag.LoaiGhes as List<LoaiGhe>;
+                        var dinhDang = sc?.MaDdNavigation;
+                    }
+
+                    @if (sc != null)
+                    {
+                        <div class="fw-bold text-danger mb-2">
+                            @sc.MaPhimNavigation?.TenPhim
+                        </div>
+
+                        <div>Rạp: @sc.MaPcNavigation?.MaCnNavigation?.TenCn</div>
+                        <div>Phòng: @sc.MaPcNavigation?.TenPc</div>
+                        <div>Giờ: @sc.GioBd</div>
+                        <div>Ngày: @sc.NgayChieu?.ToString("dd/MM/yyyy")</div>
+
+                        <div class="mt-2 text-success fw-bold">
+                            Giá cơ bản: @sc.GiaGoc?.ToString("N0") đ
+                        </div>
+
+                        <div class="mt-3">
+                            <b>Phụ phí:</b>
+
+                            @if (dinhDang != null && dinhDang.PhuThu > 0)
+                            {
+                                <div>
+                                    + Định dạng (@dinhDang.TenDd):
+                                    @dinhDang.PhuThu?.ToString("N0") đ
+                                </div>
+                            }
+
+                            @if (loaiGhes != null && loaiGhes.Count > 0)
+                            {
+                                foreach (var lg in loaiGhes)
+                                {
+                                    if (lg.PhuThu > 0)
+                                    {
+                                        <div>
+                                            + @lg.TenLg:
+                                            @lg.PhuThu?.ToString("N0") đ
+                                        </div>
+                                    }
+                                }
+                            }
+
+                            <div class="text-muted mt-2">
+                                Giá vé = Giá cơ bản + phụ phí ghế + phụ phí định dạng
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-3 align-content-center">
+            <div class="m-2 d-flex flex-column align-items-center">
+                <div class="seat booked"
+                     style="pointer-events:none;opacity:0.5; width: 150px">
+                    Đã Đặt
+                </div>
+                <div class="seat selected" style="width: 150px">
+                    Đã Chọn
+                </div>
+                <div class="seat" style="width: 150px">
+                    Ghế THƯỜNG
+                </div>
+                <div class="seat vip" style="width: 150px">
+                    Ghế VIP
+                </div>
+                <div class="seat doi" style="width: 150px">
+                    Ghế ĐÔI
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let gheChon = @Html.Raw(Json.Serialize(ViewBag.GheCuaToi ?? new List<int>()));
+
+    function chonGhe(el) {
+        if (el.classList.contains("booked")) return;
+
+        let id = parseInt(el.dataset.id);
+
+        if (gheChon.includes(id)) {
+            gheChon = gheChon.filter(x => x != id);
+            el.classList.remove("selected");
+        } else {
+            gheChon.push(id);
+            el.classList.add("selected");
+        }
+    }
+
+    function tiepTuc() {
+        if (gheChon.length === 0) {
+            alert("Chọn ít nhất 1 ghế!");
+            return;
+        }
+
+        let masc = "@ViewBag.MaSc";
+
+        window.location.href = `/HoaDon/DichVu?masc=${masc}&gheIds=${gheChon.join(",")}`;
+    }
+</script>

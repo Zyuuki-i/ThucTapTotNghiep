@@ -11,6 +11,8 @@ namespace CinemaVN.Models
         public int? MaGhe { get; set; }
         public decimal? Gia { get; set; }
         public int? TrangThai { get; set; }
+        public DateTime? ThoiGianGiu { get; set; }
+        public string? SessionKey { get; set; }
 
         public virtual Ghe? MaGheNavigation { get; set; }
         public virtual HoaDon? MaHdNavigation { get; set; }

@@ -16,6 +16,7 @@ namespace CinemaVN.DatModels
         public string? DiaChi { get; set; }
         [Display(Name = "Số điện thoại")]
         [Required(ErrorMessage = "Số điện thoại không được để trống")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Số điện thoại phải gồm 10 chữ số")]
         public string? Sdt { get; set; }
 
         public List<HoaDon>? HoaDons { get; set; }

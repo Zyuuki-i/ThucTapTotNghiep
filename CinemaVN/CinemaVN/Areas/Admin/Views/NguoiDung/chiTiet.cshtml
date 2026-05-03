@@ -1,0 +1,143 @@
+﻿@model CinemaVN.DatModels.CNguoiDung
+@{
+    ViewData["Title"] = "Quản Lý Người Dùng - Chi Tiết Người Dùng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="text-label text-center">QUẢN LÝ NGƯỜI DÙNG</h1>
+<div class="row mb-2">
+    <div class="col-5"><hr /></div>
+    <div class="col-2 text-center">
+        <h3 class="text-info">CHI TIẾT</h3>
+    </div>
+    <div class="col-5"><hr /></div>
+    <div class="col-12 text-center">
+        <a class="btn btn-outline-info w-25" asp-action="chuyenTrang" asp-route-role="@(Model.MaVt??"")">Quay lại</a>
+    </div>
+</div>
+<div class="my-3">
+    @if (TempData["MessageError_ChiTietNguoiDung"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_ChiTietNguoiDung"]
+        </div>
+    }
+    @if (TempData["MessageSuccess_ChiTietNguoiDung"] != null)
+    {
+        <div class="alert alert-success text-center fw-bold">
+            @TempData["MessageSuccess_ChiTietNguoiDung"]
+        </div>
+    }
+</div>
+@if (Model != null)
+{
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-md-3 border border-info rounded p-3 text-center shadow-sm">
+                <div class="bg-light p-2 rounded mb-2">
+                    <h5 class="mb-0">@Model.DiemHoiVien</h5>
+                    <small>Points</small>
+                </div>
+
+                @{
+                    var hinh = Model.Hinh ?? "default.png";
+                    var url = "~/images/avatars/" + hinh;
+                }
+
+                <img src="@Url.Content(url)"
+                        class="rounded-circle mb-3"
+                        style="width:120px;height:120px;object-fit:cover;" />
+
+                <h5 class="fw-bold">@Model.HoTen</h5>
+                <p class="text-muted">@Model.MaVtNavigation?.TenVt</p>
+
+                <a class="btn btn-outline-danger btn-sm"
+                    asp-action="xoaAnh"
+                    asp-route-id="@Model.MaNd"
+                    asp-route-role="@(Model.MaVt ?? "")">
+                    Xóa ảnh
+                </a>
+            </div>
+
+            <div class="col-md-9 border border-info rounded p-3 shadow-sm">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Họ tên</label>
+                        <input class="form-control" value="@Model.HoTen" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Ngày sinh</label>
+                        <input class="form-control" value="@Model.NgaySinh?.ToShortDateString()" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Giới tính</label>
+                        <input class="form-control" value="@(Model.Phai == false ? "Nữ" : "Nam")" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Email</label>
+                        <input class="form-control" value="@Model.Email" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">SĐT</label>
+                        <input class="form-control" value="@Model.Sdt" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Mật khẩu</label>
+                        <a class="btn btn-danger w-100"
+                           asp-action="resetPass"
+                           asp-route-id="@Model.MaNd"
+                           asp-route-role="@(Model.MaVt ?? "")">
+                            Reset Password
+                        </a>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="fw-semibold">Địa chỉ</label>
+                        <textarea class="form-control" rows="2" readonly>@Model.DiaChi</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 border border-info rounded p-3 shadow-sm">
+                <h5 class="fw-bold mb-3">Thông tin nội bộ</h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Vai trò</label>
+                        <input class="form-control" value="@Model.MaVtNavigation?.TenVt" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Chức vụ</label>
+                        <input class="form-control" value="@Model.ChucVu" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">Chi nhánh</label>
+                        <input class="form-control" value="@Model.MaCnNavigation?.TenCn" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="fw-semibold">CCCD</label>
+                        <input class="form-control" value="@Model.Cccd" readonly />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+</script>

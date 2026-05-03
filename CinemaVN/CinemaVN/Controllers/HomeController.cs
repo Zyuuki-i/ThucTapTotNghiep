@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using CinemaVN.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CinemaVN.Controllers
 {
@@ -17,6 +18,16 @@ namespace CinemaVN.Controllers
         public IActionResult Index()
         {
             ViewBag.Banners = db.Banners.Where(b => b.TrangThai == true).ToList();
+            ViewBag.PhimDangChieu = db.Phims
+                .Where(p => p.TrangThai == 1)
+                .Take(8)
+                .ToList();
+
+            ViewBag.PhimSapChieu = db.Phims
+                .Where(p => p.TrangThai == 0)
+                .Take(4)
+                .ToList();
+
             return View();
         }
 
