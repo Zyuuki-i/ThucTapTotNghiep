@@ -65,14 +65,12 @@ namespace CinemaVN.Controllers
             if (suat == null)
                 return RedirectToAction("Index");
 
-            // Lấy danh sách ghế
             var ghes = db.Ghes
                 .Where(g => g.MaPc == suat.MaPc)
                 .OrderBy(g => g.Hang)
                 .ThenBy(g => g.SoGhe)
                 .ToList();
 
-            // Xóa ghế giữ quá 10 phút
             var timeExpire = DateTime.Now.AddMinutes(-10);
 
             var hetHan = db.Ves
@@ -85,7 +83,6 @@ namespace CinemaVN.Controllers
                 db.SaveChanges();
             }
 
-            // Lấy toàn bộ ghế đã bị chiếm (kèm sessionKey)
             var gheData = db.Ves
                 .Where(v => v.MaSc == masc &&
                     (

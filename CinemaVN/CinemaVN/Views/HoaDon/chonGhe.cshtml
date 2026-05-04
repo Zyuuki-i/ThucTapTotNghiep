@@ -14,7 +14,7 @@
 
     <div class="row mb-4 justify-content-evenly">
         <div class="col-6">
-            <div class="screen mb-4">MÀN HÌNH</div>
+            @* <div class="screen mb-4">MÀN HÌNH</div>
 
             @if (ghes != null)
             {
@@ -45,7 +45,64 @@
                         }
                     </div>
                 }
+            } *@
+            @{
+                int? maxToaDoX = ghes.Any() ? ghes.Max(g => g.ToaDoX) : 15;
+                int? maxToaDoY = ghes.Any() ? ghes.Max(g => g.ToaDoY) : 10;
             }
+
+            <div class="screen mb-5">MÀN HÌNH</div>
+
+            <div style="display: grid;
+                        grid-template-columns: 30px repeat(@maxToaDoX, 40px);
+                        grid-template-rows: repeat(@maxToaDoY, 40px);
+                        gap: 10px;
+                        justify-content: center;
+                        margin: 0 auto;">
+
+                @foreach (var hang in ghes.GroupBy(g => new { g.Hang, g.ToaDoY }))
+                {
+                    <div style="grid-column: 1;
+                        grid-row: @hang.Key.ToaDoY;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;">
+                        @hang.Key.Hang
+                    </div>
+                }
+
+                @foreach (var ghe in ghes)
+                {
+                    var ve = gheData?.FirstOrDefault(g => g.MaGhe == ghe.MaGhe);
+
+                    bool isMine = ve != null && ve?.SessionKey?.Trim() == sessionKey?.Trim();
+                    bool isBooked = ve != null && ve?.SessionKey?.Trim() != sessionKey?.Trim() && ve?.SessionKey != null;
+                    string css = "seat";
+
+                    if (isBooked) css += " booked";
+                    if (isMine) css += " selected";
+                    if (ghe.MaLg == "VIP") css += " vip";
+                    if (ghe.MaLg == "DOI") css += " doi";
+
+                    int colSpan = (ghe.MaLg == "DOI") ? 2 : 1;
+
+                    int? gridCol = ghe.ToaDoX + 1;
+                    int? gridRow = ghe.ToaDoY;
+
+                    <div class="@css d-flex align-items-center justify-content-center"
+                         data-id="@ghe.MaGhe"
+                         onclick="chonGhe(this)"
+                         style="grid-column: @gridCol / span @colSpan;
+                        grid-row: @gridRow;
+                        margin: 0;
+                        width: 100%;
+                        height: 100%;
+                        @(isBooked ? "pointer-events:none;opacity:0.5;" : "")">
+                        @ghe.SoGhe
+                    </div>
+                }
+            </div>
             <button class="btn btn-danger mt-3" onclick="tiepTuc()">
                 Tiếp tục
             </button>
@@ -114,7 +171,7 @@
                     Đã Đặt
                 </div>
                 <div class="seat selected" style="width: 150px">
-                    Đã Chọn
+                    Đang Chọn
                 </div>
                 <div class="seat" style="width: 150px">
                     Ghế THƯỜNG
