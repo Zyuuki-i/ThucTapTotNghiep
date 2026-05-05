@@ -7,7 +7,14 @@
     var masc = ViewBag.MaSc;
     List<KhuyenMai>? dsKM = ViewBag.KhuyenMais as List<KhuyenMai>;
 }
-
+<div class="my-3">
+    @if (TempData["MessageError_DichVu"] != null)
+    {
+        <div class="alert alert-danger text-center fw-bold">
+            @TempData["MessageError_DichVu"]
+        </div>
+    }
+</div>
 <div class="container text-center mb-5">
     <h4 class="my-5 text-uppercase text-info">Chọn dịch vụ</h4>
 
@@ -91,4 +98,12 @@
 
         el.classList.add("border", "border-danger");
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const alertBox = document.querySelector(".alert");
+        if (alertBox) {
+            setTimeout(() => alertBox.style.display = "none", 10000);
+        }
+    });
+
 </script>

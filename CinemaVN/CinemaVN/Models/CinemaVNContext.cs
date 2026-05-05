@@ -19,6 +19,7 @@ namespace CinemaVN.Models
         public virtual DbSet<Banner> Banners { get; set; } = null!;
         public virtual DbSet<ChiNhanh> ChiNhanhs { get; set; } = null!;
         public virtual DbSet<ChiTietDichVu> ChiTietDichVus { get; set; } = null!;
+        public virtual DbSet<ChiTietPhieuNhap> ChiTietPhieuNhaps { get; set; } = null!;
         public virtual DbSet<DichVu> DichVus { get; set; } = null!;
         public virtual DbSet<DinhDang> DinhDangs { get; set; } = null!;
         public virtual DbSet<Ghe> Ghes { get; set; } = null!;
@@ -27,6 +28,7 @@ namespace CinemaVN.Models
         public virtual DbSet<KhuyenMai> KhuyenMais { get; set; } = null!;
         public virtual DbSet<LoaiGhe> LoaiGhes { get; set; } = null!;
         public virtual DbSet<NguoiDung> NguoiDungs { get; set; } = null!;
+        public virtual DbSet<PhieuNhap> PhieuNhaps { get; set; } = null!;
         public virtual DbSet<Phim> Phims { get; set; } = null!;
         public virtual DbSet<PhongChieu> PhongChieus { get; set; } = null!;
         public virtual DbSet<SuatChieu> SuatChieus { get; set; } = null!;
@@ -38,8 +40,8 @@ namespace CinemaVN.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Data Source=ZYUUKI\\SQLEXPRESS;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
-                //optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
             }
         }
 
@@ -121,6 +123,36 @@ namespace CinemaVN.Models
                     .HasForeignKey(d => d.MaHd)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__ChiTietDic__MaHD__7A672E12");
+            });
+
+            modelBuilder.Entity<ChiTietPhieuNhap>(entity =>
+            {
+                entity.HasKey(e => new { e.MaPn, e.MaDv })
+                    .HasName("PK__ChiTietP__4557BF95233AC9AF");
+
+                entity.ToTable("ChiTietPhieuNhap");
+
+                entity.Property(e => e.MaPn).HasColumnName("MaPN");
+
+                entity.Property(e => e.MaDv).HasColumnName("MaDV");
+
+                entity.Property(e => e.DonGia).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.ThanhTien)
+                    .HasColumnType("decimal(29, 2)")
+                    .HasComputedColumnSql("([DonGia]*[SoLuong])", false);
+
+                entity.HasOne(d => d.MaDvNavigation)
+                    .WithMany(p => p.ChiTietPhieuNhaps)
+                    .HasForeignKey(d => d.MaDv)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ChiTietPhi__MaDV__55F4C372");
+
+                entity.HasOne(d => d.MaPnNavigation)
+                    .WithMany(p => p.ChiTietPhieuNhaps)
+                    .HasForeignKey(d => d.MaPn)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ChiTietPhi__MaPN__55009F39");
             });
 
             modelBuilder.Entity<DichVu>(entity =>
@@ -391,6 +423,43 @@ namespace CinemaVN.Models
                     .WithMany(p => p.NguoiDungs)
                     .HasForeignKey(d => d.MaVt)
                     .HasConstraintName("FK__NguoiDung__MaVT__46E78A0C");
+            });
+
+            modelBuilder.Entity<PhieuNhap>(entity =>
+            {
+                entity.HasKey(e => e.MaPn)
+                    .HasName("PK__PhieuNha__2725E7F0A22680F0");
+
+                entity.ToTable("PhieuNhap");
+
+                entity.Property(e => e.MaPn).HasColumnName("MaPN");
+
+                entity.Property(e => e.MaCn)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("MaCN");
+
+                entity.Property(e => e.MaNd).HasColumnName("MaND");
+
+                entity.Property(e => e.NgayNhap)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.NhaCungCap).HasMaxLength(255);
+
+                entity.Property(e => e.TongTien)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasDefaultValueSql("((0))");
+
+                entity.HasOne(d => d.MaCnNavigation)
+                    .WithMany(p => p.PhieuNhaps)
+                    .HasForeignKey(d => d.MaCn)
+                    .HasConstraintName("FK__PhieuNhap__MaCN__4F47C5E3");
+
+                entity.HasOne(d => d.MaNdNavigation)
+                    .WithMany(p => p.PhieuNhaps)
+                    .HasForeignKey(d => d.MaNd)
+                    .HasConstraintName("FK__PhieuNhap__MaND__503BEA1C");
             });
 
             modelBuilder.Entity<Phim>(entity =>

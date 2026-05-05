@@ -8,6 +8,7 @@ namespace CinemaVN.Models
         public NguoiDung()
         {
             HoaDons = new HashSet<HoaDon>();
+            PhieuNhaps = new HashSet<PhieuNhap>();
         }
 
         public int MaNd { get; set; }
@@ -29,5 +30,6 @@ namespace CinemaVN.Models
         public virtual ChiNhanh? MaCnNavigation { get; set; }
         public virtual VaiTro? MaVtNavigation { get; set; }
         public virtual ICollection<HoaDon> HoaDons { get; set; }
+        public virtual ICollection<PhieuNhap> PhieuNhaps { get; set; }
     }
 }

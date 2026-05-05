@@ -208,6 +208,28 @@ CREATE TABLE ChiTietDichVu (
 );
 GO
 
+CREATE TABLE PhieuNhap (
+    MaPN INT IDENTITY(100,1) PRIMARY KEY,
+    MaCN VARCHAR(10) FOREIGN KEY REFERENCES ChiNhanh(MaCN), -- Nhập cho chi nhánh nào
+    MaND INT FOREIGN KEY REFERENCES NguoiDung(MaND),        -- Nhân viên nào lập phiếu
+    NhaCungCap NVARCHAR(255),                               -- Tên đơn vị cung cấp (Coca, Pepsi...)
+    NgayNhap DATETIME DEFAULT GETDATE(),
+    TongTien DECIMAL(18,2) DEFAULT 0
+);
+GO
+
+CREATE TABLE ChiTietPhieuNhap (
+    MaPN INT FOREIGN KEY REFERENCES PhieuNhap(MaPN),
+    MaDV INT FOREIGN KEY REFERENCES DichVu(MaDV),           -- Nhập bắp, nước loại nào
+    SoLuong INT NOT NULL,
+    DonGia DECIMAL(18, 2) NOT NULL,							-- Giá vốn lúc nhập hàng
+    ThanhTien AS (DonGia * SoLuong),						-- Tự động tính thành tiền
+    PRIMARY KEY (MaPN, MaDV),
+    CONSTRAINT CK_CTPN_SoLuong CHECK (SoLuong > 0),
+    CONSTRAINT CK_CTPN_DonGia CHECK (DonGia >= 0)
+);
+GO
+
 SET IDENTITY_INSERT [dbo].[Banner] ON 
 INSERT [dbo].[Banner] ([MaBN], [TieuDe], [HinhAnh], [DuongDan], [TrangThai]) VALUES (1, N'Tưng Bừng Khai Trương', N'cinemavn-grand-opening.png', N'https://www.facebook.com/tuyendungcgv.vn/', 1)
 INSERT [dbo].[Banner] ([MaBN], [TieuDe], [HinhAnh], [DuongDan], [TrangThai]) VALUES (2, N'Movie Time', N'cinemavn-movie-time.jpg', NULL, 1)

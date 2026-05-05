@@ -128,6 +128,25 @@ namespace CinemaVN.Controllers
                     v.TrangThai = 1;
                 }
 
+                var chiTietDichVus = db.ChiTietDichVus.Where(ct => ct.MaHd == hd.MaHd).ToList();
+
+                if (chiTietDichVus.Any())
+                {
+                    foreach (var ct in chiTietDichVus)
+                    {
+                        Kho? kho = db.Khos.FirstOrDefault(k => k.MaDv == ct.MaDv && k.MaCn == hd.MaCn);
+
+                        if (kho != null)
+                        {
+                            kho.SoLuongTon -= ct.SoLuong;
+                            if (kho.SoLuongTon < 0)
+                            {
+                                kho.SoLuongTon = 0;
+                            }
+                        }
+                    }
+                }
+
                 var nd = db.NguoiDungs
                     .FirstOrDefault(n => n.MaNd == HttpContext.Session.GetInt32("UserId"));
 

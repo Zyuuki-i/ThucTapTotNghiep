@@ -94,7 +94,8 @@ namespace CinemaVN.Controllers
                  .Select(v => new GheStatus
                  {
                      MaGhe = v.MaGhe.Value,
-                     SessionKey = v.SessionKey
+                     SessionKey = v.SessionKey,
+                     TrangThai = v.TrangThai
                  })
                 .ToList();
 
@@ -236,6 +237,11 @@ namespace CinemaVN.Controllers
                     return RedirectToAction("Index");
                 }
 
+                SuatChieu? sc = db.SuatChieus
+                                  .Include(s => s.MaPcNavigation)
+                                  .FirstOrDefault(t => t.MaSc == ves.First().MaSc);
+                string maCn = sc?.MaPcNavigation?.MaCn ?? "CNQ1";
+
                 var dsDv = new List<ChiTietDichVu>();
                 foreach (var key in form.Keys)
                 {
@@ -256,6 +262,25 @@ namespace CinemaVN.Controllers
                     }
                 }
 
+                foreach (var dv in dsDv)
+                {
+                    var kho = db.Khos.FirstOrDefault(k => k.MaDv == dv.MaDv && k.MaCn == maCn);
+
+                    if (kho == null || kho.SoLuongTon < dv.SoLuong)
+                    {
+                        tran.Rollback(); 
+
+                        var tenDv = db.DichVus.FirstOrDefault(d => d.MaDv == dv.MaDv)?.TenDv ?? "Dịch vụ";
+                        int tonHienTai = kho?.SoLuongTon ?? 0;
+
+                        TempData["MessageError_DichVu"] = $"Rất tiếc, {tenDv} hiện chỉ còn {tonHienTai} phần. Vui lòng điều chỉnh lại số lượng!";
+
+                        string gheIds = string.Join(",", ves.Select(v => v.MaGhe));
+
+                        return RedirectToAction("DichVu", new { masc = masc, gheIds = gheIds });
+                    }
+                }
+
                 decimal tongTienVe = ves.Sum(v => v.Gia ?? 0);
                 decimal tongTienDv = 0;
 
@@ -268,10 +293,9 @@ namespace CinemaVN.Controllers
                 decimal tongTien = tongTienVe + tongTienDv;
                 decimal tongTienGiam = 0;
 
-                int? maKm = string.IsNullOrEmpty(form["maKm"])
-                                ? null
-                                : int.Parse(form["maKm"]);
+                int? maKm = string.IsNullOrEmpty(form["maKm"]) ? null : int.Parse(form["maKm"]);
                 KhuyenMai? km = null;
+
                 if (maKm != null) km = db.KhuyenMais.Where(t => t.MaKm == maKm).FirstOrDefault();
                 if (km != null)
                 {
@@ -281,7 +305,6 @@ namespace CinemaVN.Controllers
                         {
                             if (km.SoDiem == null || nd.DiemHoiVien >= km.SoDiem)
                             {
-
                                 if (km.PhanTramGiam != null)
                                 {
                                     tongTienGiam = tongTien * km.PhanTramGiam.Value / 100;
@@ -298,13 +321,11 @@ namespace CinemaVN.Controllers
 
                 decimal tongSauGiam = Math.Max(0, tongTien - tongTienGiam);
 
-                SuatChieu? sc = db.SuatChieus.Include(sc => sc.MaPcNavigation).FirstOrDefault(t => t.MaSc == ves.First().MaSc);
-
                 var hd = new HoaDon
                 {
                     MaNd = nd.MaNd,
                     MaKm = km?.MaKm,
-                    MaCn = sc?.MaPcNavigation?.MaCn ?? "CNQ1",
+                    MaCn = maCn,
                     NgayLap = DateTime.Now,
                     TongTien = tongSauGiam,
                     TrangThai = 0

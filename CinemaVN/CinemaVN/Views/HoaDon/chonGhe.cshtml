@@ -76,10 +76,13 @@
                 {
                     var ve = gheData?.FirstOrDefault(g => g.MaGhe == ghe.MaGhe);
 
-                    bool isMine = ve != null && ve?.SessionKey?.Trim() == sessionKey?.Trim();
-                    bool isBooked = ve != null && ve?.SessionKey?.Trim() != sessionKey?.Trim() && ve?.SessionKey != null;
-                    string css = "seat";
+                    string? veSession = ve?.SessionKey?.Trim();
+                    string? mySession = sessionKey?.Trim();
 
+                    bool isMine = ve != null && ve.TrangThai == 0 && veSession == mySession;
+                    bool isBooked = ve != null && (ve.TrangThai == 1 || (ve.TrangThai == 0 && veSession != mySession));
+
+                    string css = "seat";
                     if (isBooked) css += " booked";
                     if (isMine) css += " selected";
                     if (ghe.MaLg == "VIP") css += " vip";

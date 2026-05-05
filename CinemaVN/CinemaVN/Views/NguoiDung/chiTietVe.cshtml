@@ -8,18 +8,21 @@
             <div class="col-md-4">
                 <h5 class="mb-0">Hóa đơn #@Model.MaHd</h5>
             </div>
-
-            <div class="col-md-4 text-center">
-                <h6>Mã QR Vé Của Bạn</h6>
-                <img src="/QR/GenerateQR?mahd=@Model.MaHd"
-                     alt="QR Code"
-                     class="img-thumbnail"
-                     width="180"
-                     height="180" />
-                <div class="text-muted small mt-2">
-                    Đưa mã này cho nhân viên soát vé
-                </div>
-            </div>
+            
+            @if(Model.TrangThai == 1)
+            {
+                <div class="col-md-4 text-center">
+                    <h6>Mã QR Vé Của Bạn</h6>
+                    <img src="/QR/GenerateQR?mahd=@Model.MaHd"
+                         alt="QR Code"
+                         class="img-thumbnail"
+                         width="180"
+                         height="180" />
+                    <div class="text-muted small mt-2">
+                        Đưa mã này cho nhân viên soát vé
+                    </div>
+                </div>    
+            }
 
             <div class="col-md-4 text-end">
                 @if (Model.TrangThai == 0)
