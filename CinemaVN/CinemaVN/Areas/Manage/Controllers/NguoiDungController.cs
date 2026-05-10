@@ -242,7 +242,7 @@ namespace CinemaVN.Areas.Manage.Controllers
             if (currentUser == null) return RedirectToAction("Login", "Home", new { area = "" });
             var nhanVien = _db.NguoiDungs
                 .Include(n => n.MaVtNavigation)
-                .Include(n => n.MaCnNavigation) // Lấy thêm tên chi nhánh nếu cần
+                .Include(n => n.MaCnNavigation) 
                 .FirstOrDefault(n => n.MaNd == id && n.MaCn == currentUser.MaCn);
 
             if (nhanVien == null)

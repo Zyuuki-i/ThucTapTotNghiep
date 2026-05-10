@@ -2,15 +2,12 @@
 @{
     ViewData["Title"] = "Chi Tiết Hồ Sơ Nhân Viên";
     Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
-    
-    // Xử lý hiển thị ảnh mặc định nếu nhân viên chưa có ảnh
     string avatarUrl = string.IsNullOrEmpty(Model.Hinh)
         ? $"https://ui-avatars.com/api/?name={Model.HoTen}&background=0D8ABC&color=fff&size=150"
         : $"/images/avatars/{Model.Hinh}";
 }
 
 <div class="container mt-4" style="max-width: 1000px;">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-label text-uppercase mb-0 fw-bold">
             <i class="bi bi-person-lines-fill text-primary me-2"></i>HỒ SƠ NHÂN SỰ
@@ -26,12 +23,10 @@
     </div>
 
     <div class="row g-4">
-        <!-- CỘT TRÁI: AVATAR VÀ THÔNG TIN CƠ BẢN -->
         <div class="col-md-4">
             <div class="card shadow-lg border-0 rounded-4 text-center overflow-hidden h-100">
-                <div class="bg-dark" style="height: 100px;"></div> <!-- Ảnh bìa mini -->
+                <div class="bg-dark" style="height: 100px;"></div> 
                 <div class="card-body pb-5 mt-n5">
-                    <!-- Avatar -->
                     <img src="@avatarUrl" class="rounded-circle shadow-lg border border-5 border-white mb-3" style="width: 150px; height: 150px; object-fit: cover; margin-top: -75px;" alt="Avatar" />
                     
                     <h4 class="fw-bold mb-1">@Model.HoTen</h4>
@@ -60,8 +55,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- CỘT PHẢI: CHI TIẾT THÔNG TIN -->
         <div class="col-md-8">
             <div class="card shadow-lg border-0 rounded-4 h-100">
                 <div class="card-header bg-white border-bottom py-3">
@@ -69,7 +62,6 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-4">
-                        <!-- Thông tin cá nhân -->
                         <div class="col-sm-6">
                             <p class="text-muted small mb-1 fw-bold text-uppercase">Tài khoản đăng nhập (Email)</p>
                             <div class="d-flex align-items-center">

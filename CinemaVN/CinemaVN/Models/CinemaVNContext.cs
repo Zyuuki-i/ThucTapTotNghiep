@@ -40,8 +40,8 @@ namespace CinemaVN.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("Data Source=ZYUUKI\\SQLEXPRESS;Initial Catalog=CinemaVN;Integrated Security=True;Encrypt=False");
+                //optionsBuilder.UseSqlServer("Data Source=localhost;Initial Catalog=CinemaVN;Integrated Security=True;TrustServerCertificate=True");
             }
         }
 
@@ -50,7 +50,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<Banner>(entity =>
             {
                 entity.HasKey(e => e.MaBn)
-                    .HasName("PK__Banner__272475ADE3C74385");
+                    .HasName("PK__Banner__272475ADB0761653");
 
                 entity.ToTable("Banner");
 
@@ -72,7 +72,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<ChiNhanh>(entity =>
             {
                 entity.HasKey(e => e.MaCn)
-                    .HasName("PK__ChiNhanh__27258E0E90E8AE28");
+                    .HasName("PK__ChiNhanh__27258E0E9C4AA136");
 
                 entity.ToTable("ChiNhanh");
 
@@ -96,7 +96,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<ChiTietDichVu>(entity =>
             {
                 entity.HasKey(e => new { e.MaHd, e.MaDv })
-                    .HasName("PK__ChiTietD__4557FE8536E15A08");
+                    .HasName("PK__ChiTietD__4557FE8511DFFDE7");
 
                 entity.ToTable("ChiTietDichVu");
 
@@ -108,21 +108,43 @@ namespace CinemaVN.Models
 
                 entity.Property(e => e.SoLuong).HasDefaultValueSql("((1))");
 
-                entity.Property(e => e.ThanhTien)
-                    .HasColumnType("decimal(29, 2)")
-                    .HasComputedColumnSql("([DonGia]*[SoLuong])", false);
-
                 entity.HasOne(d => d.MaDvNavigation)
                     .WithMany(p => p.ChiTietDichVus)
                     .HasForeignKey(d => d.MaDv)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__ChiTietDic__MaDV__7B5B524B");
+                    .HasConstraintName("FK__ChiTietDic__MaDV__1332DBDC");
 
                 entity.HasOne(d => d.MaHdNavigation)
                     .WithMany(p => p.ChiTietDichVus)
                     .HasForeignKey(d => d.MaHd)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__ChiTietDic__MaHD__7A672E12");
+                    .HasConstraintName("FK__ChiTietDic__MaHD__123EB7A3");
+            });
+
+            modelBuilder.Entity<ChiTietPhieuNhap>(entity =>
+            {
+                entity.HasKey(e => new { e.MaPn, e.MaDv })
+                    .HasName("PK__ChiTietP__4557BF9503D7FBE3");
+
+                entity.ToTable("ChiTietPhieuNhap");
+
+                entity.Property(e => e.MaPn).HasColumnName("MaPN");
+
+                entity.Property(e => e.MaDv).HasColumnName("MaDV");
+
+                entity.Property(e => e.DonGia).HasColumnType("decimal(18, 2)");
+
+                entity.HasOne(d => d.MaDvNavigation)
+                    .WithMany(p => p.ChiTietPhieuNhaps)
+                    .HasForeignKey(d => d.MaDv)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ChiTietPhi__MaDV__1DB06A4F");
+
+                entity.HasOne(d => d.MaPnNavigation)
+                    .WithMany(p => p.ChiTietPhieuNhaps)
+                    .HasForeignKey(d => d.MaPn)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ChiTietPhi__MaPN__1CBC4616");
             });
 
             modelBuilder.Entity<ChiTietPhieuNhap>(entity =>
@@ -158,7 +180,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<DichVu>(entity =>
             {
                 entity.HasKey(e => e.MaDv)
-                    .HasName("PK__DichVu__272586570F732A80");
+                    .HasName("PK__DichVu__27258657634168ED");
 
                 entity.ToTable("DichVu");
 
@@ -182,7 +204,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<DinhDang>(entity =>
             {
                 entity.HasKey(e => e.MaDd)
-                    .HasName("PK__DinhDang__27258665145AA0B9");
+                    .HasName("PK__DinhDang__272586651D17AF8D");
 
                 entity.ToTable("DinhDang");
 
@@ -201,7 +223,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<Ghe>(entity =>
             {
                 entity.HasKey(e => e.MaGhe)
-                    .HasName("PK__Ghe__3CD3C67BCE691F22");
+                    .HasName("PK__Ghe__3CD3C67BA5AC05FA");
 
                 entity.ToTable("Ghe");
 
@@ -224,18 +246,18 @@ namespace CinemaVN.Models
                 entity.HasOne(d => d.MaLgNavigation)
                     .WithMany(p => p.Ghes)
                     .HasForeignKey(d => d.MaLg)
-                    .HasConstraintName("FK__Ghe__MaLG__628FA481");
+                    .HasConstraintName("FK__Ghe__MaLG__7A672E12");
 
                 entity.HasOne(d => d.MaPcNavigation)
                     .WithMany(p => p.Ghes)
                     .HasForeignKey(d => d.MaPc)
-                    .HasConstraintName("FK__Ghe__MaPC__619B8048");
+                    .HasConstraintName("FK__Ghe__MaPC__797309D9");
             });
 
             modelBuilder.Entity<HoaDon>(entity =>
             {
                 entity.HasKey(e => e.MaHd)
-                    .HasName("PK__HoaDon__2725A6E03153E350");
+                    .HasName("PK__HoaDon__2725A6E0827F6BE0");
 
                 entity.ToTable("HoaDon");
 
@@ -261,17 +283,17 @@ namespace CinemaVN.Models
                 entity.HasOne(d => d.MaCnNavigation)
                     .WithMany(p => p.HoaDons)
                     .HasForeignKey(d => d.MaCn)
-                    .HasConstraintName("FK__HoaDon__MaCN__6EF57B66");
+                    .HasConstraintName("FK__HoaDon__MaCN__06CD04F7");
 
                 entity.HasOne(d => d.MaKmNavigation)
                     .WithMany(p => p.HoaDons)
                     .HasForeignKey(d => d.MaKm)
-                    .HasConstraintName("FK__HoaDon__MaKM__6FE99F9F");
+                    .HasConstraintName("FK__HoaDon__MaKM__07C12930");
 
                 entity.HasOne(d => d.MaNdNavigation)
                     .WithMany(p => p.HoaDons)
                     .HasForeignKey(d => d.MaNd)
-                    .HasConstraintName("FK__HoaDon__MaND__6E01572D");
+                    .HasConstraintName("FK__HoaDon__MaND__05D8E0BE");
             });
 
             modelBuilder.Entity<Kho>(entity =>
@@ -306,11 +328,11 @@ namespace CinemaVN.Models
             modelBuilder.Entity<KhuyenMai>(entity =>
             {
                 entity.HasKey(e => e.MaKm)
-                    .HasName("PK__KhuyenMa__2725CF1536A53982");
+                    .HasName("PK__KhuyenMa__2725CF152F0C5984");
 
                 entity.ToTable("KhuyenMai");
 
-                entity.HasIndex(e => e.MoTa, "UQ__KhuyenMa__A25C5AA7F18A1DF2")
+                entity.HasIndex(e => e.Code, "UQ__KhuyenMa__A25C5AA7F9697880")
                     .IsUnique();
 
                 entity.Property(e => e.MaKm).HasColumnName("MaKM");
@@ -341,7 +363,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<LoaiGhe>(entity =>
             {
                 entity.HasKey(e => e.MaLg)
-                    .HasName("PK__LoaiGhe__2725C77E3451B7C5");
+                    .HasName("PK__LoaiGhe__2725C77E8100B776");
 
                 entity.ToTable("LoaiGhe");
 
@@ -360,14 +382,14 @@ namespace CinemaVN.Models
             modelBuilder.Entity<NguoiDung>(entity =>
             {
                 entity.HasKey(e => e.MaNd)
-                    .HasName("PK__NguoiDun__2725D7240DC117EF");
+                    .HasName("PK__NguoiDun__2725D72464ADCAB2");
 
                 entity.ToTable("NguoiDung");
 
                 entity.HasIndex(e => e.Sdt, "UQ_SDT")
                     .IsUnique();
 
-                entity.HasIndex(e => e.Email, "UQ__NguoiDun__A9D10534DF79E78B")
+                entity.HasIndex(e => e.Email, "UQ__NguoiDun__A9D105344F54AE9A")
                     .IsUnique();
 
                 entity.Property(e => e.MaNd).HasColumnName("MaND");
@@ -417,12 +439,49 @@ namespace CinemaVN.Models
                 entity.HasOne(d => d.MaCnNavigation)
                     .WithMany(p => p.NguoiDungs)
                     .HasForeignKey(d => d.MaCn)
-                    .HasConstraintName("FK__NguoiDung__MaCN__47DBAE45");
+                    .HasConstraintName("FK__NguoiDung__MaCN__5FB337D6");
 
                 entity.HasOne(d => d.MaVtNavigation)
                     .WithMany(p => p.NguoiDungs)
                     .HasForeignKey(d => d.MaVt)
-                    .HasConstraintName("FK__NguoiDung__MaVT__46E78A0C");
+                    .HasConstraintName("FK__NguoiDung__MaVT__5EBF139D");
+            });
+
+            modelBuilder.Entity<PhieuNhap>(entity =>
+            {
+                entity.HasKey(e => e.MaPn)
+                    .HasName("PK__PhieuNha__2725E7F073F7D207");
+
+                entity.ToTable("PhieuNhap");
+
+                entity.Property(e => e.MaPn).HasColumnName("MaPN");
+
+                entity.Property(e => e.MaCn)
+                    .HasMaxLength(10)
+                    .IsUnicode(false)
+                    .HasColumnName("MaCN");
+
+                entity.Property(e => e.MaNd).HasColumnName("MaND");
+
+                entity.Property(e => e.NgayNhap)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.NhaCungCap).HasMaxLength(255);
+
+                entity.Property(e => e.TongTien)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasDefaultValueSql("((0))");
+
+                entity.HasOne(d => d.MaCnNavigation)
+                    .WithMany(p => p.PhieuNhaps)
+                    .HasForeignKey(d => d.MaCn)
+                    .HasConstraintName("FK__PhieuNhap__MaCN__17036CC0");
+
+                entity.HasOne(d => d.MaNdNavigation)
+                    .WithMany(p => p.PhieuNhaps)
+                    .HasForeignKey(d => d.MaNd)
+                    .HasConstraintName("FK__PhieuNhap__MaND__17F790F9");
             });
 
             modelBuilder.Entity<PhieuNhap>(entity =>
@@ -465,7 +524,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<Phim>(entity =>
             {
                 entity.HasKey(e => e.MaPhim)
-                    .HasName("PK__Phim__4AC03DE3772FAD73");
+                    .HasName("PK__Phim__4AC03DE3C1BF0869");
 
                 entity.ToTable("Phim");
 
@@ -489,11 +548,11 @@ namespace CinemaVN.Models
                     .WithMany(p => p.MaPhims)
                     .UsingEntity<Dictionary<string, object>>(
                         "ChiTietTheLoai",
-                        l => l.HasOne<TheLoai>().WithMany().HasForeignKey("MaTl").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__ChiTietThe__MaTL__5DCAEF64"),
-                        r => r.HasOne<Phim>().WithMany().HasForeignKey("MaPhim").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__ChiTietTh__MaPhi__5CD6CB2B"),
+                        l => l.HasOne<TheLoai>().WithMany().HasForeignKey("MaTl").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__ChiTietThe__MaTL__75A278F5"),
+                        r => r.HasOne<Phim>().WithMany().HasForeignKey("MaPhim").OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK__ChiTietTh__MaPhi__74AE54BC"),
                         j =>
                         {
-                            j.HasKey("MaPhim", "MaTl").HasName("PK__ChiTietT__48B26DE4EB014B15");
+                            j.HasKey("MaPhim", "MaTl").HasName("PK__ChiTietT__48B26DE4B1B3867D");
 
                             j.ToTable("ChiTietTheLoai");
 
@@ -504,7 +563,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<PhongChieu>(entity =>
             {
                 entity.HasKey(e => e.MaPc)
-                    .HasName("PK__PhongChi__2725E7E5152EAF4A");
+                    .HasName("PK__PhongChi__2725E7E503D499EA");
 
                 entity.ToTable("PhongChieu");
 
@@ -522,13 +581,13 @@ namespace CinemaVN.Models
                 entity.HasOne(d => d.MaCnNavigation)
                     .WithMany(p => p.PhongChieus)
                     .HasForeignKey(d => d.MaCn)
-                    .HasConstraintName("FK__PhongChieu__MaCN__59FA5E80");
+                    .HasConstraintName("FK__PhongChieu__MaCN__71D1E811");
             });
 
             modelBuilder.Entity<SuatChieu>(entity =>
             {
                 entity.HasKey(e => e.MaSc)
-                    .HasName("PK__SuatChie__27250809CA26F642");
+                    .HasName("PK__SuatChie__272508098DB80E2F");
 
                 entity.ToTable("SuatChieu");
 
@@ -554,23 +613,23 @@ namespace CinemaVN.Models
                 entity.HasOne(d => d.MaDdNavigation)
                     .WithMany(p => p.SuatChieus)
                     .HasForeignKey(d => d.MaDd)
-                    .HasConstraintName("FK__SuatChieu__MaDD__68487DD7");
+                    .HasConstraintName("FK__SuatChieu__MaDD__00200768");
 
                 entity.HasOne(d => d.MaPcNavigation)
                     .WithMany(p => p.SuatChieus)
                     .HasForeignKey(d => d.MaPc)
-                    .HasConstraintName("FK__SuatChieu__MaPC__6754599E");
+                    .HasConstraintName("FK__SuatChieu__MaPC__7F2BE32F");
 
                 entity.HasOne(d => d.MaPhimNavigation)
                     .WithMany(p => p.SuatChieus)
                     .HasForeignKey(d => d.MaPhim)
-                    .HasConstraintName("FK__SuatChieu__MaPhi__66603565");
+                    .HasConstraintName("FK__SuatChieu__MaPhi__7E37BEF6");
             });
 
             modelBuilder.Entity<TheLoai>(entity =>
             {
                 entity.HasKey(e => e.MaTl)
-                    .HasName("PK__TheLoai__272500710824C732");
+                    .HasName("PK__TheLoai__272500716A4C0988");
 
                 entity.ToTable("TheLoai");
 
@@ -584,7 +643,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<VaiTro>(entity =>
             {
                 entity.HasKey(e => e.MaVt)
-                    .HasName("PK__VaiTro__2725103EE2911703");
+                    .HasName("PK__VaiTro__2725103E5F567117");
 
                 entity.ToTable("VaiTro");
 
@@ -601,7 +660,7 @@ namespace CinemaVN.Models
             modelBuilder.Entity<Ve>(entity =>
             {
                 entity.HasKey(e => e.MaVe)
-                    .HasName("PK__Ve__2725100F55FBD4FB");
+                    .HasName("PK__Ve__2725100FAAA3C458");
 
                 entity.ToTable("Ve");
 
@@ -622,17 +681,17 @@ namespace CinemaVN.Models
                 entity.HasOne(d => d.MaGheNavigation)
                     .WithMany(p => p.Ves)
                     .HasForeignKey(d => d.MaGhe)
-                    .HasConstraintName("FK__Ve__MaGhe__76969D2E");
+                    .HasConstraintName("FK__Ve__MaGhe__0E6E26BF");
 
                 entity.HasOne(d => d.MaHdNavigation)
                     .WithMany(p => p.Ves)
                     .HasForeignKey(d => d.MaHd)
-                    .HasConstraintName("FK__Ve__MaHD__74AE54BC");
+                    .HasConstraintName("FK__Ve__MaHD__0C85DE4D");
 
                 entity.HasOne(d => d.MaScNavigation)
                     .WithMany(p => p.Ves)
                     .HasForeignKey(d => d.MaSc)
-                    .HasConstraintName("FK__Ve__MaSC__75A278F5");
+                    .HasConstraintName("FK__Ve__MaSC__0D7A0286");
             });
 
             OnModelCreatingPartial(modelBuilder);

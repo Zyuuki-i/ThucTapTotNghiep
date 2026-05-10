@@ -2,15 +2,12 @@
 @{
     ViewData["Title"] = "Quản lý Kho Dịch Vụ";
     Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
-    
-    // Thống kê nhanh
     int totalItems = Model.Count();
     int outOfStock = Model.Count(k => k.SoLuongTon == null || k.SoLuongTon <= 0);
     int inStock = totalItems - outOfStock;
 }
 
 <div class="container-fluid px-0 mt-3">
-    <!-- Header & Thống kê -->
     <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
         <div>
             <h2 class="text-label fw-bold mb-1"><i class="bi bi-box-seam text-primary me-2"></i> Kho Dịch Vụ & Sản Phẩm</h2>
@@ -18,15 +15,16 @@
                 <i class="bi bi-geo-alt-fill text-danger me-1"></i> Chi nhánh: <strong class="text-warning">@ViewBag.TenChiNhanh</strong>
             </span>
         </div>
-        <div>
-            <!-- Nút Thêm mới sản phẩm vào Kho -->
-            <a asp-action="Them" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
-                <i class="bi bi-plus-circle me-2"></i> Nhập hàng
+        <div class="d-flex gap-2">
+            <a asp-action="LichSuNhap" class="btn btn-outline-dark shadow fw-bold px-4 py-2 text-uppercase">
+                <i class="bi bi-clock-history me-2"></i> Lịch sử nhập
+            </a>
+            <a asp-action="TaoPhieuNhap" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
+                <i class="bi bi-plus-circle me-2"></i> Tạo Phiếu Nhập
             </a>
         </div>
     </div>
 
-    <!-- Mini Dashboard -->
     <div class="row mb-4 g-3">
         <div class="col-md-4">
             <div class="card border-0 shadow-sm border-start border-4 border-primary h-100 rounded-3">
@@ -69,7 +67,6 @@
         </div>
     </div>
 
-    <!-- Thanh công cụ tìm kiếm -->
     <div class="card shadow-sm border-0 mb-4 rounded-3">
         <div class="card-body py-3 px-4 d-flex justify-content-between align-items-center bg-light rounded-3">
             <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-list-task me-2"></i>Danh sách trong kho</h6>
@@ -80,7 +77,6 @@
         </div>
     </div>
 
-    <!-- Bảng dữ liệu Kho -->
     <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="serviceTable">
@@ -90,7 +86,6 @@
                         <th class="py-3 px-4 text-start" style="width: 20%;">Loại</th>
                         <th class="py-3 px-4 text-end" style="width: 15%;">Đơn giá</th>
                         <th class="py-3 px-4 text-center" style="width: 15%;">Số lượng tồn</th>
-                        <th class="py-3 px-4 text-end" style="width: 15%;">Nhập</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -105,13 +100,11 @@
                     }
                     @foreach (var item in Model)
                     {
-                        // Xử lý ảnh sản phẩm
                         string imgUrl = string.IsNullOrEmpty(item.MaDvNavigation?.HinhAnh)
                             ? "/images/default-service.png"
                             : $"/images/dichvu/{item.MaDvNavigation.HinhAnh}";
 
                         <tr class="service-row">
-                            <!-- Tên và Hình ảnh -->
                             <td class="px-4 py-3 text-start">
                                 <div class="d-flex align-items-center">
                                     <img src="@imgUrl" class="rounded shadow-sm me-3 border" style="width: 60px; height: 60px; object-fit: cover;" alt="Service Image" />
@@ -122,19 +115,16 @@
                                 </div>
                             </td>
                             
-                            <!-- Loại Dịch vụ -->
                             <td class="px-4 text-start">
                                 <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-2 py-1 service-category">
                                     @item.MaDvNavigation?.LoaiDv
                                 </span>
                             </td>
 
-                            <!-- Giá tiền (Căn phải để dễ nhìn số) -->
                             <td class="px-4 text-end fw-bold text-primary">
                                 @(item.MaDvNavigation?.Gia.ToString("N0")) đ
                             </td>
 
-                            <!-- Số lượng tồn kho (Căn giữa) -->
                             <td class="px-4 text-center">
                                 @if (item.SoLuongTon == null || item.SoLuongTon == 0)
                                 {
@@ -150,11 +140,7 @@
                                 }
                             </td>
 
-                            <td class="px-4 text-end">
-                                <a asp-action="Them" asp-route-maDV="@item.MaDv" class="btn btn-sm btn-light border shadow-sm text-success fw-bold" title="Nhập thêm hàng">
-                                    <i class="bi bi-box-arrow-in-down-right"></i>
-                                </a>
-                            </td>
+                           
                         </tr>
                     }
                 </tbody>
@@ -163,7 +149,6 @@
     </div>
 </div>
 
-<!-- Script hỗ trợ tìm kiếm trên giao diện -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const searchInput = document.getElementById('searchInput');

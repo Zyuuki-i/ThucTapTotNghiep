@@ -16,6 +16,7 @@ namespace CinemaVN.Models
         public string? NhaCungCap { get; set; }
         public DateTime? NgayNhap { get; set; }
         public decimal? TongTien { get; set; }
+        public int? TrangThai { get; set; }
 
         public virtual ChiNhanh? MaCnNavigation { get; set; }
         public virtual NguoiDung? MaNdNavigation { get; set; }

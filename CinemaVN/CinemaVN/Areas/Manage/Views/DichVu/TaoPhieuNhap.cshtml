@@ -1,0 +1,181 @@
+﻿l@model IEnumerable<CinemaVN.Models.DichVu>
+@{
+    ViewData["Title"] = "Tạo Phiếu Nhập Hàng";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div class="container-fluid px-0 mt-3 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-uppercase"><i class="bi bi-file-earmark-plus-fill text-primary me-2"></i> TẠO PHIẾU NHẬP KHO</h3>
+        <a asp-action="Index" class="btn btn-outline-secondary fw-bold rounded-pill px-4"><i class="bi bi-arrow-left me-1"></i> Kho chi nhánh</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-dark text-white py-3 rounded-top-4">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-box me-2"></i>Chọn Sản Phẩm Nhập</h6>
+                </div>
+                <div class="card-body bg-light p-3">
+                    <input type="text" id="searchItem" class="form-control mb-3" placeholder="Tìm kiếm sản phẩm...">
+                    <div class="d-flex flex-column gap-2 overflow-auto custom-scrollbar" style="max-height: 500px;">
+                        @foreach (var item in Model)
+                        {
+                            string imgUrl = string.IsNullOrEmpty(item.HinhAnh) ? "/images/default-service.png" : $"/images/dichvu/{item.HinhAnh}";
+                            <div class="d-flex align-items-center bg-white p-2 rounded shadow-sm border item-row cursor-pointer" onclick="chonSanPham(@item.MaDv, '@item.TenDv', @item.Gia)">
+                                <img src="@imgUrl" class="rounded me-3 border" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div>
+                                    <strong class="d-block text-dark item-name">@item.TenDv</strong>
+                                    <small class="text-muted">ID: @item.MaDv | Loại: @item.LoaiDv</small>
+                                </div>
+                                <i class="bi bi-plus-circle-fill text-primary ms-auto fs-4 me-2"></i>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-primary text-white py-3 rounded-top-4">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-receipt me-2"></i>Thông tin Đơn Nhập Hàng</h6>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="LuuPhieuNhap" method="post" id="formPhieuNhap">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-secondary">Tên Nhà Cung Cấp / Đối tác <span class="text-danger">*</span></label>
+                            <input type="text" name="NhaCungCap" class="form-control fw-bold border-primary" placeholder="VD: Công ty TNHH Nước Giải Khát..." required>
+                        </div>
+
+                        <div class="table-responsive mb-4 border rounded">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th style="width: 120px;">SL Nhập</th>
+                                        <th style="width: 150px;">Đơn giá nhập</th>
+                                        <th style="width: 150px;" class="text-end">Thành tiền</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cartBody">
+                                    <tr id="emptyCart"><td colspan="5" class="text-center text-muted py-4">Chưa có sản phẩm nào được chọn.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="bg-light p-3 rounded border text-end mb-4">
+                            <span class="text-muted fw-bold">TỔNG TIỀN PHIẾU NHẬP:</span>
+                            <h2 class="text-danger fw-bold mb-0 mt-1" id="tongTienGiaoDien">0 đ</h2>
+                        </div>
+
+                        <button type="button" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow rounded-pill" onclick="xacNhanLuu()">
+                            <i class="bi bi-check-circle-fill me-2"></i> GỬI YÊU CẦU DUYỆT PHIẾU
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cursor-pointer { cursor: pointer; transition: 0.2s; }
+    .cursor-pointer:hover { background-color: #f8f9fa !important; border-color: #0d6efd !important; transform: translateX(5px); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #adb5bd; border-radius: 10px; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let cart = [];
+    document.getElementById('searchItem').addEventListener('keyup', function(e) {
+        let text = e.target.value.toLowerCase();
+        document.querySelectorAll('.item-row').forEach(row => {
+            let name = row.querySelector('.item-name').innerText.toLowerCase();
+            row.style.display = name.includes(text) ? 'flex' : 'none';
+        });
+    });
+
+    function chonSanPham(id, name, currentPrice) {
+        let exist = cart.find(x => x.id === id);
+        if(exist) {
+            exist.sl += 1;
+        } else {
+            let giaNhapDeXuat = Math.floor((currentPrice * 0.7) / 1000) * 1000; 
+            cart.push({ id: id, name: name, sl: 10, gia: giaNhapDeXuat });
+        }
+        renderCart();
+    }
+
+    function xoaSanPham(id) {
+        cart = cart.filter(x => x.id !== id);
+        renderCart();
+    }
+
+    function capNhatSL(id, input) {
+        let exist = cart.find(x => x.id === id);
+        if(exist) { exist.sl = parseInt(input.value) || 0; renderCart(); }
+    }
+
+    function capNhatGia(id, input) {
+        let exist = cart.find(x => x.id === id);
+        if(exist) { exist.gia = parseInt(input.value) || 0; renderCart(); }
+    }
+
+    function renderCart() {
+        let tbody = document.getElementById('cartBody');
+        if(cart.length === 0) {
+            tbody.innerHTML = '<tr id="emptyCart"><td colspan="5" class="text-center text-muted py-4">Chưa có sản phẩm nào được chọn.</td></tr>';
+            document.getElementById('tongTienGiaoDien').innerText = '0 đ';
+            return;
+        }
+
+        let html = '';
+        let tongTien = 0;
+        cart.forEach(item => {
+            let thanhTien = item.sl * item.gia;
+            tongTien += thanhTien;
+            html += `
+                <tr>
+                    <td><strong class="text-dark">${item.name}</strong>
+                        <input type="hidden" name="MaDv" value="${item.id}" />
+                    </td>
+                    <td><input type="number" name="SoLuong" class="form-control form-control-sm text-center fw-bold" value="${item.sl}" min="1" onchange="capNhatSL(${item.id}, this)"></td>
+                    <td><input type="number" name="DonGia" class="form-control form-control-sm text-end text-danger fw-bold" value="${item.gia}" min="0" step="1000" onchange="capNhatGia(${item.id}, this)"></td>
+                    <td class="text-end fw-bold text-primary">${thanhTien.toLocaleString()}đ</td>
+                    <td class="text-end"><button type="button" class="btn btn-sm btn-outline-danger" onclick="xoaSanPham(${item.id})"><i class="bi bi-x-lg"></i></button></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        document.getElementById('tongTienGiaoDien').innerText = tongTien.toLocaleString() + ' đ';
+    }
+
+    function xacNhanLuu() {
+        if(cart.length === 0) {
+            Swal.fire('Cảnh báo', 'Vui lòng chọn ít nhất 1 sản phẩm để tạo phiếu!', 'warning');
+            return;
+        }
+        Swal.fire({
+            title: 'Xác nhận gửi duyệt?',
+            text: "Phiếu nhập sẽ được gửi lên Admin. Số lượng trong kho chỉ tăng khi Admin duyệt phiếu này.",
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Gửi yêu cầu ngay'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('formPhieuNhap').submit();
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        @if (TempData["Error"] != null) {
+            <text>Swal.fire('Lỗi', '@Html.Raw(TempData["Error"])', 'error');</text>
+        }
+    });
+</script>

@@ -1,0 +1,91 @@
+﻿@model CinemaVN.Models.DichVu
+@{
+    ViewData["Title"] = "Cập Nhật Dịch Vụ";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    string currentImg = string.IsNullOrEmpty(Model.HinhAnh) ? "/images/default-service.png" : $"/images/dichvu/{Model.HinhAnh}";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container mt-4 mb-5" style="max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-uppercase"><i class="bi bi-pencil-square text-primary me-2"></i> CẬP NHẬT SẢN PHẨM</h3>
+        <a asp-action="Index" class="btn btn-outline-secondary fw-bold rounded-pill px-4"><i class="bi bi-arrow-left me-1"></i> Trở về</a>
+    </div>
+
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-body p-4 p-md-5">
+            <form asp-action="Sua" method="post" enctype="multipart/form-data">
+                
+                <input type="hidden" asp-for="MaDv" />
+                <input type="hidden" name="HinhAnhHienTai" value="@Model.HinhAnh" />
+                
+                <div class="text-center mb-5">
+                    <div class="position-relative d-inline-block">
+                        <img id="imgPreview" src="@currentImg" class="rounded-circle shadow border border-3 border-light" style="width: 160px; height: 160px; object-fit: cover; cursor: pointer; transition: 0.2s;" onclick="document.getElementById('fileUpload').click()" />
+                        <span class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow-sm" style="transform: translate(-10%, -10%); pointer-events: none;">
+                            <i class="bi bi-camera-fill fs-5"></i>
+                        </span>
+                    </div>
+                    <div class="small text-muted mt-3 fw-bold">Nhấp vào hình nếu muốn đổi ảnh mới</div>
+                    <input type="file" id="fileUpload" name="HinhAnhUpload" class="d-none" accept="image/*" onchange="previewImage(event)" />
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold text-secondary">Tên Sản Phẩm / Combo <span class="text-danger">*</span></label>
+                        <input asp-for="TenDv" class="form-control form-control-lg bg-light" required />
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">Phân loại <span class="text-danger">*</span></label>
+                        <select asp-for="LoaiDv" class="form-select form-select-lg bg-light" required>
+                            <option value="Combo">Combo</option>
+                            <option value="Bắp">Bắp lẻ</option>
+                            <option value="Nước">Nước uống</option>
+                            <option value="Khác">Sản phẩm khác</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary">Đơn giá niêm yết <span class="text-danger">*</span></label>
+                        <div class="input-group input-group-lg">
+                            <input asp-for="Gia" type="number" min="0" class="form-control fw-bold text-danger text-end bg-light" required />
+                            <span class="input-group-text bg-white fw-bold text-muted">VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 text-end border-top pt-4">
+                    <button type="submit" class="btn btn-success px-5 py-3 fw-bold rounded-pill shadow-sm fs-6">
+                        <i class="bi bi-check-circle-fill me-2"></i> LƯU THAY ĐỔI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(event) {
+    var reader = new FileReader();
+    reader.onload = function(){
+    document.getElementById('imgPreview').src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    @if (TempData["Error"] != null)
+    {
+        <text>
+            Swal.fire({
+            icon: 'error',
+            title: 'Thất bại!',
+            text: '@Html.Raw(TempData["Error"])',
+            confirmButtonColor: '#dc3545'
+            });
+        </text>
+    }
+    });
+</script>

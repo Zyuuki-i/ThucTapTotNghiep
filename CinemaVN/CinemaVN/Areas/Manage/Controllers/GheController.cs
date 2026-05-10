@@ -9,7 +9,6 @@ namespace CinemaVN.Areas.Manage.Controllers
     {
         private readonly CinemaVNContext _db;
         public GheController(CinemaVNContext db) => _db = db;
-        // 1. Trang liệt kê danh sách phòng của chi nhánh để chọn cấu hình
         public IActionResult Index()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -25,9 +24,6 @@ namespace CinemaVN.Areas.Manage.Controllers
             return View(dsPhong);
         }
 
-        
-
-        // 2. Giao diện hiển thị sơ đồ & bảng điều khiển
         public IActionResult CauHinhGhe(int maPc)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -47,7 +43,6 @@ namespace CinemaVN.Areas.Manage.Controllers
             return View(dsGhe);
         }
 
-        // 3. Thêm/Cập nhật cấu hình cho 1 Hàng ghế
         [HttpPost]
         public IActionResult LuuHangGhe(int maPc, string hang, int soLuong, string maLg)
         {
@@ -57,56 +52,42 @@ namespace CinemaVN.Areas.Manage.Controllers
             if (phong == null || string.IsNullOrEmpty(hang)) return NotFound();
 
             hang = hang.ToUpper().Trim();
-            int toaDoY = hang[0] - 64; 
-            int tongGheVatLy = (maLg == "DOI") ? soLuong * 2 : soLuong;
-
-           
-            int sucChuaHienTai = _db.Ghes.Count(g => g.MaPc == maPc && g.Hang != hang);
-            
-            for (int i = 1; i <= tongGheVatLy; i++)
+            int toaDoY = hang[0] - 64;
+            int tongGheVatLyThemMoi = (maLg == "DOI") ? soLuong * 2 : soLuong;
+            int maxSoGheHienTai = _db.Ghes
+                .Where(g => g.MaPc == maPc && g.Hang == hang)
+                .Select(g => (int?)g.SoGhe)
+                .Max() ?? 0;
+            for (int i = 1; i <= tongGheVatLyThemMoi; i++)
             {
-                var ghe = _db.Ghes.FirstOrDefault(g => g.MaPc == maPc && g.Hang == hang && g.SoGhe == i);
-                if (ghe != null)
+                int soGheMoi = maxSoGheHienTai + i; 
+
+                _db.Ghes.Add(new Ghe
                 {
-                    ghe.MaLg = maLg;
-                    ghe.ToaDoX = i;       
-                    ghe.ToaDoY = toaDoY;  
-                    _db.Ghes.Update(ghe);
-                }
-                else
-                {
-                    _db.Ghes.Add(new Ghe
-                    {
-                        MaPc = maPc,
-                        Hang = hang,
-                        SoGhe = i,
-                        MaLg = maLg,
-                        ToaDoX = i,       
-                        ToaDoY = toaDoY,  
-                        TrangThai = true
-                    });
-                }
+                    MaPc = maPc,
+                    Hang = hang,
+                    SoGhe = soGheMoi,
+                    MaLg = maLg,
+                    ToaDoX = soGheMoi, 
+                    ToaDoY = toaDoY,
+                    TrangThai = true
+                });
             }
- 
-            var gheThua = _db.Ghes.Where(g => g.MaPc == maPc && g.Hang == hang && g.SoGhe > tongGheVatLy).ToList();
-            if (gheThua.Any()) _db.Ghes.RemoveRange(gheThua);
 
             _db.SaveChanges();
-            
+
             int sucChuaMoi = _db.Ghes.Count(g => g.MaPc == maPc);
-            if (sucChuaMoi > sucChuaHienTai)
+            if (sucChuaMoi > (phong.SucChua ?? 0))
             {
                 phong.SucChua = sucChuaMoi;
                 _db.PhongChieus.Update(phong);
                 _db.SaveChanges();
             }
-                
 
-            TempData["MessageSuccess_Ghe"] = $"Đã lưu cấu hình hàng {hang}. Tổng ghế vật lý hiện tại: {sucChuaMoi}/{phong.SucChua}";
+            TempData["MessageSuccess_Ghe"] = $"Đã thêm nối tiếp {soLuong} ghế ({maLg}) vào hàng {hang}. Tổng ghế hiện tại: {sucChuaMoi}";
             return RedirectToAction("CauHinhGhe", new { maPc = maPc });
         }
 
-        // 4. Xóa một hàng ghế
         [HttpPost]
         public IActionResult XoaHang(int maPc, string hang)
         {
@@ -139,7 +120,6 @@ namespace CinemaVN.Areas.Manage.Controllers
             return RedirectToAction("CauHinhGhe", new { maPc = maPc });
         }
 
-        // 5. Reset xóa toàn bộ ghế của phòng
         [HttpPost]
         public IActionResult XoaTatCa(int maPc)
         {

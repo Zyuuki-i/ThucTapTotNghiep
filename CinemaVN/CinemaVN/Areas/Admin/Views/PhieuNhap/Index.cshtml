@@ -1,0 +1,192 @@
+﻿@model IEnumerable<CinemaVN.Models.PhieuNhap>
+@{
+    ViewData["Title"] = "Duyệt Phiếu Nhập Hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    int choDuyet = Model.Count(p => p.TrangThai == 0);
+    int daDuyet = Model.Count(p => p.TrangThai == 1);
+    int tuChoi = Model.Count(p => p.TrangThai == 2);
+}
+
+<div class="container-fluid px-0 mt-3">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="text-label fw-bold mb-1 text-uppercase"><i class="bi bi-ui-checks text-primary me-2"></i> Quản Lý Phiếu Nhập Kho</h2>
+            <p class="text-muted small mb-0">Quản lý và duyệt các yêu cầu nhập hàng từ các chi nhánh.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm border-start border-4 border-warning h-100 rounded-3 bg-warning bg-opacity-10">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-dark small mb-0 fw-bold text-uppercase">CẦN XỬ LÝ (Chờ duyệt)</p>
+                        <h2 class="mb-0 fw-bold text-warning display-6">@choDuyet <span class="fs-6 text-dark">Phiếu</span></h2>
+                    </div>
+                    <i class="bi bi-hourglass-split text-warning" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm border-start border-4 border-success h-100 rounded-3">
+                <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-0 fw-bold text-uppercase">LỊCH SỬ (Đã duyệt)</p>
+                        <h2 class="mb-0 fw-bold text-success display-6">@daDuyet <span class="fs-6 text-muted">Phiếu</span></h2>
+                    </div>
+                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 bg-white rounded-3">
+        <div class="card-body p-3">
+            <form method="get" asp-action="Index">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="small fw-bold text-muted">Tìm kiếm từ khóa</label>
+                        <input type="text" name="searchStr" value="@ViewBag.SearchStr" class="form-control" placeholder="Mã phiếu, Chi nhánh, NCC..." />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold text-muted">Từ ngày</label>
+                        <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold text-muted">Đến ngày</label>
+                        <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold text-muted">Trạng thái</label>
+                        <select name="status" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            <option value="0" selected="@(ViewBag.Status == 0)">Chờ duyệt</option>
+                            <option value="1" selected="@(ViewBag.Status == 1)">Đã duyệt</option>
+                            <option value="2" selected="@(ViewBag.Status == 2)">Từ chối / Hủy</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold text-muted">Sắp xếp Tổng tiền</label>
+                        <select name="sortOrder" class="form-select">
+                            <option value="">Mặc định (Ưu tiên chờ duyệt)</option>
+                            <option value="tien_asc" selected="@(ViewBag.SortOrder == "tien_asc")">Giá trị tăng dần</option>
+                            <option value="tien_desc" selected="@(ViewBag.SortOrder == "tien_desc")">Giá trị giảm dần</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1 d-flex gap-1">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold" title="Lọc dữ liệu"><i class="bi bi-funnel-fill"></i></button>
+                        <a asp-action="Index" class="btn btn-secondary fw-bold" title="Xóa bộ lọc"><i class="bi bi-arrow-clockwise"></i></a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="px-4 py-3">Mã Phiếu</th>
+                        <th class="py-3">Chi nhánh yêu cầu</th>
+                        <th class="py-3">Nhà cung cấp</th>
+                        <th class="py-3">Thời gian</th>
+                        <th class="text-end py-3">Tổng tiền</th>
+                        <th class="text-center py-3">Trạng thái</th>
+                        <th class="text-end pe-4 py-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="px-4 fw-bold text-primary">#PN-@item.MaPn</td>
+                            <td class="fw-bold">@item.MaCnNavigation?.TenCn</td>
+                            <td>@item.NhaCungCap</td>
+                            <td>@item.NgayNhap?.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-end fw-bold text-danger">@item.TongTien?.ToString("N0") đ</td>
+                            <td class="text-center">
+                                @if (item.TrangThai == 0)
+                                {
+                                    <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-hourglass"></i> Chờ duyệt</span>
+                                }
+                                else if (item.TrangThai == 1)
+                                {
+
+                                    <span class="badge bg-success px-3 py-2"><i class="bi bi-check-all"></i> Đã duyệt</span>
+                                }
+                                else
+                                {
+
+                                    <span class="badge bg-danger px-3 py-2">Hủy / Từ chối</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="ChiTiet" asp-route-id="@item.MaPn" class="btn btn-sm btn-primary fw-bold">Chi tiết</a>
+    
+                                @if (item.TrangThai == 0)
+                                {
+                                    <form asp-action="TuChoiPhieu" asp-route-id="@item.MaPn" method="post" class="d-inline">
+                                        <button type="button" class="btn btn-sm btn-outline-danger fw-bold" onclick="xacNhanTuChoi(this)">
+                                            Từ chối
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function xacNhanXoa(btn) {
+    Swal.fire({
+    title: 'Xóa phiếu yêu cầu?',
+    text: "Hành động này không thể hoàn tác!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    confirmButtonText: 'Xóa ngay',
+    cancelButtonText: 'Hủy'
+    }).then((result) => {
+    if (result.isConfirmed) {
+    btn.closest('form').submit();
+    }
+    });
+    }
+
+    function xacNhanTuChoi(btn) {
+    Swal.fire({
+    title: 'Từ chối phiếu này?',
+    text: "Phiếu sẽ bị hủy và chuyển sang trạng thái Từ chối.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Từ chối ngay',
+    cancelButtonText: 'Hủy'
+    }).then((result) => {
+    if (result.isConfirmed) {
+    btn.closest('form').submit();
+    }
+    });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    var successMsg = @Html.Raw(Json.Serialize(TempData["Success"]));
+    var errorMsg = @Html.Raw(Json.Serialize(TempData["Error"]));
+
+    if (successMsg) {
+    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: successMsg, showConfirmButton: false, timer: 3000 });
+    }
+    if (errorMsg) {
+    Swal.fire({ icon: 'error', title: 'Thất bại!', text: errorMsg, confirmButtonColor: '#dc3545' });
+    }
+    });
+</script>
