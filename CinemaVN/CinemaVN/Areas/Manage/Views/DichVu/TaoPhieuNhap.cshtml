@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CinemaVN.Models.DichVu>
+﻿l@model IEnumerable<CinemaVN.Models.DichVu>
 @{
     ViewData["Title"] = "Tạo Phiếu Nhập Hàng";
     Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
@@ -89,10 +89,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // JS Xử lý Giỏ Hàng Nhập
     let cart = [];
-
-    // Tìm kiếm cột trái
     document.getElementById('searchItem').addEventListener('keyup', function(e) {
         let text = e.target.value.toLowerCase();
         document.querySelectorAll('.item-row').forEach(row => {
@@ -102,12 +99,10 @@
     });
 
     function chonSanPham(id, name, currentPrice) {
-        // Kiểm tra xem đã có trong giỏ chưa
         let exist = cart.find(x => x.id === id);
         if(exist) {
             exist.sl += 1;
         } else {
-            // Đề xuất giá nhập = 70% giá bán làm mặc định
             let giaNhapDeXuat = Math.floor((currentPrice * 0.7) / 1000) * 1000; 
             cart.push({ id: id, name: name, sl: 10, gia: giaNhapDeXuat });
         }
@@ -178,7 +173,6 @@
         });
     }
 
-    // Hiển thị thông báo nếu có lỗi từ Controller
     document.addEventListener("DOMContentLoaded", function () {
         @if (TempData["Error"] != null) {
             <text>Swal.fire('Lỗi', '@Html.Raw(TempData["Error"])', 'error');</text>

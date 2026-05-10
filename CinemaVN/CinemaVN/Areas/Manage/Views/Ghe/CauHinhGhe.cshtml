@@ -4,8 +4,6 @@
     var loaiGhes = ViewBag.DanhSachLoaiGhe as List<CinemaVN.Models.LoaiGhe>;
     ViewData["Title"] = "Thiết kế sơ đồ - " + phong.TenPc;
     Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
-
-    // Palette màu chuyên nghiệp cho Cinema
     var colorMap = new Dictionary<string, string> {
         { "THUONG", "#adb5bd" }, { "VIP", "#ffc107" }, { "DOI", "#f82249" }
     };
@@ -120,9 +118,7 @@
 </div>
 
 <style>
-    .letter-spacing-2 { letter-spacing: 4px; }
-    
-    /* Hiệu ứng màn hình */
+    .letter-spacing-2 { letter-spacing: 4px; }l
     .screen-curve {
         margin: 0 auto;
         width: 70%;
@@ -131,8 +127,6 @@
         border-radius: 50% / 100% 100% 0 0;
         box-shadow: 0 10px 30px rgba(255,255,255,0.4);
     }
-
-    /* Định dạng ghế */
     .seat-item {
         height: 32px;
         display: flex;
@@ -153,15 +147,12 @@
         background: rgba(0,0,0,0.2); left: 50%;
     }
     .seat-item:hover { transform: scale(1.1); z-index: 5; }
-
-    /* Điều chỉnh scroll cho container sơ đồ */
     .seat-map-preview {
         max-height: 500px;
         overflow-y: auto;
     }
 </style>
 
-@* thông báo xóa  *@
         <div class="modal fade" id="deleteRowModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -185,7 +176,6 @@
         </div>
     </div>
 </div>
-@* thông báo qusa sức chứa *@
 <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -216,7 +206,6 @@
         </div>
     </div>
 </div>
-@* thông báo xóa tất cả *@
 <div class="modal fade" id="deleteAllModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -230,7 +219,6 @@
             </div>
             <div class="modal-footer justify-content-center bg-light">
                 <form method="post" asp-action="XoaTatCa">
-                    @* Đảm bảo tên tham số 'maPc' khớp với tham số trong Action của Controller *@
                     <input type="hidden" name="maPc" value="@phong.MaPc" />
                     
                     <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Hủy</button>
@@ -241,7 +229,6 @@
     </div>
 </div>
 <script>
-    // Hàm mở Modal xác nhận xóa hàng
     function openDeleteRowModal() {
         var rowInput = document.getElementById("inputXoaHang").value.trim().toUpperCase();
         
@@ -258,10 +245,7 @@
         myModal.show();
     }
 
-    // Tự động kích hoạt Modal khi có thông báo từ Controller
     document.addEventListener("DOMContentLoaded", function () {
-        
-        // Bắt lỗi: Thêm quá sức chứa
         @if (TempData["MessageError_Ghe"] != null)
         {
             <text>

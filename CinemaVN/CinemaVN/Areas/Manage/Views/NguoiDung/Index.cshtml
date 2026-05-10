@@ -21,7 +21,6 @@
         </a>
     </div>
 
-    <!-- Mini Dashboard -->
     <div class="row mb-4 g-3">
         <div class="col-md-4">
             <div class="card border-0 shadow-sm border-start border-4 border-primary h-100 rounded-3">
@@ -64,7 +63,6 @@
         </div>
     </div>
 
-    <!-- Thanh công cụ thông minh -->
     <div class="card shadow-sm border-0 mb-4 rounded-3">
         <div class="card-body py-3 px-4 d-flex justify-content-between align-items-center bg-light rounded-3">
             <h6 class="mb-0 fw-bold text-secondary"><i class="bi bi-list-task me-2"></i>Danh sách nhân viên</h6>
@@ -75,13 +73,11 @@
         </div>
     </div>
 
-    <!-- Bảng dữ liệu -->
     <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="employeeTable">
                 <thead class="table-dark">
                     <tr>
-                        <!-- Thêm tỷ lệ % width cố định và căn lề đồng bộ -->
                         <th class="py-3 px-4 text-start" style="width: 35%;">Hồ sơ Nhân viên</th>
                         <th class="text-start py-3 px-4" style="width: 20%;">Tài khoản đăng nhập</th>
                         <th class="text-center py-3 px-4" style="width: 15%;">Chức vụ</th>
@@ -101,14 +97,11 @@
                     }
                     @foreach (var item in Model)
                     {
-                        <!-- Dòng dữ liệu -->
                         <tr class="employee-row position-relative" style="cursor: pointer;" onclick="goToDetail(event, '@Url.Action("ChiTiet", new { id = item.MaNd })')">
                             <td class="px-4 py-3 text-start">
                                 <div class="d-flex align-items-center">
                                     @{
                                         string firstLetter = string.IsNullOrWhiteSpace(item.HoTen) ? "?" : item.HoTen.Trim().Substring(0, 1).ToUpper();
-        
-                                        // Giả sử tên cột ảnh của bạn là HinhAnh (thay đổi nếu cần)
                                         string imgUrl = string.IsNullOrEmpty(item.Hinh) ? "" : $"/images/avatars/{item.Hinh}";
                                     }
 
@@ -145,11 +138,9 @@
                                     <i class="bi bi-person-badge me-1"></i> @item.Email
                                 </span>
                             </td>
-                            <!-- Căn giữa cột Chức vụ -->
                             <td class="text-center">
                                 <span class="badge bg-info bg-opacity-75 text-info-emphasis border border-info px-2 py-1">@item.MaVtNavigation?.TenVt</span>
                             </td>
-                            <!-- Căn giữa cột Trạng thái -->
                             <td class="text-center">
                                 @if (item.TrangThai == true)
                                 {
@@ -164,7 +155,6 @@
                                     </span>
                                 }
                             </td>
-                            <!-- Căn phải cột Thao tác -->
                             <td class="text-end px-4">
                                 <a asp-action="Sua" asp-route-id="@item.MaNd" class="btn btn-sm btn-light border shadow-sm text-warning fw-bold me-1">
                                     <i class="bi bi-pencil-square"></i>
@@ -200,8 +190,6 @@
     </div>
 </div>
 
-
-<!-- Modal Khóa -->
 <div class="modal fade" id="lockModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -225,7 +213,6 @@
     </div>
 </div>
 
-<!-- Modal Mở Khóa -->
 <div class="modal fade" id="unlockModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered ">
         <div class="modal-content border-0 shadow-lg">
@@ -249,7 +236,6 @@
     </div>
 </div>
 
-<!-- Modal Thông báo (Thành công / Lỗi) -->
 @if (TempData["MessageSuccess_NV"] != null)
 {
     <div class="modal fade" id="successModalNV" tabindex="-1" aria-hidden="true">
@@ -279,7 +265,7 @@
         </div>
     </div>
 }
-<!-- Modal Xóa Vĩnh Viễn -->
+
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
@@ -318,7 +304,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        // Tự động bật Modal thông báo
         @if (TempData["MessageSuccess_NV"] != null)
         {
                 <text>
@@ -340,12 +325,9 @@
             const searchTerm = e.target.value.toLowerCase().trim();
 
             employeeRows.forEach(row => {
-                // Lấy nội dung của tên, liên hệ (sđt, email), và tài khoản
                 const name = row.querySelector('.employee-name').textContent.toLowerCase();
                 const contact = row.querySelector('.employee-contact').textContent.toLowerCase();
                 const username = row.querySelector('.employee-username').textContent.toLowerCase();
-
-                // Ẩn/hiện dòng nếu khớp từ khóa
                 if (name.includes(searchTerm) || contact.includes(searchTerm) || username.includes(searchTerm)) {
                     row.style.display = '';
                 } else {
@@ -354,15 +336,10 @@
             });
         });
     });
-    @* // Hàm chuyển trang chi tiết khi click vào dòng *@
     function goToDetail(e, url) {
-        // Kiểm tra: Nếu thẻ người dùng click vào là <a> (nút Sửa, Xem) hoặc <button> (nút Khóa)
-        // hoặc nằm bên trong các thẻ này (như icon <i>), thì KHÔNG chuyển trang Chi tiết.
         if (e.target.closest('a') || e.target.closest('button')) {
-            return; // Dừng lại, nhường quyền cho nút bấm hoạt động
+            return; 
         }
-        
-        // Nếu click vào vùng trống của dòng, thì chuyển sang URL chi tiết
         window.location.href = url;
     }
     function openDeleteModal(id, name) {

@@ -126,9 +126,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // 1. HÀM ÉP TẮT MÀN HÌNH CHỜ (Chống lỗi load liên tục)
     function forceHidePreloader() {
-    // Tắt tất cả các loại ID preloader phổ biến trong template
     const loader = document.getElementById('preloader') ||
     document.querySelector('.preloader') ||
     document.querySelector('.spinner-wrapper');
@@ -136,14 +134,11 @@
     loader.style.display = 'none';
     loader.style.opacity = '0';
     }
-    document.body.style.overflow = 'auto'; // Mở khóa thanh cuộn
+    document.body.style.overflow = 'auto';
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-    // Luôn chạy lệnh tắt load sau khi trang tải xong
     forceHidePreloader();
-
-    // 2. XỬ LÝ THÔNG BÁO TỪ CONTROLLER (Dùng Json.Serialize để chống lỗi dấu nháy)
     var successMsg = @Html.Raw(Json.Serialize(TempData["Success"]));
     var errorMsg = @Html.Raw(Json.Serialize(TempData["Error"]));
 
@@ -169,7 +164,6 @@
     }
     });
 
-    // 3. XỬ LÝ TÌM KIẾM
     const searchInput = document.getElementById('searchInput');
     if(searchInput) {
     searchInput.addEventListener('keyup', function (e) {
@@ -182,7 +176,6 @@
     });
     }
 
-    // 4. POPUP XÁC NHẬN XÓA GIỮA MÀN HÌNH
     function xacNhanXoa(btn) {
     Swal.fire({
     title: 'BẠN CÓ CHẮC CHẮN?',

@@ -9,7 +9,6 @@ namespace CinemaVN.Areas.Manage.Controllers
     {
         private readonly CinemaVNContext _db;
         public GheController(CinemaVNContext db) => _db = db;
-        // 1. Trang liệt kê danh sách phòng của chi nhánh để chọn cấu hình
         public IActionResult Index()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -25,9 +24,6 @@ namespace CinemaVN.Areas.Manage.Controllers
             return View(dsPhong);
         }
 
-        
-
-        // 2. Giao diện hiển thị sơ đồ & bảng điều khiển
         public IActionResult CauHinhGhe(int maPc)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -47,7 +43,6 @@ namespace CinemaVN.Areas.Manage.Controllers
             return View(dsGhe);
         }
 
-        // 3. Thêm/Cập nhật cấu hình cho 1 Hàng ghế
         [HttpPost]
         public IActionResult LuuHangGhe(int maPc, string hang, int soLuong, string maLg)
         {
@@ -59,17 +54,13 @@ namespace CinemaVN.Areas.Manage.Controllers
             hang = hang.ToUpper().Trim();
             int toaDoY = hang[0] - 64;
             int tongGheVatLyThemMoi = (maLg == "DOI") ? soLuong * 2 : soLuong;
-
-            // 1. Tìm số ghế lớn nhất hiện tại của hàng này (Nếu hàng chưa có ghế nào thì gán bằng 0)
             int maxSoGheHienTai = _db.Ghes
                 .Where(g => g.MaPc == maPc && g.Hang == hang)
                 .Select(g => (int?)g.SoGhe)
                 .Max() ?? 0;
-
-            // 2. Thêm ghế mới nối tiếp vào sau số ghế lớn nhất
             for (int i = 1; i <= tongGheVatLyThemMoi; i++)
             {
-                int soGheMoi = maxSoGheHienTai + i; // Ghế mới = Max cũ + i
+                int soGheMoi = maxSoGheHienTai + i; 
 
                 _db.Ghes.Add(new Ghe
                 {
@@ -85,7 +76,6 @@ namespace CinemaVN.Areas.Manage.Controllers
 
             _db.SaveChanges();
 
-            // 3. Cập nhật lại sức chứa của phòng nếu tăng lên
             int sucChuaMoi = _db.Ghes.Count(g => g.MaPc == maPc);
             if (sucChuaMoi > (phong.SucChua ?? 0))
             {
@@ -98,7 +88,6 @@ namespace CinemaVN.Areas.Manage.Controllers
             return RedirectToAction("CauHinhGhe", new { maPc = maPc });
         }
 
-        // 4. Xóa một hàng ghế
         [HttpPost]
         public IActionResult XoaHang(int maPc, string hang)
         {
@@ -131,7 +120,6 @@ namespace CinemaVN.Areas.Manage.Controllers
             return RedirectToAction("CauHinhGhe", new { maPc = maPc });
         }
 
-        // 5. Reset xóa toàn bộ ghế của phòng
         [HttpPost]
         public IActionResult XoaTatCa(int maPc)
         {

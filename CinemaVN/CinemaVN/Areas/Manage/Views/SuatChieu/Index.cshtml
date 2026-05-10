@@ -2,8 +2,6 @@
 @{
     ViewData["Title"] = "Lịch Chiếu Phim";
     Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
-
-    // Gom nhóm dữ liệu theo Ngày Chiếu
     var groupedByDate = Model
         .Where(x => x.NgayChieu.HasValue)
         .GroupBy(x => x.NgayChieu.Value.Date)
@@ -119,7 +117,6 @@ else
 }
 
 <style>
-    /* Hiệu ứng hover cho card suất chiếu */
     .custom-hover-card {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -129,7 +126,6 @@ else
             box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
         }
 </style>
-@* xóa xuất chiếu *@
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
@@ -174,8 +170,6 @@ else
                 document.getElementById('delShowTime').textContent = "Giờ chiếu: " + time;
             });
         }
-
-        // Tự động bật Modal thông báo Thành công/Lỗi 
         @if (TempData["MessageSuccess_SC"] != null)
         {
                 <text>

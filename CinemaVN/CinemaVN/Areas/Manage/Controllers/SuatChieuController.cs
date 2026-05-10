@@ -60,8 +60,7 @@ namespace CinemaVN.Areas.Manage.Controllers
             ViewBag.SearchString = searchString;
             ViewBag.FilterDate = filterDate?.ToString("yyyy-MM-dd");
             ViewBag.FilterMovie = filterMovie;
-            ViewBag.FilterRoom = filterRoom; // Lưu trạng thái phòng đang chọn
-
+            ViewBag.FilterRoom = filterRoom; 
             return View(dsSuatChieu);
         }
 

@@ -3,8 +3,6 @@
 @{
     ViewData["Title"] = "Quản lý Phòng Chiếu";
     Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
-
-    // Thống kê nhanh
     int tongSoPhong = Model.Count();
     int tongSucChua = Model.Sum(p => p.SucChua ?? 0);
 }
@@ -155,14 +153,9 @@ else
         var deleteModal = document.getElementById('deleteModal');
         if (deleteModal) {
             deleteModal.addEventListener('show.bs.modal', function (event) {
-                // 1. Lấy nút vừa được click
                 var button = event.relatedTarget;
-                
-                // 2. Lấy data-id và data-name từ nút đó
                 var roomId = button.getAttribute('data-id');
                 var roomName = button.getAttribute('data-name');
-                
-                // 3. Gán dữ liệu vào Modal
                 document.getElementById('deleteRoomName').textContent = roomName;
                 document.getElementById('deleteRoomId').value = roomId;
             });
