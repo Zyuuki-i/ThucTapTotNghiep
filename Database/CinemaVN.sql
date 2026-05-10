@@ -214,7 +214,8 @@ CREATE TABLE PhieuNhap (
     MaND INT FOREIGN KEY REFERENCES NguoiDung(MaND),        
     NhaCungCap NVARCHAR(255),                               
     NgayNhap DATETIME DEFAULT GETDATE(),
-    TongTien DECIMAL(18,2) DEFAULT 0
+    TongTien DECIMAL(18,2) DEFAULT 0,
+	TrangThai INT DEFAULT 0
 );
 GO
 
