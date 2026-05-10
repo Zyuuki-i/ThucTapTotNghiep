@@ -1,0 +1,137 @@
+﻿@model CinemaVN.Models.PhieuNhap
+@{
+    ViewData["Title"] = "Chi Tiết Phiếu Nhập #" + Model.MaPn;
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+    
+    var chiTiet = Model.ChiTietPhieuNhaps.ToList();
+}
+
+<div class="container-fluid mt-3 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <a asp-action="LichSuNhap" class="btn btn-outline-secondary fw-bold rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
+        <button onclick="window.print()" class="btn btn-primary fw-bold shadow-sm px-4 py-2 rounded-pill">
+            <i class="bi bi-printer-fill me-2"></i> IN PHIẾU NHẬP
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-lg mx-auto invoice-paper" style="max-width: 900px;">
+        <div class="card-body p-5">
+            
+            <div class="row border-bottom border-2 border-dark pb-3 mb-4">
+                <div class="col-sm-6">
+                    <h2 class="fw-bold text-danger mb-0">CINEMA VN</h2>
+                    <p class="text-muted mb-0 small">Hệ thống Rạp chiếu phim hàng đầu</p>
+                    <div class="mt-2 text-dark small">
+                        <strong>Chi nhánh:</strong> @Model.MaCnNavigation?.TenCn <br />
+                        <strong>Địa chỉ:</strong> @(Model.MaCnNavigation?.DiaChi ?? "Đang cập nhật...")
+                    </div>
+                </div>
+                <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                    <h3 class="fw-bold text-uppercase text-dark mb-1">PHIẾU NHẬP KHO</h3>
+                    <p class="mb-0"><strong>Số phiếu:</strong> <span class="text-danger">#PN-@Model.MaPn</span></p>
+                    <p class="mb-0"><strong>Ngày lập:</strong> @Model.NgayNhap?.ToString("dd/MM/yyyy HH:mm")</p>
+                    <div class="mt-2">
+                        Trạng thái: 
+                        @if (Model.TrangThai == 0) { <span class="badge border border-warning text-warning fw-bold">CHỜ DUYỆT</span> }
+                        else if (Model.TrangThai == 1) { <span class="badge border border-success text-success fw-bold">ĐÃ NHẬP KHO</span> }
+                        else { <span class="badge border border-danger text-danger fw-bold">ĐÃ HỦY / TỪ CHỐI</span> }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-5 bg-light p-3 rounded">
+                <div class="col-sm-6">
+                    <h6 class="fw-bold text-muted mb-2 text-uppercase">Thông tin Nhà Cung Cấp:</h6>
+                    <h5 class="fw-bold text-dark mb-1">@Model.NhaCungCap</h5>
+                </div>
+                <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
+                    <h6 class="fw-bold text-muted mb-2 text-uppercase">Người Lập Phiếu:</h6>
+                    <h6 class="fw-bold text-dark mb-1">@Model.MaNdNavigation?.HoTen</h6>
+                    <small class="text-muted">Mã NV: NV-@Model.MaNd</small>
+                </div>
+            </div>
+
+            <table class="table table-bordered border-dark align-middle mb-4">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" style="width: 50px;">STT</th>
+                        <th>Tên sản phẩm / Dịch vụ</th>
+                        <th class="text-center" style="width: 100px;">Số lượng</th>
+                        <th class="text-end" style="width: 150px;">Đơn giá</th>
+                        <th class="text-end" style="width: 180px;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int stt = 1; }
+                    @foreach (var item in chiTiet)
+                    {
+                        var thanhTien = item.SoLuong * item.DonGia; 
+                        <tr>
+                            <td class="text-center">@stt</td>
+        
+                            <td class="fw-bold">@item.MaDvNavigation?.TenDv</td>
+        
+                            <td class="text-center">@item.SoLuong</td>
+                            <td class="text-end">@item.DonGia.ToString("N0") đ</td>
+        
+                            <td class="text-end fw-bold">@(thanhTien.ToString("N0")) đ</td>
+                        </tr>
+                        stt++;
+                    }
+                </tbody>
+            </table>
+
+            <div class="row justify-content-end mb-5">
+                <div class="col-sm-5">
+                    <table class="table table-borderless table-sm mb-0">
+                        <tr class="border-top border-dark border-2">
+                            <td class="fw-bold fs-5 text-uppercase">TỔNG CỘNG:</td>
+                            <td class="text-end fw-bold fs-4 text-danger">@Model.TongTien?.ToString("N0") đ</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row text-center pt-4 mt-5">
+                <div class="col-4">
+                    <p class="fw-bold mb-5 pb-5">Người giao hàng<br><small class="text-muted fw-normal">(Ký, ghi rõ họ tên)</small></p>
+                </div>
+                <div class="col-4">
+                    <p class="fw-bold mb-5 pb-5">Người lập phiếu<br><small class="text-muted fw-normal">(Ký, ghi rõ họ tên)</small></p>
+                </div>
+                <div class="col-4">
+                    <p class="fw-bold mb-5 pb-5">Quản lý chi nhánh<br><small class="text-muted fw-normal">(Ký, đóng dấu)</small></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .invoice-paper {
+        background-color: #fff;
+        border-radius: 10px;
+    }
+    @@media print {
+        body * { visibility: hidden; }
+        .no-print { display: none !important; }
+        
+        .invoice-paper, .invoice-paper * { visibility: visible; }
+        .invoice-paper {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        #layout-menu, .layout-navbar, .footer { display: none !important; }
+        .layout-page { padding: 0 !important; margin: 0 !important; }
+    }
+</style>

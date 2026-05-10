@@ -1,0 +1,145 @@
+﻿@model CinemaVN.Models.PhieuNhap
+@{
+    ViewData["Title"] = "Chi tiết Phiếu Nhập #" + Model.MaPn;
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid mt-3 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold"><i class="bi bi-file-earmark-text text-primary me-2"></i> CHI TIẾT YÊU CẦU NHẬP HÀNG</h3>
+        <a asp-action="Index" class="btn btn-outline-secondary fw-bold rounded-pill px-4">Trở về</a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-dark text-white py-3"><h6 class="mb-0 fw-bold">Thông tin Phiếu #@Model.MaPn</h6></div>
+                <div class="card-body">
+                    <p>
+                        <strong>Trạng thái:</strong>
+                        @if (Model.TrangThai == 0)
+                        {
+                            <span class="badge bg-warning text-dark fs-6 ms-2">Chờ duyệt</span>
+                        }
+                        else if (Model.TrangThai == 2)
+                        {
+                            <span class="badge bg-danger px-3 py-2">Từ chối</span>
+                        }
+                        else
+                        {
+
+                            <span class="badge bg-success fs-6 ms-2">Đã duyệt (Hàng đã vào kho)</span>
+                        }
+                    </p>
+                    <hr />
+                    <p class="mb-2"><strong>Chi nhánh:</strong> <span class="text-primary fw-bold">@Model.MaCnNavigation?.TenCn</span></p>
+                    <p class="mb-2"><strong>Người lập:</strong> @Model.MaNdNavigation?.HoTen</p>
+                    <p class="mb-2"><strong>Ngày lập:</strong> @Model.NgayNhap?.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p class="mb-2"><strong>Nhà cung cấp:</strong> @Model.NhaCungCap</p>
+                    
+                    <div class="bg-light p-3 rounded mt-4 text-center border">
+                        <span class="text-muted small fw-bold text-uppercase">Tổng giá trị đơn</span>
+                        <h3 class="text-danger fw-bold mb-0">@Model.TongTien?.ToString("N0") đ</h3>
+                    </div>
+
+                    @if (Model.TrangThai == 0)
+                    {
+                        <div class="mt-4 d-flex gap-2">
+                            <form asp-action="DuyetPhieu" asp-route-id="@Model.MaPn" method="post" class="flex-grow-1">
+                                <button type="button" class="btn btn-success w-100 py-3 fw-bold shadow-sm rounded-pill" onclick="xacNhanDuyet(this)">
+                                    <i class="bi bi-check2-circle me-2"></i> DUYỆT NHẬP
+                                </button>
+                            </form>
+
+                            <form asp-action="TuChoiPhieu" asp-route-id="@Model.MaPn" method="post" class="flex-grow-1">
+                                <button type="button" class="btn btn-outline-danger w-100 py-3 fw-bold shadow-sm rounded-pill" onclick="xacNhanTuChoi(this)">
+                                    <i class="bi bi-x-circle me-2"></i> TỪ CHỐI
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-primary text-white py-3"><h6 class="mb-0 fw-bold">Danh sách Sản phẩm yêu cầu</h6></div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Tên Sản Phẩm</th>
+                                <th class="text-center">Số Lượng Nhập</th>
+                                <th class="text-end">Đơn Giá Nhập</th>
+                                <th class="text-end pe-4">Thành Tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ChiTietPhieuNhaps)
+                            {
+                                var thanhTien = item.SoLuong * item.DonGia;
+                                <tr>
+                                    <td class="ps-4 fw-bold">@item.MaDvNavigation?.TenDv</td>
+                                    <td class="text-center"><span class="badge bg-primary fs-6 px-3">@item.SoLuong</span></td>
+                                    <td class="text-end">@item.DonGia.ToString("N0") đ</td>
+                                    <td class="text-end pe-4 fw-bold text-danger">@(thanhTien.ToString("N0")) đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function xacNhanDuyet(btn) {
+    Swal.fire({
+    title: 'Xác nhận Duyệt Phiếu?',
+    text: "Hệ thống sẽ tự động cộng số lượng vào KHO của chi nhánh. Không thể hoàn tác!",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#198754',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Vâng, Duyệt ngay',
+    cancelButtonText: 'Xem lại'
+    }).then((result) => {
+    if (result.isConfirmed) {
+    btn.closest('form').submit(); 
+    }
+    });
+    }
+
+    function xacNhanTuChoi(btn) {
+    Swal.fire({
+    title: 'Từ chối phiếu này?',
+    text: "Phiếu sẽ bị hủy và không thể cộng kho. Bạn có chắc chắn?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Vâng, Từ chối',
+    cancelButtonText: 'Quay lại'
+    }).then((result) => {
+    if (result.isConfirmed) {
+    btn.closest('form').submit(); 
+    }
+    });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    var successMsg = @Html.Raw(Json.Serialize(TempData["Success"]));
+    var errorMsg = @Html.Raw(Json.Serialize(TempData["Error"]));
+
+    if (successMsg) {
+    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: successMsg, showConfirmButton: false, timer: 3000 });
+    }
+    if (errorMsg) {
+    Swal.fire({ icon: 'error', title: 'Thất bại!', text: errorMsg, confirmButtonColor: '#dc3545' });
+    }
+    });
+</script>

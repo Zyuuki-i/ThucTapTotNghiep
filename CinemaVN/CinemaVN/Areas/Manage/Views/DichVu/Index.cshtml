@@ -18,10 +18,12 @@
                 <i class="bi bi-geo-alt-fill text-danger me-1"></i> Chi nhánh: <strong class="text-warning">@ViewBag.TenChiNhanh</strong>
             </span>
         </div>
-        <div>
-            <!-- Nút Thêm mới sản phẩm vào Kho -->
-            <a asp-action="Them" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
-                <i class="bi bi-plus-circle me-2"></i> Nhập hàng
+        <div class="d-flex gap-2">
+            <a asp-action="LichSuNhap" class="btn btn-outline-dark shadow fw-bold px-4 py-2 text-uppercase">
+                <i class="bi bi-clock-history me-2"></i> Lịch sử nhập
+            </a>
+            <a asp-action="TaoPhieuNhap" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
+                <i class="bi bi-plus-circle me-2"></i> Tạo Phiếu Nhập
             </a>
         </div>
     </div>
@@ -90,7 +92,6 @@
                         <th class="py-3 px-4 text-start" style="width: 20%;">Loại</th>
                         <th class="py-3 px-4 text-end" style="width: 15%;">Đơn giá</th>
                         <th class="py-3 px-4 text-center" style="width: 15%;">Số lượng tồn</th>
-                        <th class="py-3 px-4 text-end" style="width: 15%;">Nhập</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -150,11 +151,7 @@
                                 }
                             </td>
 
-                            <td class="px-4 text-end">
-                                <a asp-action="Them" asp-route-maDV="@item.MaDv" class="btn btn-sm btn-light border shadow-sm text-success fw-bold" title="Nhập thêm hàng">
-                                    <i class="bi bi-box-arrow-in-down-right"></i>
-                                </a>
-                            </td>
+                           
                         </tr>
                     }
                 </tbody>

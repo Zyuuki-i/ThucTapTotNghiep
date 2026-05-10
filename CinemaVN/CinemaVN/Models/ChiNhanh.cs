@@ -10,6 +10,7 @@ namespace CinemaVN.Models
             HoaDons = new HashSet<HoaDon>();
             Khos = new HashSet<Kho>();
             NguoiDungs = new HashSet<NguoiDung>();
+            PhieuNhaps = new HashSet<PhieuNhap>();
             PhongChieus = new HashSet<PhongChieu>();
         }
 
@@ -21,6 +22,7 @@ namespace CinemaVN.Models
         public virtual ICollection<HoaDon> HoaDons { get; set; }
         public virtual ICollection<Kho> Khos { get; set; }
         public virtual ICollection<NguoiDung> NguoiDungs { get; set; }
+        public virtual ICollection<PhieuNhap> PhieuNhaps { get; set; }
         public virtual ICollection<PhongChieu> PhongChieus { get; set; }
     }
 }

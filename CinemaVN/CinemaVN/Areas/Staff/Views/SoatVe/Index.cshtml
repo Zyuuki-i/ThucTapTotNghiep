@@ -1,0 +1,170 @@
+﻿@{
+    ViewData["Title"] = "Hệ Thống Soát Vé";
+    Layout = "~/Areas/Staff/Views/Shared/_StaffLayout.cshtml";
+}
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container-fluid py-3" style="background-color: #f2f2f2; min-height: 100vh;">
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-5 border-danger">
+        <h4 class="fw-bold mb-0 text-dark"><i class="bi bi-upc-scan text-danger me-2"></i>SOÁT VÉ ĐIỆN TỬ</h4>
+        <div>
+            <span class="badge bg-danger fs-6 me-2 shadow-sm"><i class="bi bi-person-badge"></i> @ViewBag.TenNhanVien</span>
+            <span class="badge bg-dark fs-6 shadow-sm"><i class="bi bi-geo-alt-fill"></i> @ViewBag.TenChiNhanh</span>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            
+            <!-- KHUNG CAMERA QUÉT MÃ QR -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-dark text-white text-center py-3">
+                    <h5 class="mb-0 fw-bold">QUÉT MÃ QR KHÁCH HÀNG</h5>
+                </div>
+                <div class="card-body p-0 position-relative bg-dark d-flex justify-content-center">
+                    <!-- Nơi thư viện HTML5-QRCode vẽ camera -->
+                    <div id="reader" style="width: 100%; max-width: 500px; border: none;"></div>
+                </div>
+            </div>
+
+            <!-- NHẬP THỦ CÔNG (DỰ PHÒNG KHI CAMERA LỖI) -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 text-center">
+                    <h6 class="fw-bold text-muted mb-3"><i class="bi bi-keyboard me-2"></i>Nhập mã thủ công</h6>
+                    <div class="input-group input-group-lg shadow-sm">
+                        <span class="input-group-text bg-white border-danger"><i class="bi bi-ticket-perforated text-danger"></i></span>
+                        <input type="text" id="manualCode" class="form-control border-danger" placeholder="Nhập SessionKey hoặc Mã Vé..." autocomplete="off">
+                        <button class="btn btn-danger fw-bold px-4" onclick="xulyNhapTay()">KIỂM TRA</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Làm đẹp giao diện quét QR của thư viện */
+    #reader { border-radius: 0 0 1rem 1rem; overflow: hidden; background: #000; }
+    #reader__scan_region { min-height: 250px; background: #000; }
+    #reader__dashboard_section_csr span { display: none !important; }
+    #reader__dashboard_section_swaplink { color: #dc3545; font-weight: bold; text-decoration: none; display: block; margin-top: 10px; }
+    #reader button { background-color: #dc3545; color: white; border: none; padding: 8px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; margin: 10px; }
+    #reader button:hover { background-color: #bb2d3b; }
+</style>
+
+<script>
+    let html5QrcodeScanner;
+    let isProcessing = false; 
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Cấu hình máy quét QR
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0 
+            },
+            /* verbose= */ false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    });
+
+    // Hàm gọi khi Camera bắt được mã QR
+    function onScanSuccess(decodedText, decodedResult) {
+        if (isProcessing) return; // Đang xử lý 1 vé thì bỏ qua
+        
+        // Tạm dừng camera
+        isProcessing = true;
+        if (html5QrcodeScanner) html5QrcodeScanner.pause(true);
+
+        guiDuLieuLenServer(decodedText);
+    }
+
+    function onScanFailure(error) {
+        // Bỏ qua các cảnh báo khi không thấy mã trong khung hình
+    }
+
+    // Hàm xử lý khi nhấn nút "Kiểm tra" nhập tay
+    function xulyNhapTay() {
+        let code = document.getElementById('manualCode').value.trim();
+        if(code === '') {
+            Swal.fire('Chú ý', 'Vui lòng nhập mã vé!', 'warning');
+            return;
+        }
+
+        if (isProcessing) return;
+        isProcessing = true;
+        if (html5QrcodeScanner && html5QrcodeScanner.getState() === 2) {
+            html5QrcodeScanner.pause(true);
+        }
+
+        guiDuLieuLenServer(code);
+    }
+
+    // GỌI AJAX LÊN CONTROLLER
+    function guiDuLieuLenServer(code) {
+        Swal.fire({
+            title: 'Đang kiểm tra vé...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        let url = `@Url.Action("XuLyQuetVe", "SoatVe", new { area = "Staff" })`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `qrCode=${encodeURIComponent(code)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('manualCode').value = ''; // Xóa ô nhập tay
+
+            if(data.success) {
+    // VÉ HỢP LỆ
+    Swal.fire({
+        icon: 'success',
+        title: 'HỢP LỆ - MỜI VÀO RẠP',
+        html: `
+            <div class="text-start mt-3 p-3 bg-light rounded border border-success">
+                <p class="mb-1"><strong>Mã HĐ:</strong> #${data.maHD}</p>
+                <p class="mb-1"><strong>Phim:</strong> <span class="text-danger fw-bold">${data.phim}</span></p>
+                <p class="mb-1"><strong>Giờ chiếu:</strong> ${data.suat} (${data.rap})</p>
+                <p class="mb-1"><strong>Số lượng:</strong> ${data.soLuong} vé</p>
+                <p class="mb-0"><strong>Ghế:</strong> <span class="text-primary fw-bold">${data.ghe}</span></p>
+            </div>
+        `,
+        confirmButtonText: 'Tiếp tục soát vé',
+        confirmButtonColor: '#28a745'
+    }).then(() => { resumeScanner(); });
+} else {
+                // VÉ SAI, HẾT HẠN HOẶC ĐÃ QUÉT
+                Swal.fire({
+                    icon: 'error',
+                    title: 'TỪ CHỐI!',
+                    text: data.message,
+                    confirmButtonText: 'Quét lại',
+                    confirmButtonColor: '#dc3545'
+                }).then(() => { resumeScanner(); });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('Lỗi', 'Không thể kết nối đến máy chủ!', 'error')
+                .then(() => { resumeScanner(); });
+        });
+    }
+
+    // Hàm mở lại Camera sau khi thông báo xong
+    function resumeScanner() {
+        if (html5QrcodeScanner && html5QrcodeScanner.getState() === 3) { // 3 is PAUSED
+            html5QrcodeScanner.resume();
+        }
+        isProcessing = false;
+    }
+</script>

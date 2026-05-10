@@ -105,10 +105,28 @@
                         <tr class="employee-row position-relative" style="cursor: pointer;" onclick="goToDetail(event, '@Url.Action("ChiTiet", new { id = item.MaNd })')">
                             <td class="px-4 py-3 text-start">
                                 <div class="d-flex align-items-center">
-                                    <!-- Thêm flex-shrink-0 để avatar không bị méo khi thu nhỏ màn hình -->
-                                    <div class="bg-secondary bg-gradient text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0 me-3 shadow-sm" style="width: 45px; height: 45px;">
-                                        <span class="fw-bold fs-5">@(string.IsNullOrWhiteSpace(item.HoTen) ? "?" : item.HoTen.Substring(0, 1).ToUpper())</span>
-                                    </div>
+                                    @{
+                                        string firstLetter = string.IsNullOrWhiteSpace(item.HoTen) ? "?" : item.HoTen.Trim().Substring(0, 1).ToUpper();
+        
+                                        // Giả sử tên cột ảnh của bạn là HinhAnh (thay đổi nếu cần)
+                                        string imgUrl = string.IsNullOrEmpty(item.Hinh) ? "" : $"/images/avatars/{item.Hinh}";
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(imgUrl))
+                                    {
+                                        <img src="@imgUrl" class="rounded-circle flex-shrink-0 me-3 shadow-sm border border-2 border-white" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" alt="Avatar" />
+        
+                                        <div class="bg-secondary bg-gradient text-white rounded-circle justify-content-center align-items-center flex-shrink-0 me-3 shadow-sm" style="width: 45px; height: 45px; display: none;">
+                                            <span class="fw-bold fs-5">@firstLetter</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-secondary bg-gradient text-white rounded-circle d-flex justify-content-center align-items-center flex-shrink-0 me-3 shadow-sm" style="width: 45px; height: 45px;">
+                                            <span class="fw-bold fs-5">@firstLetter</span>
+                                        </div>
+                                    }
+
                                     <div>
                                         <strong class="d-block text-dark employee-name">@item.HoTen</strong>
                                         <div class="small text-muted employee-contact mt-1">

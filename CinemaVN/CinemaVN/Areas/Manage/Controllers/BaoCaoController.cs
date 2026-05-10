@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CinemaVN.Models; // Thay bằng namespace Models của bạn
-using System.Text.Json;
+using CinemaVN.Models;
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
 namespace CinemaVN.Areas.Manage.Controllers
 {
@@ -14,80 +17,53 @@ namespace CinemaVN.Areas.Manage.Controllers
         {
             _db = db;
         }
-
-        // Helper lấy User hiện tại
-        private NguoiDung GetCurrentUser()
+        public class ThongKeNgay
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            return _db.NguoiDungs.Include(u => u.MaCnNavigation).FirstOrDefault(u => u.MaNd == userId);
+            public string Ngay { get; set; }
+            public int SoVe { get; set; }
+            public int SoDichVu { get; set; }
+            public decimal DoanhThu { get; set; }
         }
 
-        public IActionResult Index()
+        public IActionResult Index(DateTime? fromDate, DateTime? toDate)
         {
-            var currentUser = GetCurrentUser();
-            if (currentUser == null) return RedirectToAction("Login", "Home", new { area = "" });
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var user = _db.NguoiDungs.Include(u => u.MaCnNavigation).FirstOrDefault(u => u.MaNd == userId);
+            if (user == null || user.MaCn == null) return RedirectToAction("Login", "Home", new { area = "" });
 
-            ViewBag.TenChiNhanh = currentUser.MaCnNavigation?.TenCn;
+            ViewBag.TenChiNhanh = user.MaCnNavigation.TenCn;
+            DateTime start = fromDate ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            DateTime end = toDate ?? DateTime.Now.Date;
+            DateTime endOfDay = end.AddDays(1).AddTicks(-1);
 
-            // 1. THIẾT LẬP THỜI GIAN (Lấy tháng hiện tại)
-            var today = DateTime.Today;
-            var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
-            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+            var hoaDons = _db.HoaDons
+                .Include(h => h.Ves)
+                .Include(h => h.ChiTietDichVus)
+                .Where(h => h.MaCn == user.MaCn && h.NgayLap >= start && h.NgayLap <= endOfDay)
+                .ToList();
+            ViewBag.TongDoanhThu = hoaDons.Sum(h => h.TongTien ?? 0);
+            ViewBag.TongVe = hoaDons.Sum(h => h.Ves.Count);
+            ViewBag.TongDichVu = hoaDons.Sum(h => h.ChiTietDichVus.Sum(c => c.SoLuong));
+            ViewBag.TongDonHang = hoaDons.Count;
+            var dataTheoNgay = hoaDons
+                .GroupBy(h => h.NgayLap.Value.Date)
+                .Select(g => new ThongKeNgay
+                {
+                    Ngay = g.Key.ToString("dd/MM/yyyy"),
+                    SoVe = g.Sum(h => h.Ves.Count),
+                    SoDichVu = g.Sum(h => h.ChiTietDichVus.Sum(c => c.SoLuong)),
 
-            // 2. LẤY DỮ LIỆU HÓA ĐƠN CỦA CHI NHÁNH TRONG THÁNG (Giả định bạn có bảng HoaDons)
-            var hoaDonsTrongThang = _db.HoaDons
-                .Where(hd => hd.MaCn == currentUser.MaCn && hd.NgayLap >= firstDayOfMonth && hd.NgayLap <= lastDayOfMonth)
+                    DoanhThu = g.Sum(h => h.TongTien ?? 0)
+                })
+                .OrderBy(x => DateTime.ParseExact(x.Ngay, "dd/MM/yyyy", null))
                 .ToList();
 
-            ViewBag.TongDoanhThu = hoaDonsTrongThang.Sum(hd => hd.TongTien) ?? 0;
-            ViewBag.TongDonHang = hoaDonsTrongThang.Count;
+            ViewBag.ChartLabels = dataTheoNgay.Select(x => x.Ngay).ToList();
+            ViewBag.ChartData = dataTheoNgay.Select(x => x.DoanhThu).ToList();
+            ViewBag.FromDate = start.ToString("yyyy-MM-dd");
+            ViewBag.ToDate = end.ToString("yyyy-MM-dd");
 
-            // Đếm số nhân sự đang hoạt động tại chi nhánh
-            ViewBag.TongNhanSu = _db.NguoiDungs.Count(n => n.MaCn == currentUser.MaCn && n.TrangThai == true);
-            var sevenDaysAgo = today.AddDays(-6);
-            var doanhThu7Ngay = _db.HoaDons
-                .Where(hd => hd.MaCn == currentUser.MaCn && hd.NgayLap >= sevenDaysAgo && hd.NgayLap <= today)
-                .GroupBy(hd => hd.NgayLap.Value.Date)
-                .Select(g => new { Ngay = g.Key.ToString("dd/MM"), DoanhThu = g.Sum(hd => hd.TongTien) })
-                .ToList();
-
-            // Đảm bảo đủ 7 ngày kể cả ngày không có doanh thu
-            var chartLabels = new List<string>();
-            var chartData = new List<decimal>();
-            for (int i = 6; i >= 0; i--)
-            {
-                var date = today.AddDays(-i);
-                chartLabels.Add(date.ToString("dd/MM"));
-                var dtDay = doanhThu7Ngay.FirstOrDefault(d => d.Ngay == date.ToString("dd/MM"));
-                chartData.Add(dtDay?.DoanhThu ?? 0);
-            }
-
-            ViewBag.ChartLabels = JsonSerializer.Serialize(chartLabels);
-            ViewBag.ChartData = JsonSerializer.Serialize(chartData);
-
-
-            //var topDichVu = _db.ChiTietDichVus
-            //    .Include(ct => ct.MaHDNavigation)
-            //    .Include(ct => ct.MaDvNavigation)
-            //    .Where(ct => ct.MaHDNavigation.MaCn == currentUser.MaCn
-            //              && ct.MaHDNavigation.NgayLap >= firstDayOfMonth
-            //              && ct.MaHDNavigation.NgayLap <= lastDayOfMonth)
-            //    .GroupBy(ct => new { ct.MaDv, ct.MaDvNavigation.TenDv, ct.MaDvNavigation.HinhAnh })
-            //    .Select(g => new
-            //    {
-            //        MaDV = g.Key.MaDv,
-            //        TenDV = g.Key.TenDv,
-            //        HinhAnh = g.Key.HinhAnh,
-            //        TongSoLuong = g.Sum(ct => ct.SoLuong),
-            //        TongTienMangLai = g.Sum(ct => ct.ThanhTien)
-            //    })
-            //    .OrderByDescending(x => x.TongSoLuong)
-            //    .Take(5)
-            //    .ToList();
-
-            //ViewBag.TopDichVu = topDichVu;
-
-            return View();
+            return View(dataTheoNgay);
         }
     }
 }
