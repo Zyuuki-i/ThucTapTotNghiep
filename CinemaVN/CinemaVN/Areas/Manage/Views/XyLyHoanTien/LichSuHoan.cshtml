@@ -1,0 +1,58 @@
+﻿@model IEnumerable<CinemaVN.Models.HoaDon>
+@{
+    ViewData["Title"] = "Lịch sử hoàn tiền";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-label fw-bold mb-2"><i class="bi bi-clock-history text-secondary me-2"></i> Lịch Sử Hoàn Tiền</h2>
+            <p class="text-muted mb-0">Danh sách các hóa đơn đã được phê duyệt hoàn trả thành công.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-primary fw-bold px-4 rounded-pill shadow-sm">
+            <i class="bi bi-arrow-left me-2"></i> Về trang Phê duyệt
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="bg-black">
+                        <th class="py-3">Mã HĐ</th>
+                        <th class="py-3">Khách hàng</th>
+                        <th class="py-3">Thông tin phim</th>
+                        <th class="text-end py-3">Đã hoàn trả</th>
+                        <th class="text-center py-3">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="5" class="text-center py-5 text-muted">Chưa có lịch sử hoàn tiền nào.</td></tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        var firstVe = item.Ves.FirstOrDefault();
+                        <tr>
+                            <td class="ps-4 fw-bold text-secondary">#@item.MaHd</td>
+                            <td>
+                                <div class="fw-bold">@item.MaNdNavigation?.HoTen</div>
+                                <small class="text-muted">SĐT: @item.MaNdNavigation?.Sdt</small>
+                            </td>
+                            <td>
+                                <div class="small fw-bold text-primary">@firstVe?.MaScNavigation?.MaPhimNavigation?.TenPhim</div>
+                                <div class="small text-muted">@firstVe?.MaScNavigation?.GioBd - @firstVe?.MaScNavigation?.NgayChieu?.ToString("dd/MM/yyyy")</div>
+                            </td>
+                            <td class="text-end fw-bold text-danger">@item.TongTien?.ToString("N0") đ</td>
+                            <td class="text-center pe-4">
+                                <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i> Đã hoàn tất</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

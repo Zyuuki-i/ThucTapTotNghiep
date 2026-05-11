@@ -3,8 +3,12 @@
     ViewData["Title"] = "Quản Lý Giá - Định Dạng";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
-<h1 class="text-label text-center">QUẢN LÝ GIÁ</h1>
-<a asp-action="themDinhDang" class="btn btn-label btn-success">Thêm Định Dạng</a>
+<h2 class="text-label fw-bold text-uppercase">
+    <i class="bi bi-currency-dollar"></i> Quản Lý Giá
+</h2>
+<a asp-action="themDinhDang" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
+    <i class="bi bi-plus-circle me-2"></i>Thêm Định Dạng
+</a>
 <div class="my-3">
     @if (TempData["MessageError_DinhDang"] != null)
     {

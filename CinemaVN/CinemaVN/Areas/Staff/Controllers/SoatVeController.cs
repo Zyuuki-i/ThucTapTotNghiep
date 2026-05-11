@@ -16,120 +16,102 @@ namespace CinemaVN.Areas.Staff.Controllers
         {
             _db = db;
         }
-        // 1. GIAO DIỆN QUÉT MÃ QR
         public IActionResult Index()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "Home", new { area = "" });
-
             var staff = _db.NguoiDungs.Include(u => u.MaCnNavigation).FirstOrDefault(u => u.MaNd == userId);
-            if (staff == null) return RedirectToAction("Login", "Home", new { area = "" });
+            if (staff == null || staff.MaCn == null) return RedirectToAction("Login", "Home", new { area = "" });
 
             ViewBag.TenNhanVien = staff.HoTen;
             ViewBag.TenChiNhanh = staff.MaCnNavigation?.TenCn;
-
             return View();
         }
-        // 2. API XỬ LÝ SOÁT VÉ (NHẬN TỪ AJAX)
+
         [HttpPost]
-        public async Task<IActionResult> XuLyQuetVe(string qrCode)
+        public async Task<IActionResult> KiemTraVe([FromBody] QrRequest data)
         {
-            if (string.IsNullOrEmpty(qrCode))
-            {
-                return Json(new { success = false, message = "Mã QR trống hoặc không hợp lệ!" });
-            }
-
-            // 1. BÓC TÁCH LẤY MÃ HÓA ĐƠN (MaHD) TỪ MÃ QR HOẶC NHẬP TAY
-            int maHD = 0;
-            if (qrCode.StartsWith("MaHD:"))
-            {
-                // Xử lý mã QR (VD: "MaHD:105|CinemaVN" -> Lấy số 105)
-                var parts = qrCode.Split('|');
-                var idPart = parts[0].Replace("MaHD:", "");
-                int.TryParse(idPart, out maHD);
-            }
-            else
-            {
-                // Xử lý nhập tay (Nhân viên nhập thẳng số 105 vào ô)
-                int.TryParse(qrCode, out maHD);
-            }
-
-            if (maHD == 0)
-            {
-                return Json(new { success = false, message = "Mã hóa đơn không đúng định dạng!" });
-            }
-
-            // 2. TÌM TẤT CẢ VÉ THUỘC MÃ HÓA ĐƠN NÀY
-           
-            var ves = await _db.Ves
-                .Include(v => v.MaScNavigation).ThenInclude(s => s.MaPhimNavigation)
-                .Include(v => v.MaScNavigation).ThenInclude(s => s.MaPcNavigation)
-                .Include(v => v.MaGheNavigation)
-                .Where(v => v.MaHd == maHD)
-                .ToListAsync();
-
-            if (!ves.Any())
-            {
-                return Json(new { success = false, message = $"Không tìm thấy vé nào cho Hóa Đơn #{maHD}!" });
-            }
-
-            var suatChieu = ves.First().MaScNavigation;
-            var phim = suatChieu?.MaPhimNavigation;
-            var phong = suatChieu?.MaPcNavigation;
-
-            // 3. KIỂM TRA NGÀY CHIẾU (Bảo mật: Khách không thể lấy vé ngày mai đi xem hôm nay)
-            if (suatChieu != null && suatChieu.NgayChieu?.Date != DateTime.Today)
-            {
-                string ngayChieu = suatChieu.NgayChieu?.ToString("dd/MM/yyyy") ?? "Không xác định";
-                return Json(new { success = false, message = $"Từ chối! Hóa đơn này mua vé cho ngày {ngayChieu}, không phải hôm nay." });
-            }
-
-            // 4. LỌC CÁC VÉ CÓ TRẠNG THÁI = 1 (HỢP LỆ: Đã thanh toán, chưa soát vé)
-            var veHopLe = ves.Where(v => v.TrangThai == 1).ToList();
-
-            if (!veHopLe.Any())
-            {
-                // Bắt lỗi cụ thể để báo cho nhân viên biết
-                if (ves.All(v => v.TrangThai == 2))
-                {
-                    return Json(new { success = false, message = $"Hóa đơn #{maHD} ĐÃ ĐƯỢC SOÁT VÉ trước đó!" });
-                }
-                return Json(new { success = false, message = $"Hóa đơn #{maHD} chưa thanh toán hoặc đã bị hủy!" });
-            }
-
-            // 5. TIẾN HÀNH SOÁT VÉ: CHUYỂN TRẠNG THÁI TỪ 1 SANG 2
-            using var transaction = await _db.Database.BeginTransactionAsync();
             try
             {
-                foreach (var ve in veHopLe)
+                string inputData = data?.QrCode?.Trim();
+                if (string.IsNullOrEmpty(inputData))
+                    return Json(new { success = false, message = "Vui lòng nhập hoặc quét mã hóa đơn!" });
+
+                int maHD = 0;
+
+                if (inputData.StartsWith("MaHD:") && inputData.Contains("|CinemaVN"))
                 {
-                    ve.TrangThai = 2; // 2: Đã dùng (Đã soát vé)
-                    _db.Ves.Update(ve);
+                    string maHdStr = inputData.Split('|')[0].Replace("MaHD:", "").Trim();
+                    if (!int.TryParse(maHdStr, out maHD))
+                        return Json(new { success = false, message = "Dữ liệu QR bị lỗi định dạng!" });
+                }
+                else
+                {
+                    if (!int.TryParse(inputData, out maHD))
+                        return Json(new { success = false, message = "Mã hóa đơn nhập tay phải là chữ số!" });
                 }
 
+                var hoaDon = await _db.HoaDons
+                    .Include(h => h.MaNdNavigation)
+                    .Include(h => h.Ves).ThenInclude(v => v.MaScNavigation).ThenInclude(s => s.MaPhimNavigation)
+                    .Include(h => h.Ves).ThenInclude(v => v.MaScNavigation).ThenInclude(s => s.MaPcNavigation)
+                    .Include(h => h.Ves).ThenInclude(v => v.MaGheNavigation)
+                    .FirstOrDefaultAsync(h => h.MaHd == maHD);
+
+                if (hoaDon == null)
+                    return Json(new { success = false, message = $"Không tìm thấy Hóa đơn #{maHD} trên hệ thống!" });
+
+                var ves = hoaDon.Ves.ToList();
+                if (!ves.Any())
+                    return Json(new { success = false, message = "Hóa đơn này không chứa vé xem phim nào!" });
+
+                var suatChieu = ves.First().MaScNavigation;
+
+                if (suatChieu.NgayChieu?.Date != DateTime.Today)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Sai ngày! Vé này chiếu vào ngày {suatChieu.NgayChieu?.ToString("dd/MM/yyyy")}.",
+                        phim = suatChieu.MaPhimNavigation?.TenPhim
+                    });
+                }
+
+                bool allScanned = ves.All(v => v.TrangThai == 2);
+                if (allScanned)
+                    return Json(new { success = false, message = "CẢNH BÁO: Vé này ĐÃ ĐƯỢC SOÁT trước đó. Có dấu hiệu dùng lại vé cũ!" });
+
+                foreach (var v in ves)
+                {
+                    if (v.TrangThai == 1) v.TrangThai = 2;
+                }
                 await _db.SaveChangesAsync();
-                await transaction.CommitAsync();
 
-                // Lấy tên các ghế gộp thành chuỗi (VD: "A1, A2, E2 E3")
-                string danhSachGhe = string.Join(", ", veHopLe.Select(v => v.MaGheNavigation?.Hang + v.MaGheNavigation?.SoGhe));
+                string tenGhe = string.Join(", ", ves.Select(v => v.MaGheNavigation.Hang + v.MaGheNavigation.SoGhe));
 
-                // Trả về dữ liệu thành công cho giao diện
                 return Json(new
                 {
                     success = true,
+                    message = "Soát vé THÀNH CÔNG!",
                     maHD = maHD,
-                    phim = phim?.TenPhim,
-                    rap = phong?.TenPc,
-                    suat = suatChieu?.GioBd?.ToString(@"hh\:mm"),
-                    ghe = danhSachGhe,
-                    soLuong = veHopLe.Count
+                    phim = suatChieu.MaPhimNavigation?.TenPhim,
+                    rap = suatChieu.MaPcNavigation?.TenPc,
+                    suat = suatChieu.GioBd?.ToString(@"hh\:mm"),
+                    ghe = tenGhe,
+                    khach = hoaDon.MaNdNavigation?.HoTen ?? "Khách mua tại quầy",
+                    soVe = ves.Count
                 });
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+                return Json(new { success = false, message = "Lỗi Server: " + ex.Message });
             }
         }
+
+    }
+
+    public class QrRequest
+    {
+        public string QrCode { get; set; }
     }
 }

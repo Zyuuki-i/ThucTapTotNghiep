@@ -5,23 +5,44 @@
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h1 class="text-label text-center">QUẢN LÝ CHI NHÁNH</h1>
+<div class="w-100">
+    <div class="mb-1">
+        <h2 class="text-label fw-bold text-uppercase">
+            <i class="bi bi-people"></i> Quản Lý Chi Nhánh
+        </h2>
+    </div>
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+            <a asp-action="them" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
+                <i class="bi bi-plus-circle me-2"></i>Thêm Chi Nhánh
+            </a>
+        </div>
 
-<div class="w-100 d-flex justify-content-between">
-    <a asp-action="them" class="btn btn-label btn-success">Thêm Mới</a>
-    <div class="d-flex justify-content-between">
-        <form class="d-flex search-group me-1" method="get" asp-action="Index">
-            <div class="input-group">
-                <input class="form-control" type="search" name="keyword" placeholder="Tìm mã, tên, địa chỉ,..." value="@ViewBag.Keyword" aria-label="Search">
-                <button class="btn btn-search bg-black text-white" type="submit"><i class="bi bi-search"></i></button>
-            </div>
-        </form>
-        @if (ViewBag.keyword != null && ViewBag.keyword != "")
-        {
-            <a asp-action="Index" class="btn btn-outline-info me-1">Quay lại</a>
-        }
+        <div class="d-flex align-items-center gap-2">
+            <form method="get" asp-action="Index">
+                <div class="input-group" style="width: 320px;">
+                    <input class="form-control"
+                           type="search"
+                           name="keyword"
+                           placeholder="Tìm mã, tên, địa chỉ..."
+                           value="@ViewBag.Keyword">
+
+                    <button class="btn btn-dark" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            @if (!string.IsNullOrEmpty(ViewBag.Keyword))
+            {
+                <a asp-action="Index" class="btn btn-outline-info">
+                    Quay lại
+                </a>
+            }
+        </div>
     </div>
 </div>
+
 <div class="my-3">
     @if (TempData["MessageError_ChiNhanh"] != null)
     {

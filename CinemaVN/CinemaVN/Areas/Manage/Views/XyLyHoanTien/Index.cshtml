@@ -1,0 +1,106 @@
+﻿@model IEnumerable<CinemaVN.Models.HoaDon>
+@{
+    ViewData["Title"] = "Xử lý hoàn tiền";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-label fw-bold mb-2"><i class="bi bi-ui-checks"></i> Phê Duyệt Hoàn Tiền</h2>
+        <a asp-action="LichSuHoan" class="btn btn-outline-secondary fw-bold px-4 rounded-pill shadow-sm">
+            <i class="bi bi-clock-history me-2"></i> Xem Lịch Sử Hoàn
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-4 py-3">Mã HĐ</th>
+                        <th class="py-3">Khách hàng</th>
+                        <th class="py-3">Khách>Thông tin suất chiếu</th>
+                        <th class="text-end py-3">Tổng tiền hoàn</th>
+                        <th class="text-center py-3">Voucher sử dụng</th>
+                        <th class="text-end pe-4 py-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="6" class="text-center py-5 text-muted">Hiện tại không có yêu cầu hoàn tiền nào chờ duyệt.</td></tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        var firstVe = item.Ves.FirstOrDefault();
+                        <tr>
+                            <td class="ps-4 fw-bold">#@item.MaHd</td>
+                            <td>
+                                <div class="fw-bold">@item.MaNdNavigation?.HoTen</div>
+                                <small class="text-muted">SĐT: @item.MaNdNavigation?.Sdt</small>
+                            </td>
+                            <td>
+                                <div class="small fw-bold text-primary">@firstVe?.MaScNavigation?.MaPhimNavigation?.TenPhim</div>
+                                <div class="small text-muted">@firstVe?.MaScNavigation?.GioBd - @firstVe?.MaScNavigation?.NgayChieu?.ToString("dd/MM/yyyy")</div>
+                            </td>
+                            <td class="text-end fw-bold text-danger">@item.TongTien?.ToString("N0") đ</td>
+                            <td class="text-center">
+                                @if (item.MaKmNavigation != null)
+                                {
+                                    <span class="badge bg-warning text-dark">@item.MaKmNavigation.Code (-@item.MaKmNavigation.SoDiem điểm)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Không có</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-success fw-bold px-3" onclick="duyetHoan(@item.MaHd)">Duyệt</button>
+                                <button class="btn btn-sm btn-outline-danger fw-bold ms-1" onclick="tuChoiHoan(@item.MaHd)">Từ chối</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function duyetHoan(id) {
+    Swal.fire({
+    title: 'Xác nhận phê duyệt?',
+    text: "Hệ thống sẽ hoàn trả tiền và điểm Voucher cho khách hàng, đồng thời thu hồi điểm thưởng.",
+    icon: 'question', showCancelButton: true, confirmButtonColor: '#198754', confirmButtonText: 'Đồng ý duyệt'
+    }).then((result) => {
+    if (result.isConfirmed) {
+    thucHienGoiApi(id, 'DuyetHoanTien');
+    }
+    });
+    }
+
+    function tuChoiHoan(id) {
+    Swal.fire({
+    title: 'Từ chối yêu cầu?',
+    text: "Vé sẽ quay lại trạng thái đã bán bình thường.",
+    icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', confirmButtonText: 'Từ chối'
+    }).then((result) => {
+    if (result.isConfirmed) {
+    thucHienGoiApi(id, 'TuChoiHoanTien');
+    }
+    });
+    }
+
+    function thucHienGoiApi(id, action) {
+    fetch(`/Manage/XyLyHoanTien/${action}?maHD=${id}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+    if(data.success) {
+    Swal.fire('Thành công', data.message, 'success').then(() => location.reload());
+    } else {
+    Swal.fire('Lỗi', data.message, 'error');
+    }
+    });
+    }
+</script>

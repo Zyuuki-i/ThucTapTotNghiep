@@ -5,10 +5,14 @@
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h1 class="text-label text-center">QUẢN LÝ BANNER</h1>
+<h2 class="text-label fw-bold text-uppercase">
+    <i class="bi bi-image"></i> Quản Lý Banner
+</h2>
 
 <div class="w-100 d-flex justify-content-between">
-    <a asp-action="them" class="btn btn-label btn-success">Thêm Mới</a>
+    <a asp-action="them" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
+        <i class="bi bi-plus-circle me-2"></i>Thêm Mới
+    </a>
     <div class="d-flex justify-content-between">
         <form class="d-flex search-group me-1" method="get" asp-action="Index">
             <div class="input-group">
