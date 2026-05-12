@@ -21,6 +21,10 @@
                 </div>
                     <input asp-for="Phone" type="hidden" class="form-control" value="0000000000" />
                 <div class="mb-2">
+                    <label class="form-label">Mật khẩu cũ</label>
+                    <input name="passOld" type="password" class="form-control" placeholder="Nhập mật khẩu cũ" required/>
+                </div>
+                <div class="mb-2">
                     <label asp-for="Password" class="form-label">Mật khẩu</label>
                     <input asp-for="Password" type="password" class="form-control" placeholder="Nhập mật khẩu mới" />
                     <span asp-validation-for="Password" class="text-danger"></span>

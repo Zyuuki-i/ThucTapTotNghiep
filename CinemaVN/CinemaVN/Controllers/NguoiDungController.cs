@@ -98,9 +98,9 @@ namespace CinemaVN.Controllers
         }
 
         [HttpPost]
-        public IActionResult doiMatKhau(Register reg)
+        public IActionResult doiMatKhau(Register reg, string passOld)
         {
-            if (reg == null || string.IsNullOrEmpty(reg.Email) || string.IsNullOrEmpty(reg.Password))
+            if (reg == null || string.IsNullOrEmpty(reg.Email) || string.IsNullOrEmpty(reg.Password) || string.IsNullOrEmpty(passOld))
             {
                 TempData["MessageError_DoiMatKhau"] = "Thông tin không hợp lệ!";
                 return RedirectToAction("doiMatKhau", reg);
@@ -109,6 +109,16 @@ namespace CinemaVN.Controllers
             if (user == null)
             {
                 TempData["MessageError_DoiMatKhau"] = "Người dùng không tồn tại!";
+                return RedirectToAction("doiMatKhau", reg);
+            }
+            if (!BCrypt.Net.BCrypt.Verify(passOld,user.MatKhau))
+            {
+                TempData["MessageError_DoiMatKhau"] = "Mật khẩu cũ không đúng!";
+                return RedirectToAction("doiMatKhau", reg);
+            }
+            if (BCrypt.Net.BCrypt.Verify(reg.Password, user.MatKhau))
+            {
+                TempData["MessageError_DoiMatKhau"] = "Mật khẩu mới phải khác mật khẩu cũ!";
                 return RedirectToAction("doiMatKhau", reg);
             }
             user.MatKhau = BCrypt.Net.BCrypt.HashPassword(reg.Password);
