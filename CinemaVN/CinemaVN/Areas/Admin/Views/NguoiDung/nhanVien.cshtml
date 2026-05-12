@@ -5,9 +5,14 @@
     List<ChiNhanh> chiNhanhs = ViewBag.ChiNhanhs as List<ChiNhanh> ?? new List<ChiNhanh>();
 }
 
-<h1 class="text-label text-center">QUẢN LÝ NGƯỜI DÙNG</h1>
+<h2 class="text-label fw-bold mb-1">
+    <i class="bi bi-box-seam"></i> Quản Lý Tài Khoản Nhân Viên
+</h2>
 <div class="w-100 d-flex justify-content-between">
-    <a asp-action="them" asp-route-role="staff" class="btn btn-label btn-success">Tạo tài khoản</a>
+
+    <a asp-action="them" asp-route-role="staff" class="btn btn-primary shadow fw-bold px-4 py-2 text-uppercase">
+        <i class="bi bi-plus-circle me-2"></i>Tạo tài khoản
+    </a>
     <div class="d-flex justify-content-between">
         <form class="d-flex search-group me-1" method="get" asp-action="nhanVien">
             <div class="input-group">

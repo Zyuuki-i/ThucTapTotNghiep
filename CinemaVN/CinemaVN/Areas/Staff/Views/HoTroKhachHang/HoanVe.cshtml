@@ -1,0 +1,221 @@
+﻿@model IEnumerable<CinemaVN.Models.HoaDon>
+@{
+    ViewData["Title"] = "Xử lý Hoàn Vé";
+    Layout = "~/Areas/Staff/Views/Shared/_StaffLayout.cshtml";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container-fluid py-4 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-uppercase text-dark mb-1">
+                <i class="bi bi-arrow-counterclockwise text-danger me-2"></i> YÊU CẦU HOÀN TIỀN VÉ
+            </h3>
+            <p class="text-muted mb-0">Tra cứu hóa đơn và gửi yêu cầu hoàn tiền lên Quản lý chi nhánh.</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary fw-bold px-4 rounded-pill">
+            <i class="bi bi-arrow-left me-2"></i> Trở về Dashboard
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4 p-md-5">
+                    <h5 class="fw-bold mb-3 text-center">TRA CỨU HÓA ĐƠN</h5>
+                    <p class="text-center text-muted small mb-4">Nhập mã hóa đơn (VD: 130) để kiểm tra thông tin vé cần hoàn.</p>
+                    
+                    <div class="input-group input-group-lg shadow-sm border border-danger rounded overflow-hidden">
+                        <span class="input-group-text bg-white border-0 text-danger"><i class="bi bi-search"></i></span>
+                        <input type="number" id="txtMaHD" class="form-control border-0 fw-bold bg-white" placeholder="Nhập mã Hóa đơn..." autofocus>
+                        <button class="btn btn-danger fw-bold px-4" onclick="timHoaDon()">KIỂM TRA</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="box-ketqua" class="card border-0 shadow-sm rounded-4 d-none transition-all">
+                <div class="card-header bg-dark text-white fw-bold py-3 text-center rounded-top-4">
+                    THÔNG TIN HÓA ĐƠN #<span id="lblMaHDTitle"></span>
+                </div>
+                <div class="card-body p-4 bg-light rounded-bottom-4">
+                    <div class="row g-3 fs-6">
+                        <div class="col-5 text-muted fw-bold">Ngày đặt vé:</div>
+                        <div class="col-7 fw-bold text-dark" id="lblNgayDat">---</div>
+                        
+                        <div class="col-5 text-muted fw-bold">Tên Phim:</div>
+                        <div class="col-7 fw-bold text-primary" id="lblPhim">---</div>
+                        
+                        <div class="col-5 text-muted fw-bold">Ngày chiếu:</div>
+                        <div class="col-7 fw-bold text-dark" id="lblNgayChieu">---</div>
+
+                        <div class="col-5 text-muted fw-bold">Giờ chiếu:</div>
+                        <div class="col-7 fw-bold text-danger" id="lblSuat">---</div>
+                    </div>
+
+                    <hr class="border-secondary my-4">
+
+                    <div class="bg-white border border-danger p-3 rounded-3 text-center mb-4">
+                        <span class="text-muted fw-bold small d-block">TỔNG TIỀN HOÀN TRẢ</span>
+                        <h2 class="text-danger fw-bold mb-0" id="lblTien">0 đ</h2>
+                    </div>
+
+                    <div class="alert alert-warning small mb-4">
+                        <i class="bi bi-info-circle-fill me-1"></i> <strong>Lưu ý:</strong> Việc hoàn vé phải được thực hiện trước suất chiếu <b>ít nhất 1 tiếng</b> và chỉ áp dụng cho vé đặt trong ngày.
+                    </div>
+
+                    <button class="btn btn-danger w-100 py-3 fw-bold fs-5 shadow-sm rounded-pill" onclick="xacNhanHoan()">
+                        <i class="bi bi-send-check-fill me-2"></i> GỬI YÊU CẦU HOÀN TIỀN
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="row justify-content-center mt-5">
+    <div class="col-lg-10">
+        <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-list-check text-danger me-2"></i> LỊCH SỬ YÊU CẦU HOÀN VÉ CỦA CHI NHÁNH</h5>
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 py-3">Mã HĐ</th>
+                            <th>Khách hàng</th>
+                            <th>Phim / Suất chiếu</th>
+                            <th class="text-end">Số tiền hoàn</th>
+                            <th class="text-center pe-4">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || !Model.Any())
+                        {
+                            <tr><td colspan="5" class="text-center py-4 text-muted">Chưa có yêu cầu hoàn vé nào gần đây.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model)
+                            {
+                                var firstVe = item.Ves.FirstOrDefault();
+                                bool isPending = item.Ves.Any(v => v.TrangThai == 4);
+                                bool isRefunded = item.Ves.Any(v => v.TrangThai == 5);
+                                    
+                                <tr>
+                                    <td class="ps-4 fw-bold">#@item.MaHd</td>
+                                    <td>
+                                        <div class="fw-bold">@(item.MaNdNavigation?.HoTen ?? "Khách vãng lai")</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-primary">@firstVe?.MaScNavigation?.MaPhimNavigation?.TenPhim</div>
+                                        <small class="text-muted">@firstVe?.MaScNavigation?.GioBd?.ToString(@"hh\:mm") - @firstVe?.MaScNavigation?.NgayChieu?.ToString("dd/MM/yyyy")</small>
+                                    </td>
+                                    <td class="text-end fw-bold text-danger">@item.TongTien?.ToString("N0") đ</td>
+                                    <td class="text-center pe-4">
+                                        @if (isPending)
+                                        {
+                                            <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-hourglass-split me-1"></i> Chờ Quản lý duyệt</span>
+                                        }
+                                        else if (isRefunded)
+                                        {
+                                            <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i> Đã hoàn tiền</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .transition-all {
+    transition: all 0.3s ease;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    }
+</style>
+
+<script>
+    document.getElementById("txtMaHD").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+    event.preventDefault();
+    timHoaDon();
+    }
+    });
+
+    function timHoaDon() {
+    let id = document.getElementById('txtMaHD').value.trim();
+    if(id === '') {
+    Swal.fire('Cảnh báo', 'Vui lòng nhập mã hóa đơn!', 'warning');
+    return;
+    }
+
+    Swal.fire({ title: 'Đang kiểm tra...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    document.getElementById('box-ketqua').classList.add('d-none');
+
+    fetch(`/Staff/HoTroKhachHang/TimHoaDonHoanVe?maHD=${id}`)
+    .then(res => res.json())
+    .then(data => {
+    Swal.close();
+    if(data.success) {
+    document.getElementById('lblMaHDTitle').innerText = data.maHD;
+    document.getElementById('lblNgayDat').innerText = data.ngayDat;
+    document.getElementById('lblPhim').innerText = data.phim;
+    document.getElementById('lblNgayChieu').innerText = data.ngayChieu;
+    document.getElementById('lblSuat').innerText = data.suat;
+    document.getElementById('lblTien').innerText = data.tongTien;
+                    
+    document.getElementById('box-ketqua').classList.remove('d-none');
+    } else {
+    Swal.fire('Lỗi', data.message, 'error');
+    }
+    })
+    .catch(err => {
+    Swal.close();
+    Swal.fire('Lỗi', 'Mất kết nối máy chủ!', 'error');
+    });
+    }
+
+    function xacNhanHoan() {
+    let id = document.getElementById('txtMaHD').value.trim();
+        
+    Swal.fire({
+    title: 'Xác nhận hoàn vé?',
+    text: "Yêu cầu hoàn tiền sẽ được chuyển tới Quản lý chi nhánh để phê duyệt. Vé sẽ tạm thời bị khóa.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Có, Gửi yêu cầu!',
+    cancelButtonText: 'Hủy'
+    }).then((result) => {
+    if (result.isConfirmed) {
+    Swal.fire({ title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    fetch(`/Staff/HoTroKhachHang/YeuCauHoanVe?maHD=${id}`, { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+    if(data.success) {
+    Swal.fire('Thành công!', data.message, 'success').then(() => {
+    document.getElementById('txtMaHD').value = '';
+    document.getElementById('box-ketqua').classList.add('d-none');
+    document.getElementById('txtMaHD').focus();
+    });
+    } else {
+    Swal.fire('Thất bại', data.message, 'error');
+    }
+    })
+    .catch(err => {
+    Swal.close();
+    Swal.fire('Lỗi', 'Mất kết nối máy chủ!', 'error');
+    });
+    }
+    });
+    }
+</script>

@@ -5,11 +5,9 @@
     var dsDichVu = ViewBag.DanhSachDichVu as List<CinemaVN.Models.DichVu>;
 }
 
-<!-- Cố tình đặt SweetAlert ở đây để đảm bảo load xong mới chạy code -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="container-fluid py-3" style="background-color: #f2f2f2;">
-    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-3 bg-white p-3 rounded shadow-sm border-start border-5 border-danger">
         <h4 class="fw-bold mb-0 text-dark"><i class="bi bi-display text-danger me-2"></i>HỆ THỐNG POS BÁN VÉ</h4>
         <div>
@@ -19,10 +17,8 @@
     </div>
 
     <div class="row g-3">
-        <!-- CỘT TRÁI: THAO TÁC -->
         <div class="col-lg-8">
-            
-            <!-- 1. TÌM KHÁCH HÀNG (TÍCH ĐIỂM) -->
+
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body p-3">
                     <div id="box-timkiem" class="d-flex">
@@ -43,34 +39,43 @@
                 </div>
             </div>
 
-            <!-- 2. CHỌN PHIM VÀ SUẤT CHIẾU -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-white fw-bold"><span class="badge bg-danger me-2">1</span>Chọn Phim & Suất Chiếu</div>
                 <div class="card-body">
                     <div class="d-flex overflow-auto gap-3 custom-scrollbar pb-2">
-                        @if(dsPhim != null && dsPhim.Any()) {
-                            foreach(var phim in dsPhim) {
-                                // Xử lý ảnh (đảm bảo không bị vỡ)
-                                string anhPhim = string.IsNullOrEmpty(phim.Poster) ? "/images/default-movie.jpg" : $"/images/movies/{phim.Poster}";
-                                <div class="movie-card text-center cursor-pointer" style="min-width: 100px;" onclick="chonPhim(this, @phim.MaPhim, '@phim.TenPhim')">
-                                    <img src="@anhPhim" class="w-100 rounded border shadow-sm mb-1" style="height: 140px; object-fit: cover;">
-                                    <small class="fw-bold d-block text-truncate" title="@phim.TenPhim">@phim.TenPhim</small>
-                                </div>
+                    @if(dsPhim != null && dsPhim.Any()) {
+                        foreach(var phim in dsPhim) {
+            
+                            string anhPhim = "/images/posters/default.png";
+            
+                            if (!string.IsNullOrWhiteSpace(phim.Poster))
+                            {
+                                string posterName = phim.Poster.Trim();
+                                anhPhim = posterName.StartsWith("http") 
+                                    ? posterName 
+                                    : $"/images/posters/{posterName}";
                             }
-                        } else {
-                            <p class="text-danger w-100 text-center py-3">Hôm nay chi nhánh không có lịch chiếu!</p>
+
+                            <div class="movie-card text-center cursor-pointer" style="min-width: 110px;" onclick="chonPhim(this, @phim.MaPhim, '@phim.TenPhim')">
+                
+                                <img src="@anhPhim" 
+                                     class="w-100 rounded border shadow-sm mb-1" 
+                                     style="height: 150px; object-fit: cover;" 
+                                     onerror="this.onerror=null; this.src='/images/posters/default.png';"> <small class="fw-bold d-block text-truncate mt-1" title="@phim.TenPhim">@phim.TenPhim</small>
+                            </div>
                         }
-                    </div>
+                    } else {
+                        <p class="text-danger w-100 text-center py-3">Hôm nay chi nhánh không có lịch chiếu!</p>
+                    }
+                </div>
 
                     <div id="box-suatchieu" class="mt-3 p-3 bg-light rounded d-none border">
                         <strong class="d-block mb-2 text-danger">Suất chiếu: <span id="lblTenPhim"></span></strong>
-                        <button class="btn btn-outline-dark fw-bold btn-suat me-2" onclick="chonSuat(this, 101, '14:30', 'Rạp 1')">14:30 (Rạp 1)</button>
-                        <button class="btn btn-outline-dark fw-bold btn-suat" onclick="chonSuat(this, 102, '18:00', 'Rạp 2')">18:00 (Rạp 2)</button>
+                        <div id="ds-btn-suat" class="d-flex flex-wrap gap-2">
+                            </div>
                     </div>
                 </div>
             </div>
-
-            <!-- 3. CHỌN GHẾ -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between">
                     <span><span class="badge bg-danger me-2">2</span>Chọn Ghế Ngồi</span>
@@ -88,7 +93,6 @@
                 </div>
             </div>
 
-            <!-- 4. CHỌN BẮP NƯỚC -->
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-header bg-white fw-bold"><span class="badge bg-danger me-2">3</span>Bắp Nước</div>
                 <div class="card-body row g-2">
@@ -102,7 +106,9 @@
                                         <div class="fw-bold small">@dv.TenDv</div>
                                         <div class="text-danger small fw-bold">@dv.Gia.ToString("N0")đ</div>
                                     </div>
-                                    <input type="number" class="form-control text-center input-dv" style="width: 60px;" data-gia="@dv.Gia" value="0" min="0" onchange="capNhatBill()">
+                                    <input type="number" class="form-control text-center input-dv" style="width: 60px;" 
+                                       data-madv="@dv.MaDv" data-tendv="@dv.TenDv" data-gia="@dv.Gia" 
+                                       value="0" min="0" onchange="capNhatBill()">
                                 </div>
                             </div>
                         }
@@ -110,9 +116,48 @@
                 </div>
             </div>
 
+            
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white fw-bold"><span class="badge bg-danger me-2">4</span>Voucher / Đổi Điểm</div>
+                <div class="card-body">
+                    <div class="d-flex overflow-auto gap-3 custom-scrollbar pb-2">
+                        @{ var dsKhuyenMai = ViewBag.DanhSachKhuyenMai as List<CinemaVN.Models.KhuyenMai>; }
+                        @if(dsKhuyenMai != null && dsKhuyenMai.Any()) {
+                            foreach(var km in dsKhuyenMai) {
+                                <div class="border rounded p-2 text-center d-flex flex-column justify-content-between shadow-sm" style="min-width: 160px; background: #fff3cd; border-color: #ffecb5 !important;">
+                                    <div>
+                                        <strong class="d-block text-danger mb-1 fs-5">@km.Code</strong>
+                                        <small class="d-block text-muted mb-1" style="font-size:11px;">Giảm @km.PhanTramGiam% (Tối đa @km.GiamToiDa?.ToString("N0")đ)</small>
+                                        <small class="d-block text-muted" style="font-size:11px;">Đơn tối thiểu: @km.DieuKien?.ToString("N0")đ</small>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-warning text-dark w-100 mt-2 mb-1"><i class="bi bi-star-fill"></i> Đổi: @km.SoDiem điểm</span>
+                                        <button class="btn btn-sm btn-outline-danger w-100 fw-bold" onclick="apDungVoucher('@km.Code')">Dùng mã</button>
+                                    </div>
+                                </div>
+                            }
+                        } else {
+                            <p class="text-muted w-100 text-center small mb-0">Không có mã khuyến mãi nào đang hoạt động.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3 border-bottom pb-3 d-none" id="box-voucher-applied">
+                <div class="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-2 rounded border border-success">
+                    <div>
+                        <span class="badge bg-success me-1"><i class="bi bi-check-circle"></i> Đã áp dụng</span>
+                        <strong id="lblVoucherCode" class="text-success small text-uppercase">---</strong>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <strong id="billTienGiam" class="text-danger fw-bold fs-6">-0 đ</strong>
+                        <button class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="xoaVoucher()" title="Xóa mã"><i class="bi bi-x-circle-fill fs-5"></i></button>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
 
-        <!-- CỘT PHẢI: HÓA ĐƠN -->
         <div class="col-lg-4">
             <div class="card border-0 shadow-lg position-sticky" style="top: 15px;">
                 <div class="card-header bg-danger text-white text-center py-3">
@@ -132,6 +177,27 @@
                         <span class="small fw-bold">Dịch vụ:</span>
                         <strong id="billTienDV">0 đ</strong>
                     </div>
+
+                    <div class="mb-3 border-bottom pb-3" id="box-voucher-input">
+    <span class="small fw-bold text-muted d-block mb-1"><i class="bi bi-keyboard me-1"></i>Nhập mã thủ công</span>
+    <div class="input-group">
+        <input type="text" id="maVoucherThuCong" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Nhập mã...">
+        <button class="btn btn-dark btn-sm fw-bold px-3" onclick="apDungVoucherThuCong()">ÁP DỤNG</button>
+    </div>
+</div>
+
+<div class="mb-3 border-bottom pb-3 d-none" id="box-voucher-applied">
+    <div class="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-2 rounded border border-success">
+        <div>
+            <span class="badge bg-success me-1"><i class="bi bi-check-circle"></i> Đã áp dụng</span>
+            <strong id="lblVoucherCode" class="text-success small text-uppercase">---</strong>
+        </div>
+        <div class="d-flex align-items-center">
+            <strong id="billTienGiam" class="text-danger fw-bold fs-6">-0 đ</strong>
+            <button class="btn btn-sm btn-link text-danger p-0 ms-2" onclick="xoaVoucher()" title="Xóa mã"><i class="bi bi-x-circle-fill fs-5"></i></button>
+        </div>
+    </div>
+</div>
 
                     <div class="bg-light p-3 text-center border border-danger rounded mb-3">
                         <span class="text-muted small fw-bold">TỔNG CẦN THU</span>
@@ -168,28 +234,30 @@
 </style>
 
 <script>
-    // 1. KHỞI TẠO GIỎ HÀNG (QUAN TRỌNG: KHÔNG ĐƯỢC XÓA)
+
     let bill = {
-        maKH: null, tenKH: 'Khách vãng lai',
+        maKH: null, tenKH: 'Khách vãng lai', diemHienTai: 0, 
         maSC: 0, tenPhim: '', suat: '', rap: '',
-        dsGhe: [], // [{maGhe: 25, ten: 'A1', gia: 80000}]
-        tienVe: 0, tienDV: 0, tongTien: 0
+        dsGhe: [], dsDV: [], 
+        tienVe: 0, tienDV: 0, tongTienBanDau: 0, tongTien: 0,
+        maKM: null, codeKM: '', phanTramKM: 0, toiDaKM: 0, tienGiam: 0, diemTruKM: 0 
     };
 
-    // 2. XỬ LÝ TÌM KHÁCH HÀNG (CÓ TRY...CATCH CHỐNG TREO MÁY)
+
     function timKhachHang() {
         let sdt = document.getElementById('sdtKhach').value.trim();
         if(sdt === '') { Swal.fire('Lỗi', 'Chưa nhập số điện thoại', 'warning'); return; }
 
         Swal.fire({ title: 'Đang tìm...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-        fetch(`@Url.Action("TimKhachHang", "BanVe", new { area = "Staff" })?sdt=${sdt}`)
+        fetch(`/Staff/BanVe/TimKhachHang?sdt=${sdt}`)
             .then(res => res.json())
             .then(data => {
-                Swal.close(); // Đóng loading an toàn
+                Swal.close();
                 if(data.success) {
                     bill.maKH = data.maKh;
                     bill.tenKH = data.tenKh;
+                    bill.diemHienTai = data.diem;
                     
                     document.getElementById('txtTenKhach').innerText = data.tenKh;
                     document.getElementById('txtDiemKhach').innerText = data.diem;
@@ -208,14 +276,15 @@
     }
 
     function huyKhachHang() {
-        bill.maKH = null; bill.tenKH = 'Khách vãng lai';
+        bill.maKH = null; bill.tenKH = 'Khách vãng lai'; bill.diemHienTai = 0;
+        xoaVoucher();
         document.getElementById('sdtKhach').value = '';
         document.getElementById('box-profile').classList.replace('d-flex', 'd-none');
         document.getElementById('box-timkiem').classList.replace('d-none', 'd-flex');
         capNhatBill();
     }
 
-    // 3. XỬ LÝ CHỌN PHIM - GHẾ
+
     function chonPhim(el, ma, ten) {
         document.querySelectorAll('.movie-card').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
@@ -224,130 +293,282 @@
         document.getElementById('billPhim').innerText = ten;
         document.getElementById('lblTenPhim').innerText = ten;
         
-        document.getElementById('box-suatchieu').classList.remove('d-none');
-        document.querySelectorAll('.btn-suat').forEach(b => b.classList.replace('btn-dark', 'btn-outline-dark'));
-        
         document.getElementById('box-ghe').style.opacity = '0.4';
         document.getElementById('box-ghe').style.pointerEvents = 'none';
+        document.getElementById('lblRap').innerText = 'Chưa chọn suất';
         capNhatBill();
+
+        document.getElementById('box-suatchieu').classList.add('d-none');
+        
+        fetch(`/Staff/BanVe/GetSuatChieu?maPhim=${ma}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.success && data.data.length > 0) {
+                    let htmlBtn = '';
+                    data.data.forEach(sc => {
+                        htmlBtn += `<button class="btn btn-outline-dark fw-bold btn-suat" onclick="chonSuat(this, ${sc.maSc}, '${sc.gioBd}', '${sc.tenRap}')">${sc.gioBd} (${sc.tenRap})</button>`;
+                    });
+                    document.getElementById('ds-btn-suat').innerHTML = htmlBtn;
+                    document.getElementById('box-suatchieu').classList.remove('d-none');
+                } else {
+                    Swal.fire('Thông báo', 'Phim này đã hết suất chiếu trong ngày hôm nay tại chi nhánh!', 'info');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Lỗi', 'Không thể kết nối máy chủ để lấy suất chiếu!', 'error');
+            });
     }
 
     function chonSuat(btn, maSC, gio, rap) {
-    document.querySelectorAll('.btn-suat').forEach(b => b.classList.replace('btn-dark', 'btn-outline-dark'));
-    btn.classList.replace('btn-outline-dark', 'btn-dark');
+        document.querySelectorAll('.btn-suat').forEach(b => b.classList.replace('btn-dark', 'btn-outline-dark'));
+        btn.classList.replace('btn-outline-dark', 'btn-dark');
 
-    bill.maSC = maSC; bill.suat = gio; bill.rap = rap;
-    document.getElementById('billSuat').innerText = gio;
-    document.getElementById('billRap').innerText = rap;
-    document.getElementById('lblRap').innerText = rap;
+        bill.maSC = maSC; bill.suat = gio; bill.rap = rap;
+        document.getElementById('billSuat').innerText = gio;
+        document.getElementById('billRap').innerText = rap;
+        document.getElementById('lblRap').innerText = rap;
 
-    // Hiển thị khung ghế lên (tạm thời đang mờ)
-    document.getElementById('box-ghe').style.opacity = '1';
-    document.getElementById('box-ghe').style.pointerEvents = 'auto';
-    document.getElementById('box-ghe').innerHTML = '<div class="text-white my-4"><div class="spinner-border text-danger" role="status"></div><br>Đang tải sơ đồ ghế...</div>';
+        document.getElementById('box-ghe').style.opacity = '1';
+        document.getElementById('box-ghe').style.pointerEvents = 'auto';
+        document.getElementById('box-ghe').innerHTML = '<div class="text-white my-4"><div class="spinner-border text-danger" role="status"></div><br>Đang tải sơ đồ ghế...</div>';
 
-    // RESET GIỎ HÀNG
-    bill.dsGhe = [];
-    capNhatBill();
+        bill.dsGhe = [];
+        capNhatBill();
 
-    // GỌI API LẤY SƠ ĐỒ GHẾ MỚI NHẤT
-    fetch(`/Staff/BanVe/GetDanhSachGhe?maSC=${maSC}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                veSoDoGhe(data.data);
-            } else {
-                Swal.fire('Lỗi', 'Không tải được sơ đồ ghế', 'error');
+        fetch(`/Staff/BanVe/GetDanhSachGhe?maSC=${maSC}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) { veSoDoGhe(data.data); } 
+                else { Swal.fire('Lỗi', 'Không tải được sơ đồ ghế', 'error'); }
+            });
+    }
+
+
+    function veSoDoGhe(duLieuGhe) {
+        let html = '<div class="w-75 mx-auto bg-secondary bg-opacity-50 text-white rounded mb-5 d-flex align-items-center justify-content-center" style="height: 30px; border-top: 3px solid #6c757d;">MÀN HÌNH</div>';
+
+        duLieuGhe.forEach(row => {
+            html += `<div class="d-flex justify-content-center gap-2 mb-3">
+                        <span class="text-white fw-bold me-2 d-flex align-items-center justify-content-center" style="width: 25px; font-size: 16px;">${row.hang}</span>`;
+            
+            for (let i = 0; i < row.seats.length; i++) {
+                let seat = row.seats[i];
+                let tenLoai = (seat.loaiGhe || "").toLowerCase();
+                if (tenLoai.includes('đôi') || tenLoai.includes('couple') || tenLoai.includes('sweetbox')) { 
+                    if (i + 1 < row.seats.length) {
+                        let nextSeat = row.seats[i + 1];
+                        let nextTenLoai = (nextSeat.loaiGhe || "").toLowerCase();
+
+                        if (nextTenLoai.includes('đôi') || nextTenLoai.includes('couple') || nextTenLoai.includes('sweetbox')) {
+                            let pairName = seat.tenGhe + " | " + nextSeat.tenGhe; 
+                            let pairPrice = seat.gia + nextSeat.gia; 
+                            let isSold = seat.daBan || nextSeat.daBan; 
+
+                            let statusClass = "seat-couple";
+                            let onClickEvent = `onclick="chonGheDoi(this, ${seat.maGhe}, ${nextSeat.maGhe}, '${seat.tenGhe}', '${nextSeat.tenGhe}', ${pairPrice})"`;
+                            
+                            if (isSold) {
+                                statusClass += " seat-sold disabled";
+                                onClickEvent = ""; 
+                            }
+
+                            html += `<button class="seat-btn ${statusClass}" ${onClickEvent} title="${pairName} - ${pairPrice.toLocaleString()}đ">${pairName}</button>`;
+                            
+                            i++;
+                            continue;
+                        }
+                    }
+                }
+                let statusClass = "seat-standard"; 
+                if (tenLoai.includes('vip')) { statusClass = "seat-vip"; }
+                else if (tenLoai.includes('đôi') || tenLoai.includes('couple')) { statusClass = "seat-couple"; }
+
+                let onClickEvent = `onclick="chonGhe(this, ${seat.maGhe}, '${seat.tenGhe}', ${seat.gia})"`;
+                if (seat.daBan) {
+                    statusClass += " seat-sold disabled";
+                    onClickEvent = ""; 
+                }
+
+                html += `<button class="seat-btn ${statusClass}" ${onClickEvent} title="${seat.tenGhe} - ${seat.gia.toLocaleString()}đ">${seat.tenGhe}</button>`;
             }
+            html += `</div>`;
         });
-}
-function veSoDoGhe(duLieuGhe) {
-    // Thanh màn hình
-    let html = '<div class="w-75 mx-auto bg-secondary bg-opacity-50 text-white rounded mb-5 d-flex align-items-center justify-content-center" style="height: 30px; border-top: 3px solid #6c757d;">MÀN HÌNH</div>';
 
-    // Duyệt qua từng hàng ghế (A, B, C...)
-    duLieuGhe.forEach(row => {
-        html += `<div class="d-flex justify-content-center gap-2 mb-3">
-                    <span class="text-white fw-bold me-2 d-flex align-items-center justify-content-center" style="width: 25px; font-size: 16px;">${row.hang}</span>`;
+        html += `
+            <div class="mt-5 d-flex justify-content-center flex-wrap gap-4 text-white small fw-bold">
+                <span class="d-flex align-items-center"><div style="width:20px; height:20px; border-radius:4px" class="seat-standard me-2"></div> Thường</span>
+                <span class="d-flex align-items-center"><div style="width:20px; height:20px; border-radius:4px" class="seat-vip me-2"></div> VIP</span>
+                <span class="d-flex align-items-center"><div style="width:45px; height:20px; border-radius:4px" class="seat-couple me-2"></div> Đôi</span>
+                <span class="d-flex align-items-center"><div style="width:20px; height:20px; border-radius:4px" class="seat-selected me-2"></div> Đang chọn</span>
+                <span class="d-flex align-items-center"><div style="width:20px; height:20px; border-radius:4px; background-color:#495057" class="me-2"></div> Đã bán</span>
+            </div>`;
+        document.getElementById('box-ghe').innerHTML = html;
+    }
+
+    function chonGheDoi(btn, maGhe1, maGhe2, ten1, ten2, giaTong) {
+        if(btn.classList.contains('seat-sold')) return;
         
-        // Duyệt qua từng ghế trong hàng đó
-        row.seats.forEach(seat => {
-            let statusClass = "seat-standard"; // Mặc định là ghế Thường (Xám)
-            let tenLoai = (seat.loaiGhe || "").toLowerCase();
+        let isLock = !btn.classList.contains('seat-selected'); 
 
-            // 1. Phân loại ghế dựa vào tên loại trong Database
-            if (tenLoai.includes('vip')) {
-                statusClass = "seat-vip"; // Màu vàng
-            } else if (tenLoai.includes('đôi') || tenLoai.includes('couple') || tenLoai.includes('sweetbox')) {
-                statusClass = "seat-couple"; // Màu đỏ, to gấp đôi
+        let originalText = btn.innerText;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" style="width: 1.2rem; height: 1.2rem;"></span>';
+        btn.style.pointerEvents = 'none';
+        Promise.all([
+            fetch(`/Staff/BanVe/ToggleLockGhe?maSC=${bill.maSC}&maGhe=${maGhe1}&isLock=${isLock}`, { method: 'POST' }).then(r => r.json()),
+            fetch(`/Staff/BanVe/ToggleLockGhe?maSC=${bill.maSC}&maGhe=${maGhe2}&isLock=${isLock}`, { method: 'POST' }).then(r => r.json())
+        ]).then(results => {
+            btn.innerHTML = originalText;
+            btn.style.pointerEvents = 'auto';
+            
+            if(results[0].success && results[1].success) {
+                btn.classList.toggle('seat-selected');
+                if(isLock) {
+                    bill.dsGhe.push({ ma: maGhe1, ten: ten1, gia: giaTong / 2 });
+                    bill.dsGhe.push({ ma: maGhe2, ten: ten2, gia: giaTong / 2 });
+                } else {
+                    bill.dsGhe = bill.dsGhe.filter(g => g.ma !== maGhe1 && g.ma !== maGhe2);
+                }
+                capNhatBill();
+            } else {
+                Swal.fire('Rất tiếc', 'Ghế đôi này đã bị người khác chọn!', 'warning');
+                btn.classList.add('seat-sold', 'disabled'); 
+                btn.classList.remove('seat-selected');
             }
-
-            // 2. Xử lý ghế đã bán
-            let onClickEvent = `onclick="chonGhe(this, ${seat.maGhe}, '${seat.tenGhe}', ${seat.gia})"`;
-            if (seat.daBan) {
-                statusClass += " seat-sold disabled";
-                onClickEvent = ""; // Khóa không cho bấm
-            }
-
-            // 3. Render nút bấm (Lấy tên ghế, VD: "A1" hoặc "E2 E3")
-            // Dùng seat.tenGhe để in chữ lên nút cho giống hình
-            html += `<button class="seat-btn ${statusClass}" ${onClickEvent} title="${seat.tenGhe} - ${seat.gia.toLocaleString()}đ">${seat.tenGhe}</button>`;
+        }).catch(err => {
+            btn.innerHTML = originalText;
+            btn.style.pointerEvents = 'auto';
+            Swal.fire('Lỗi', 'Mất kết nối máy chủ!', 'error');
         });
+    }
 
-        html += `</div>`;
-    });
-
-    // 4. Khung chú thích màu sắc chuẩn bên dưới
-    html += `
-        <div class="mt-5 d-flex justify-content-center flex-wrap gap-4 text-white small fw-bold">
-            <span class="d-flex align-items-center"><div style="width:20px; height:20px; border-radius:4px" class="seat-standard me-2"></div> Thường</span>
-            <span class="d-flex align-items-center"><div style="width:20px; height:20px; border-radius:4px" class="seat-vip me-2"></div> VIP</span>
-            <span class="d-flex align-items-center"><div style="width:45px; height:20px; border-radius:4px" class="seat-couple me-2"></div> Ghế Đôi</span>
-            <span class="d-flex align-items-center"><div style="width:20px; height:20px; border-radius:4px" class="seat-selected me-2"></div> Đang chọn</span>
-            <span class="d-flex align-items-center"><div style="width:20px; height:20px; border-radius:4px; background-color:#495057" class="me-2"></div> Đã bán</span>
-        </div>`;
-
-    // Nhúng toàn bộ HTML vào khung #box-ghe
-    document.getElementById('box-ghe').innerHTML = html;
-}
 
     function chonGhe(btn, maGhe, ten, gia) {
         if(btn.classList.contains('seat-sold')) return;
-        btn.classList.toggle('seat-selected');
         
-        if(btn.classList.contains('seat-selected')) bill.dsGhe.push({ma: maGhe, ten: ten, gia: gia});
-        else bill.dsGhe = bill.dsGhe.filter(g => g.ma !== maGhe);
+        let isLock = !btn.classList.contains('seat-selected'); 
+
+        let originalText = btn.innerText;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        btn.style.pointerEvents = 'none';
+
+        fetch(`/Staff/BanVe/ToggleLockGhe?maSC=${bill.maSC}&maGhe=${maGhe}&isLock=${isLock}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            btn.innerHTML = originalText;
+            btn.style.pointerEvents = 'auto';
+            
+            if(data.success) {
+                btn.classList.toggle('seat-selected');
+                if(isLock) bill.dsGhe.push({ma: maGhe, ten: ten, gia: gia});
+                else bill.dsGhe = bill.dsGhe.filter(g => g.ma !== maGhe);
+                capNhatBill();
+            } else {
+                Swal.fire('Rất tiếc', data.message || 'Ghế đã bị người khác chọn!', 'warning');
+                btn.classList.add('seat-sold', 'disabled'); 
+                btn.classList.remove('seat-selected');
+            }
+        });
+    }
+
+    function apDungVoucher(code) {
+        if (!bill.maKH) { Swal.fire('Cảnh báo', 'Vui lòng tìm khách hàng thành viên trước khi dùng mã!', 'warning'); return; }
+        if (bill.tongTienBanDau === 0) { Swal.fire('Cảnh báo', 'Vui lòng chọn ghế trước khi dùng mã!', 'warning'); return; }
+
+        Swal.fire({ title: 'Đang kiểm tra...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        fetch(`/Staff/BanVe/KiemTraVoucher?code=${code}&tongTien=${bill.tongTienBanDau}&maKH=${bill.maKH}`)
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    bill.maKM = data.maKM;
+                    bill.codeKM = code;
+                    bill.phanTramKM = data.phanTram || 0;
+                    bill.toiDaKM = data.toiDa || 0;
+                    bill.diemTruKM = data.diemTru || 0;
+
+                    if(document.getElementById('lblVoucherCode')) {
+                        document.getElementById('lblVoucherCode').innerText = code;
+                        if(document.getElementById('box-voucher-input')) document.getElementById('box-voucher-input').classList.add('d-none');
+                        document.getElementById('box-voucher-applied').classList.remove('d-none');
+                    }
+                    
+                    capNhatBill(); 
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Áp dụng mã thành công!', showConfirmButton: false, timer: 2000 });
+                } else {
+                    Swal.fire('Thất bại', data.message, 'error');
+                }
+            });
+    }
+
+    function apDungVoucherThuCong() {
+        let code = document.getElementById('maVoucherThuCong').value.trim().toUpperCase();
+        if (code === '') { Swal.fire('Cảnh báo', 'Vui lòng nhập mã khuyến mãi!', 'warning'); return; }
+        
+        apDungVoucher(code);
+    }
+
+    function xoaVoucher() {
+        bill.maKM = null; bill.codeKM = ''; bill.phanTramKM = 0; bill.toiDaKM = 0; bill.tienGiam = 0; bill.diemTruKM = 0;
+
+        if(document.getElementById('maVoucherThuCong')) document.getElementById('maVoucherThuCong').value = '';
+
+        if(document.getElementById('box-voucher-input')) document.getElementById('box-voucher-input').classList.remove('d-none');
+        if(document.getElementById('box-voucher-applied')) document.getElementById('box-voucher-applied').classList.add('d-none');
         
         capNhatBill();
     }
 
-    // 4. CẬP NHẬT TIỀN & ĐIỂM
+
     function capNhatBill() {
         bill.tienVe = bill.dsGhe.reduce((sum, g) => sum + g.gia, 0);
         let tenGhe = bill.dsGhe.map(g => g.ten).join(', ');
         
         bill.tienDV = 0;
+        bill.dsDV = [];
         document.querySelectorAll('.input-dv').forEach(inp => {
-            bill.tienDV += (parseInt(inp.value) || 0) * (parseInt(inp.dataset.gia) || 0);
+            let sl = parseInt(inp.value) || 0;
+            let gia = parseInt(inp.dataset.gia) || 0;
+            let madv = parseInt(inp.dataset.madv) || 0;
+            let tendv = inp.dataset.tendv;
+
+            if(sl > 0) {
+                bill.tienDV += sl * gia;
+                bill.dsDV.push({ MaDV: madv, SoLuong: sl, DonGia: gia, TenDV: tendv }); 
+            }
         });
 
-        bill.tongTien = bill.tienVe + bill.tienDV;
-
+        bill.tongTienBanDau = bill.tienVe + bill.tienDV;
+        if (bill.maKM && bill.tongTienBanDau > 0) {
+            let giam = (bill.tongTienBanDau * bill.phanTramKM) / 100;
+            if (bill.toiDaKM > 0 && giam > bill.toiDaKM) giam = bill.toiDaKM;
+            bill.tienGiam = giam;
+        } else {
+            bill.tienGiam = 0;
+        }
+        bill.tongTien = bill.tongTienBanDau - bill.tienGiam;
+        if (bill.tongTien < 0) bill.tongTien = 0; 
         document.getElementById('billGhe').innerText = tenGhe || '---';
         document.getElementById('billTienVe').innerText = bill.tienVe.toLocaleString('vi-VN') + ' đ';
         document.getElementById('billTienDV').innerText = bill.tienDV.toLocaleString('vi-VN') + ' đ';
+        
+        if (document.getElementById('billTienGiam')) {
+            document.getElementById('billTienGiam').innerText = '-' + bill.tienGiam.toLocaleString('vi-VN') + ' đ';
+        }
+        
         document.getElementById('billTongTien').innerText = bill.tongTien.toLocaleString('vi-VN') + ' đ';
-
-        let diem = Math.floor(bill.tongTien / 1000);
-        if(bill.maKH && bill.tongTien > 0) {
-            document.getElementById('billDiemThuong').innerText = diem;
+       let diemCong = Math.floor(bill.tongTien / 1000);
+        if(bill.maKH) {
+            let infoDiem = `+${diemCong} điểm`;
+            if (bill.diemTruKM > 0) infoDiem += ` | <span class="text-danger">- ${bill.diemTruKM} điểm</span>`;
+            
+            document.getElementById('billDiemThuong').innerHTML = infoDiem;
             document.getElementById('box-diem').classList.remove('d-none');
         } else {
             document.getElementById('box-diem').classList.add('d-none');
         }
     }
 
-    // 5. THANH TOÁN & IN HÓA ĐƠN
     function thanhToan(method) {
         if(method !== 'TIENMAT') { Swal.fire('Lỗi', 'Chỉ hỗ trợ tiền mặt!', 'warning'); return; }
         if(bill.maSC === 0) { Swal.fire('Lỗi', 'Chưa chọn suất chiếu!', 'warning'); return; }
@@ -358,11 +579,13 @@ function veSoDoGhe(duLieuGhe) {
         let reqData = {
             MaSuatChieu: bill.maSC,
             DanhSachMaGhe: bill.dsGhe.map(g => g.ma),
+            DanhSachDichVu: bill.dsDV, 
             MaKhachHang: bill.maKH,
+            MaKhuyenMai: bill.maKM, 
             TongTienSauGiam: bill.tongTien
         };
 
-        fetch(`@Url.Action("ThanhToanTienMat", "BanVe", new { area = "Staff" })`, {
+        fetch(`/Staff/BanVe/ThanhToanTienMat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(reqData)
@@ -371,7 +594,7 @@ function veSoDoGhe(duLieuGhe) {
         .then(data => {
             Swal.close();
             if(data.success) {
-                inHoaDon(data.maHD, data.sessionKey, data.diemThuong);
+                inHoaDon(data.maHD, data.diemThuong);
             } else {
                 Swal.fire('Thất bại', data.message, 'error');
             }
@@ -382,62 +605,83 @@ function veSoDoGhe(duLieuGhe) {
         });
     }
 
-    function inHoaDon(maHD, qrKey, diem) {
+    function inHoaDon(maHD, diem) {
         let printWin = window.open('', '_blank');
         let tenGhe = bill.dsGhe.map(g => g.ten).join(', ');
-        let qrUrl = `/Staff/BanVe/RenderQR?key=${qrKey}`;
+        let noiDungQR = `MaHD:${maHD}|CinemaVN`;
+
+        let qrUrl = `/Staff/BanVe/RenderQR?key=${encodeURIComponent(noiDungQR)}`; 
         
         let html = `
-            <html style="text-align: center; font-family: monospace; padding: 20px;">
-                <h2>CINEMA VN</h2>
-                <p>Mã HĐ: #${maHD} | Khách: ${bill.tenKH}</p>
-                <hr>
-                <h3>${bill.tenPhim}</h3>
-                <p>${bill.suat} - ${bill.rap}</p>
-                <p>Ghế: ${tenGhe}</p>
-                <h2>TỔNG: ${bill.tongTien.toLocaleString()} đ</h2>
-                ${diem > 0 ? `<p>Điểm cộng: +${diem}</p>` : ''}
-                <img src="${qrUrl}" style="width: 150px; margin-top: 10px;">
-                <p style="font-size: 11px;">Mã soát vé QR Code</p>
+            <div style="width: 320px; margin: 0 auto; font-family: 'Courier New', Courier, monospace; color: #000; padding: 10px; background: #fff;">
+                <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h2 style="margin: 0; font-size: 26px; text-transform: uppercase; font-weight: bold;">CINEMA VN</h2>
+                    <p style="margin: 5px 0 0; font-size: 13px;">Chi nhánh: ${document.querySelector('.badge.bg-dark').innerText}</p>
+                    <p style="margin: 2px 0 0; font-size: 13px;">Hotline: 1900 1234</p>
+                </div>
+                
+                <h3 style="text-align: center; font-size: 18px; margin: 10px 0;">HÓA ĐƠN BÁN HÀNG</h3>
+                
+                <p style="margin: 3px 0; font-size: 13px;"><strong>Mã HĐ:</strong> #${maHD}</p>
+                <p style="margin: 3px 0; font-size: 13px;"><strong>Khách:</strong> ${bill.tenKH}</p>
+                <p style="margin: 3px 0; font-size: 13px;"><strong>Ngày in:</strong> ${new Date().toLocaleString('vi-VN')}</p>
+                
+                <div style="border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 10px 0; margin: 15px 0;">
+                    <p style="margin: 0 0 5px; font-weight: bold; font-size: 16px;">Phim: ${bill.tenPhim}</p>
+                    <p style="margin: 3px 0; font-size: 13px;">Suất: ${bill.suat} | Rạp: ${bill.rap}</p>
+                    <p style="margin: 3px 0; font-size: 13px;">Ghế: ${tenGhe}</p>
+                </div>
+                
+                <table style="width: 100%; font-size: 13px; border-collapse: collapse; margin-bottom: 15px;">
+                    <tr><td colspan="2" style="font-weight:bold; padding-bottom:5px;">Vé Xem Phim</td><td style="text-align:right;">${bill.tienVe.toLocaleString()}</td></tr>
+                    ${bill.dsDV.map(dv => `<tr><td style="padding: 2px 0;">${dv.TenDV}</td><td>x${dv.SoLuong}</td><td style="text-align:right;">${(dv.SoLuong * dv.DonGia).toLocaleString()}</td></tr>`).join('')}
+                    ${bill.tienGiam > 0 ? `<tr><td colspan="2" style="padding-top:5px;">Giảm giá (Voucher)</td><td style="text-align:right; padding-top:5px;">-${bill.tienGiam.toLocaleString()}</td></tr>` : ''}
+                </table>
+                
+                <div style="border-top: 2px solid #000; padding-top: 10px; text-align: right; font-size: 18px;">
+                    <strong>TỔNG THANH TOÁN: <br>${bill.tongTien.toLocaleString()} đ</strong>
+                </div>
+                
+                ${diem > 0 ? `<p style="text-align: right; font-size: 13px; margin: 5px 0;">(Điểm tích lũy: +${diem})</p>` : ''}
+                
+                <div style="text-align: center; margin-top: 25px;">
+                    <img src="${qrUrl}" style="width: 130px; height: 130px; image-rendering: pixelated;">
+                    <p style="margin: 5px 0 0; font-size: 12px; font-weight: bold;">[ Quét QR để soát vé ]</p>
+                </div>
+                
+                <p style="text-align: center; margin-top: 20px; font-size: 12px; border-top: 1px dashed #000; padding-top: 10px;">Xin cảm ơn & Hẹn gặp lại!</p>
+                
                 <script>window.onload = function() { window.print(); window.close(); }<\/script>
-            </html>`;
+            </div>`;
+            
         printWin.document.write(html);
-        setTimeout(() => location.reload(), 1500); // Reload quầy
+        setTimeout(() => location.reload(), 1500);
     }
 </script>
 <style>
-    /* ================== SƠ ĐỒ GHẾ ================== */
 .seat-btn { 
     width: 45px; 
     height: 45px; 
-    border-radius: 8px; /* Bo góc mềm mại giống hình */
+    border-radius: 8px; 
     font-weight: bold; 
     border: none; 
     transition: 0.2s; 
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #212529; /* Chữ màu đậm để dễ đọc */
+    color: #212529; 
     font-size: 13px;
 }
 
-/* 1. Ghế Thường (Màu xám) */
 .seat-standard { background-color: #bac1c8; }
-
-/* 2. Ghế VIP (Màu vàng) */
 .seat-vip { background-color: #ffc107; }
-
-/* 3. Ghế Đôi / Sweetbox (Màu đỏ - Rộng gấp đôi) */
 .seat-couple { 
     background-color: #ff2a4b; 
     color: white; 
-    width: 100px; /* Rộng gấp đôi ghế thường + khoảng trống */
+    width: 100px;
 }
 
-/* Ghế đã bán (Màu tối, mờ đi) */
 .seat-sold { background-color: #495057; color: #adb5bd; cursor: not-allowed; opacity: 0.8; }
-
-/* Ghế đang được nhân viên chọn (Phát sáng viền xanh) */
 .seat-selected { 
     background-color: #0dcaf0 !important; 
     color: white !important; 
