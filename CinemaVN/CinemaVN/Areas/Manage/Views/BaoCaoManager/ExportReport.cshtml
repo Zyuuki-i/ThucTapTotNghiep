@@ -1,0 +1,163 @@
+﻿@{
+    ViewData["Title"] = "Báo Cáo PDF";
+    Layout = "~/Views/Shared/_PdfLayout.cshtml";
+}
+
+<div class="a4-page">
+    <div class="report-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div class="report-title">CINEMAVN</div>
+                <div class="sub-title">Hệ thống quản lý rạp chiếu phim đa chi nhánh</div>
+            </div>
+
+            <button onclick="window.print()" class="btn btn-primary no-print">
+                In / Lưu PDF
+            </button>
+        </div>
+
+        <div class="mt-4">
+            <h2 class="fw-bold">BÁO CÁO HIỆU QUẢ HOẠT ĐỘNG CHI NHÁNH</h2>
+            <p><strong>Chi nhánh:</strong> @ViewBag.TenChiNhanh</p>
+            <p><strong>Người lập:</strong> @ViewBag.ManagerName</p>
+            <p><strong>Từ ngày:</strong> @ViewBag.TuNgay</p>
+            <p><strong>Đến ngày:</strong> @ViewBag.DenNgay</p>
+            <p><strong>Ngày xuất:</strong> @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+        </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="row g-3">
+        <div class="col-4">
+            <div class="kpi-box bg-primary">
+                <small>Tổng doanh thu</small>
+                <h4>@String.Format("{0:N0}", ViewBag.TongDoanhThu) đ</h4>
+            </div>
+        </div>
+
+        <div class="col-4">
+            <div class="kpi-box bg-success">
+                <small>Doanh thu vé</small>
+                <h4>@String.Format("{0:N0}", ViewBag.DoanhThuVe) đ</h4>
+            </div>
+        </div>
+
+        <div class="col-4">
+            <div class="kpi-box bg-warning text-dark">
+                <small>Doanh thu F&B</small>
+                <h4>@String.Format("{0:N0}", ViewBag.DoanhThuFB) đ</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="section-title">Biểu đồ doanh thu theo ngày</div>
+    <div class="chart-box">
+        <canvas id="revenueChart"></canvas>
+    </div>
+
+    <div class="section-title">Biểu đồ phim hot tại chi nhánh</div>
+    <div class="chart-box">
+        <canvas id="movieChart"></canvas>
+    </div>
+
+    <!-- TOP MOVIES -->
+    <div class="section-title">Top phim bán chạy</div>
+
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Phim</th>
+                <th>Số vé</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ViewBag.TopMovies)
+            {
+                <tr>
+                    <td>@item.item</td>
+                    <td>@item.qty</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- STAFF -->
+    <div class="section-title">Hiệu suất nhân viên</div>
+
+    <table class="table table-bordered">
+        <thead class="table-primary">
+            <tr>
+                <th>Nhân viên</th>
+                <th>Số hóa đơn</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in ViewBag.StaffPerformance)
+            {
+                <tr>
+                    <td>@item.name</td>
+                    <td>@item.count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- SIGN -->
+    <div class="row mt-5">
+        <div class="col-6 text-center">
+            <p><strong>Người lập báo cáo</strong></p>
+            <br /><br /><br />
+            <p>@ViewBag.ManagerName</p>
+        </div>
+
+        <div class="col-6 text-center">
+            <p><strong>Quản lý chi nhánh</strong></p>
+            <br /><br /><br />
+            <p>@ViewBag.ManagerName</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const revenueLabels = @Html.Raw(ViewBag.RevenueLabels);
+    const revenueData = @Html.Raw(ViewBag.RevenueData);
+
+    const movieLabels = @Html.Raw(ViewBag.MovieLabels);
+    const movieData = @Html.Raw(ViewBag.MovieData);
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Doanh thu',
+                data: revenueData,
+                borderColor: '#0d6efd',
+                backgroundColor: '#0d6efd'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    new Chart(document.getElementById('movieChart'), {
+        type: 'doughnut',
+        data: {
+            labels: movieLabels,
+            datasets: [{
+                data: movieData
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    setTimeout(() => {
+        window.print();
+    }, 1200);
+</script>

@@ -1,0 +1,250 @@
+﻿@{
+    ViewData["Title"] = "Báo Cáo Chi Nhánh";
+    Layout = "~/Areas/Manage/Views/Shared/_ManageLayout.cshtml";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+    .chart-box {
+    position: relative;
+    height: 350px;
+    width: 100%;
+    }
+
+    .kpi-card {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-label fw-bold mb-1">
+            <i class="bi bi-bar-chart-line"></i>
+            KPI CHI NHÁNH: @ViewBag.TenChiNhanh
+        </h2>
+
+        <button onclick="exportPDF('manager-report')" class="btn btn-danger fw-bold">
+            <i class="bi bi-file-pdf"></i> Xuất PDF
+        </button>
+    </div>
+
+    <!-- FILTER -->
+    <div class="card shadow-sm border-0 rounded-4 mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="fw-bold">Từ ngày</label>
+                    <input type="date"
+                           id="txtTuNgay"
+                           class="form-control"
+                           value="@DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="col-md-5">
+                    <label class="fw-bold">Đến ngày</label>
+                    <input type="date"
+                           id="txtDenNgay"
+                           class="form-control"
+                           value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button onclick="loadManagerData()"
+                            class="btn btn-primary w-100 fw-bold">
+                        Lọc
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="manager-report">
+        <!-- KPI -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card bg-primary text-white kpi-card">
+                    <div class="card-body">
+                        <small>Tổng doanh thu</small>
+                        <h3 id="mg_tong">0 đ</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card bg-info text-white kpi-card">
+                    <div class="card-body">
+                        <small>Doanh thu vé</small>
+                        <h3 id="mg_ve">0 đ</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card bg-warning text-dark kpi-card">
+                    <div class="card-body">
+                        <small>Doanh thu F&B</small>
+                        <h3 id="mg_fb">0 đ</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHART ROW 1 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Doanh thu theo ngày</h5>
+                        <div class="chart-box">
+                            <canvas id="chartDay"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Top suất bán chạy</h5>
+                        <div class="chart-box">
+                            <canvas id="chartOccupancy"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHART ROW 2 -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Hiệu suất nhân viên</h5>
+                        <div class="chart-box">
+                            <canvas id="chartRefunds"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Phim hot tại chi nhánh</h5>
+                        <div class="chart-box">
+                            <canvas id="chartTrending"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let charts = {};
+
+    function formatMoney(number) {
+    return number.toLocaleString('vi-VN') + ' đ';
+    }
+
+    function destroyChart(id) {
+    if (charts[id]) {
+    charts[id].destroy();
+    }
+    }
+
+    function drawChart(id, type, labels, data, label, color) {
+    destroyChart(id);
+
+    charts[id] = new Chart(document.getElementById(id), {
+    type: type,
+    data: {
+    labels: labels,
+    datasets: [{
+    label: label,
+    data: data,
+    backgroundColor: color,
+    borderColor: color,
+    borderWidth: 2
+    }]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false
+    }
+    });
+    }
+
+    function loadManagerData() {
+    let tuNgay = document.getElementById('txtTuNgay').value;
+    let denNgay = document.getElementById('txtDenNgay').value;
+
+    fetch(`/Manage/BaoCaoManager/GetData?tuNgay=${tuNgay}&denNgay=${denNgay}`)
+    .then(res => res.json())
+    .then(data => {
+    document.getElementById('mg_tong').innerText =
+    formatMoney(data.tongDoanhThu || 0);
+
+    document.getElementById('mg_ve').innerText =
+    formatMoney(data.doanhThuVe || 0);
+
+    document.getElementById('mg_fb').innerText =
+    formatMoney(data.doanhThuFB || 0);
+
+    drawChart(
+    'chartDay',
+    'line',
+    (data.dailyRevenue || []).map(x => x.day),
+    (data.dailyRevenue || []).map(x => x.revenue),
+    'Doanh thu',
+    '#0d6efd'
+    );
+
+    drawChart(
+    'chartOccupancy',
+    'bar',
+    (data.occupancy || []).map(x => x.suat),
+    (data.occupancy || []).map(x => x.rate),
+    'Vé bán',
+    '#ffc107'
+    );
+
+    drawChart(
+    'chartRefunds',
+    'bar',
+    (data.staffRefunds || []).map(x => x.name),
+    (data.staffRefunds || []).map(x => x.count),
+    'Nhân viên',
+    '#198754'
+    );
+
+    drawChart(
+    'chartTrending',
+    'doughnut',
+    (data.localMovies || []).map(x => x.item),
+    (data.localMovies || []).map(x => x.qty),
+    'Phim',
+    [
+    '#0d6efd',
+    '#198754',
+    '#ffc107',
+    '#dc3545',
+    '#6c757d'
+    ]
+    );
+    });
+    }
+
+    function exportPDF(divId) {
+    html2pdf()
+    .from(document.getElementById(divId))
+    .save('BaoCaoChiNhanh.pdf');
+    }
+
+    window.onload = loadManagerData;
+</script>

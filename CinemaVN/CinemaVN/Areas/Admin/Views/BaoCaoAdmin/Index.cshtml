@@ -1,0 +1,294 @@
+﻿@using System.Text.Json
+@{
+    ViewData["Title"] = "Báo Cáo Admin";
+
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+@{
+    ViewData["Title"] = "Báo Cáo Admin";
+
+    var topMovies = ViewBag.TopMovies;
+    var topBranches = ViewBag.TopBranches;
+    var revenueChart = ViewBag.RevenueChart;
+
+    var labels = new List<string>();
+    var values = new List<decimal>();
+
+    if (revenueChart != null)
+    {
+        foreach (var item in revenueChart)
+        {
+            labels.Add(item.Date.ToString("dd/MM"));
+            values.Add(item.Revenue);
+        }
+    }
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-label fw-bold mb-1">
+            <i class="bi bi-bar-chart-line"></i>
+            Báo Cáo Admin
+        </h2>
+        <button onclick="exportPDF('manager-report')" class="btn btn-danger fw-bold">
+            <i class="bi bi-file-pdf"></i> Xuất PDF
+        </button>
+    </div>
+    
+    <!-- FILTER -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label>Từ ngày</label>
+                        <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Đến ngày</label>
+                        <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Chi nhánh</label>
+                        <select name="branchId" class="form-select">
+                            <option value="">Tất cả</option>
+                            @foreach (var cn in ViewBag.Branches)
+                            {
+                                if (ViewBag.SelectedBranch == cn.MaCn)
+                                {
+                                    <option selected value="@cn.MaCn">@cn.TenCn</option>
+                                }
+                                else
+                                {
+                                    <option value="@cn.MaCn">@cn.TenCn</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Phim</label>
+                        <select name="movieId" class="form-select">
+                            <option value="">Tất cả</option>
+                            @foreach (var phim in ViewBag.Movies)
+                            {
+                                if (ViewBag.SelectedMovie == phim.MaPhim)
+                                {
+                                    <option selected value="@phim.MaPhim">@phim.TenPhim</option>
+                                }
+                                else
+                                {
+                                    <option value="@phim.MaPhim">@phim.TenPhim</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-12 text-end">
+                        <button class="btn btn-primary">
+                            Lọc dữ liệu
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6>Tổng doanh thu</h6>
+                    <h3 class="fw-bold text-success">
+                        @String.Format("{0:N0}", ViewBag.TotalRevenue) VNĐ
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6>Doanh thu hôm nay</h6>
+                    <h3 class="fw-bold text-primary">
+                        @String.Format("{0:N0}", ViewBag.TodayRevenue) VNĐ
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6>Tổng vé bán</h6>
+                    <h3 class="fw-bold">@ViewBag.TotalTickets</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6>Tỷ lệ lấp đầy</h6>
+                    <h3 class="fw-bold text-danger">@ViewBag.OccupancyRate %</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6>Tổng hóa đơn</h6>
+                    <h3 class="fw-bold">@ViewBag.TotalOrders</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6>Khách hàng</h6>
+                    <h3 class="fw-bold">@ViewBag.TotalCustomers</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6>Chi nhánh</h6>
+                    <h3 class="fw-bold">@ViewBag.TotalBranches</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6>Phim đang chiếu</h6>
+                    <h3 class="fw-bold">@ViewBag.ActiveMovies</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h5>Doanh thu theo thời gian</h5>
+                    <div id="revenueChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h5>Cơ cấu doanh thu</h5>
+                    <div id="revenuePie"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h5>Top phim bán chạy</h5>
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Phim</th>
+                                <th>Vé</th>
+                                <th>Doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in topMovies)
+                            {
+                                <tr>
+                                    <td>@item.MovieName</td>
+                                    <td>@item.Tickets</td>
+                                    <td>@String.Format("{0:N0}", item.Revenue)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h5>Top chi nhánh</h5>
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Chi nhánh</th>
+                                <th>Doanh thu</th>
+                                <th>Hóa đơn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in topBranches)
+                            {
+                                <tr>
+                                    <td>@item.Branch</td>
+                                    <td>@String.Format("{0:N0}", item.Revenue)</td>
+                                    <td>@item.Orders</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var revenueOptions = {
+    series: [{
+    name: 'Doanh thu',
+    data: @Html.Raw(JsonSerializer.Serialize(values))
+    }],
+    chart: {
+    type: 'area',
+    height: 350
+    },
+    xaxis: {
+    categories: @Html.Raw(JsonSerializer.Serialize(labels))
+    }
+    };
+
+    new ApexCharts(document.querySelector("#revenueChart"), revenueOptions).render();
+
+    var pieOptions = {
+    series: [
+    @ViewBag.TicketRevenue,
+    @ViewBag.ServiceRevenue
+    ],
+    chart: {
+    type: 'donut',
+    height: 350
+    },
+    labels: ['Vé', 'Dịch vụ']
+    };
+
+    new ApexCharts(document.querySelector("#revenuePie"), pieOptions).render();
+</script>

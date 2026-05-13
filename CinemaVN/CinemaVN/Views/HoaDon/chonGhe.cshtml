@@ -4,112 +4,182 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     var ghes = ViewBag.Ghes as List<Ghe>;
-    var gheData = ViewBag.GheData as List<GheStatus>; 
+    var gheData = ViewBag.GheData as List<GheStatus>;
     var gheCuaToi = ViewBag.GheCuaToi as List<int>;
     var sessionKey = ViewBag.SessionKey as string;
 }
 
+<style>
+    /* BẢNG MÀU CHUẨN DARK THEME ĐỒNG NHẤT VỚI STAFF */
+    .cinema-bg {
+        background-color: #222629;
+        padding: 40px 20px;
+        border-radius: 12px;
+        color: #ffffff;
+    }
+    .screen {
+        background: #e0e0e0;
+        color: #000;
+        text-align: center;
+        font-weight: bold;
+        padding: 8px;
+        border-radius: 5px;
+        width: 80%;
+        margin: 0 auto 40px auto;
+        box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+    }
+    .seat {
+        background-color: #aeb5b9; /* Ghế thường - Xám */
+        color: #111;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+    .seat:hover:not(.booked) { transform: scale(1.05); }
+    .seat.vip { background-color: #ffc107; } /* Ghế VIP - Vàng */
+    .seat.doi { background-color: #ff2a4b; color: #fff; } /* Ghế Đôi - Đỏ */
+    .seat.booked { background-color: #4a4e54 !important; color: #888 !important; pointer-events: none; }
+    .seat.selected {
+        background-color: transparent !important;
+        border: 2px solid #00bcd4;
+        color: #00bcd4 !important;
+        box-shadow: 0 0 10px #00bcd4;
+    }
+    .legend-box { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #fff; }
+    .legend-color { width: 20px; height: 20px; border-radius: 4px; }
+</style>
+
 <div class="container text-center">
-    <h4 class="my-5 text-uppercase text-info">Chọn ghế</h4>
+    <h4 class="my-4 text-uppercase text-info fw-bold">CHỌN GHẾ NGỒI</h4>
 
     <div class="row mb-4 justify-content-evenly">
-        <div class="col-6">
-            @* <div class="screen mb-4">MÀN HÌNH</div>
 
-            @if (ghes != null)
-            {
-                foreach (var hang in ghes.GroupBy(g => g.Hang))
-                {
-                    <div class="d-flex justify-content-center mb-2">
-                        <span style="width:30px">@hang.Key</span>
+        <div class="col-8">
+            <div class="cinema-bg shadow">
+                <div class="screen">MÀN HÌNH</div>
 
-                        @foreach (var ghe in hang)
+                @{
+                    var orderedGhes = ghes.OrderBy(g => g.ToaDoY).ThenBy(g => g.ToaDoX).ToList();
+                    var skipGheIds = new HashSet<int>();
+                    int maxToaDoX = ghes.Any() ? (ghes.Max(g => g.ToaDoX) ?? 10) : 10;
+                }
+
+                <div style="display: grid;
+                    grid-template-columns: 30px repeat(@maxToaDoX, 40px);
+                    grid-auto-rows: 40px;
+                    gap: 10px;
+                    justify-content: center;
+                    margin: 0 auto;">
+
+                    @foreach (var hang in orderedGhes.GroupBy(g => new { g.Hang, g.ToaDoY }))
+                    {
+                        <div style="grid-column: 1; grid-row: @hang.Key.ToaDoY;
+                            display: flex; align-items: center; justify-content: center;
+                            font-weight: bold; font-size: 1.1rem; color: white;">
+                            @hang.Key.Hang
+                        </div>
+                    }
+
+                    @foreach (var ghe in orderedGhes)
+                    {
+                        if (skipGheIds.Contains(ghe.MaGhe)) continue;
+
+                        var ve = gheData?.FirstOrDefault(g => g.MaGhe == ghe.MaGhe);
+                        string? veSession = ve?.SessionKey?.Trim();
+                        string? mySession = sessionKey?.Trim();
+
+                        // Kiểm tra trạng thái thuộc về Session của khách này hay khách khác
+                        bool isMine = ve != null && ve.TrangThai == 0 && veSession == mySession;
+                        bool isBooked = ve != null && (ve.TrangThai == 1 || (ve.TrangThai == 0 && veSession != mySession));
+
+                        string css = "seat";
+                        string dataIds = ghe.MaGhe.ToString();
+
+                        string textHienThi = ghe.SoGhe?.ToString() ?? "";
+                        if (!string.IsNullOrEmpty(textHienThi) && !textHienThi.StartsWith(ghe.Hang))
                         {
-                            var ve = gheData?.FirstOrDefault(g => g.MaGhe == ghe.MaGhe);
-
-                            bool isMine = ve != null && ve?.SessionKey?.Trim() == sessionKey?.Trim();
-                            bool isBooked = ve != null && ve?.SessionKey?.Trim() != sessionKey?.Trim() && ve?.SessionKey != null;
-                            string css = "seat";
-
-                            if (isBooked) css += " booked";
-                            if (isMine) css += " selected";
-                            if (ghe.MaLg == "VIP") css += " vip";
-                            if (ghe.MaLg == "DOI") css += " doi";
-
-                            <div class="@css"
-                                 data-id="@ghe.MaGhe"
-                                 onclick="chonGhe(this)"
-                                 style="@(isBooked ? "pointer-events:none;opacity:0.5;" : "")">
-                                @ghe.SoGhe
-                            </div>
+                            textHienThi = ghe.Hang + textHienThi;
                         }
-                    </div>
-                }
-            } *@
-            @{
-                int? maxToaDoX = ghes.Any() ? ghes.Max(g => g.ToaDoX) : 15;
-                int? maxToaDoY = ghes.Any() ? ghes.Max(g => g.ToaDoY) : 10;
-            }
 
-            <div class="screen mb-5">MÀN HÌNH</div>
+                        int colSpan = 1;
 
-            <div style="display: grid;
-                        grid-template-columns: 30px repeat(@maxToaDoX, 40px);
-                        grid-template-rows: repeat(@maxToaDoY, 40px);
-                        gap: 10px;
-                        justify-content: center;
-                        margin: 0 auto;">
+                        // ================= THUẬT TOÁN GỘP GHẾ ĐÔI =================
+                        if (ghe.MaLg == "DOI")
+                        {
+                            css += " doi";
+                            colSpan = 2; // Ghế đôi luôn chiếm 2 ô
 
-                @foreach (var hang in ghes.GroupBy(g => new { g.Hang, g.ToaDoY }))
-                {
-                    <div style="grid-column: 1;
-                        grid-row: @hang.Key.ToaDoY;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-weight: bold;">
-                        @hang.Key.Hang
-                    </div>
-                }
+                            var currentRowGhes = orderedGhes.Where(g => g.Hang == ghe.Hang).ToList();
+                            var currentIndex = currentRowGhes.IndexOf(ghe);
+                            var partner = (currentIndex + 1 < currentRowGhes.Count) ? currentRowGhes[currentIndex + 1] : null;
 
-                @foreach (var ghe in ghes)
-                {
-                    var ve = gheData?.FirstOrDefault(g => g.MaGhe == ghe.MaGhe);
+                            if (partner != null && partner.MaLg == "DOI")
+                            {
+                                dataIds += $",{partner.MaGhe}"; // Gộp 2 ID lại với nhau
 
-                    bool isMine = ve != null && ve?.SessionKey?.Trim() == sessionKey?.Trim();
-                    bool isBooked = ve != null && ve?.SessionKey?.Trim() != sessionKey?.Trim() && ve?.SessionKey != null;
-                    string css = "seat";
+                                string partnerText = partner.SoGhe?.ToString() ?? "";
+                                if (!partnerText.StartsWith(partner.Hang)) partnerText = partner.Hang + partnerText;
 
-                    if (isBooked) css += " booked";
-                    if (isMine) css += " selected";
-                    if (ghe.MaLg == "VIP") css += " vip";
-                    if (ghe.MaLg == "DOI") css += " doi";
+                                textHienThi += $" | {partnerText}"; // Hiển thị "F1 | F3"
+                                skipGheIds.Add(partner.MaGhe);
 
-                    int colSpan = (ghe.MaLg == "DOI") ? 2 : 1;
+                                var vePartner = gheData?.FirstOrDefault(g => g.MaGhe == partner.MaGhe);
+                                string? vePartnerSession = vePartner?.SessionKey?.Trim();
 
-                    int? gridCol = ghe.ToaDoX + 1;
-                    int? gridRow = ghe.ToaDoY;
+                                bool partnerIsMine = vePartner != null && vePartner.TrangThai == 0 && vePartnerSession == mySession;
+                                bool partnerIsBooked = vePartner != null && (vePartner.TrangThai == 1 || (vePartner.TrangThai == 0 && vePartnerSession != mySession));
 
-                    <div class="@css d-flex align-items-center justify-content-center"
-                         data-id="@ghe.MaGhe"
-                         onclick="chonGhe(this)"
-                         style="grid-column: @gridCol / span @colSpan;
-                        grid-row: @gridRow;
-                        margin: 0;
-                        width: 100%;
-                        height: 100%;
-                        @(isBooked ? "pointer-events:none;opacity:0.5;" : "")">
-                        @ghe.SoGhe
-                    </div>
-                }
+                                isBooked = isBooked || partnerIsBooked;
+                                isMine = isMine || partnerIsMine;
+                            }
+                        }
+                        else if (ghe.MaLg == "VIP")
+                        {
+                            css += " vip";
+                        }
+
+                        if (isBooked) css += " booked";
+                        if (isMine) css += " selected";
+
+                        int? gridCol = ghe.ToaDoX + 1;
+                        int? gridRow = ghe.ToaDoY;
+
+                        <div class="@css"
+                             data-id="@dataIds"
+                             onclick="chonGhe(this)"
+                             style="grid-column: @gridCol / span @colSpan; grid-row: @gridRow;
+                            @(isBooked ? "pointer-events:none;opacity:0.5;" : "")">
+                            @textHienThi
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-center align-items-center mt-5 gap-4">
+                    <div class="legend-box"><div class="legend-color" style="background: #aeb5b9;"></div> Thường</div>
+                    <div class="legend-box"><div class="legend-color" style="background: #ffc107;"></div> VIP</div>
+                    <div class="legend-box"><div class="legend-color" style="background: #ff2a4b;"></div> Đôi</div>
+                    <div class="legend-box"><div class="legend-color" style="border: 2px solid #00bcd4; box-shadow: 0 0 5px #00bcd4;"></div> Đang chọn</div>
+                    <div class="legend-box"><div class="legend-color" style="background: #4a4e54;"></div> Đã bán</div>
+                </div>
             </div>
-            <button class="btn btn-danger mt-3" onclick="tiepTuc()">
-                Tiếp tục
+
+            <button class="btn btn-danger mt-4 px-5 py-2 fw-bold" onclick="tiepTuc()">
+                TIẾP TỤC BƯỚC THANH TOÁN
             </button>
         </div>
-        <div class="col-3">
+
+        <div class="col-4">
             <div class="m-2 d-flex flex-column align-items-center">
-                <div class="my-4 p-2 border rounded bg-light small">
+                <div class="my-0 p-4 border rounded shadow-sm bg-light small w-100 text-start">
                     @{
                         SuatChieu? sc = ViewBag.Suat as SuatChieu;
                         var loaiGhes = ViewBag.LoaiGhes as List<LoaiGhe>;
@@ -118,28 +188,24 @@
 
                     @if (sc != null)
                     {
-                        <div class="fw-bold text-danger mb-2">
+                        <div class="fw-bold text-danger mb-3 fs-5 border-bottom pb-2">
                             @sc.MaPhimNavigation?.TenPhim
                         </div>
 
-                        <div>Rạp: @sc.MaPcNavigation?.MaCnNavigation?.TenCn</div>
-                        <div>Phòng: @sc.MaPcNavigation?.TenPc</div>
-                        <div>Giờ: @sc.GioBd</div>
-                        <div>Ngày: @sc.NgayChieu?.ToString("dd/MM/yyyy")</div>
+                        <div class="mb-1"><b>Rạp:</b> @sc.MaPcNavigation?.MaCnNavigation?.TenCn</div>
+                        <div class="mb-1"><b>Phòng:</b> @sc.MaPcNavigation?.TenPc</div>
+                        <div class="mb-1"><b>Giờ chiếu:</b> @sc.GioBd</div>
+                        <div class="mb-1"><b>Ngày:</b> @sc.NgayChieu?.ToString("dd/MM/yyyy")</div>
 
-                        <div class="mt-2 text-success fw-bold">
+                        <div class="mt-3 text-success fw-bold fs-6">
                             Giá cơ bản: @sc.GiaGoc?.ToString("N0") đ
                         </div>
 
-                        <div class="mt-3">
-                            <b>Phụ phí:</b>
-
+                        <div class="mt-3 bg-white p-2 rounded border">
+                            <b class="text-dark">Phụ phí ghế / Định dạng:</b>
                             @if (dinhDang != null && dinhDang.PhuThu > 0)
                             {
-                                <div>
-                                    + Định dạng (@dinhDang.TenDd):
-                                    @dinhDang.PhuThu?.ToString("N0") đ
-                                </div>
+                                <div><i class="bi bi-plus text-secondary"></i> @dinhDang.TenDd: @dinhDang.PhuThu?.ToString("N0") đ</div>
                             }
 
                             @if (loaiGhes != null && loaiGhes.Count > 0)
@@ -148,69 +214,52 @@
                                 {
                                     if (lg.PhuThu > 0)
                                     {
-                                        <div>
-                                            + @lg.TenLg:
-                                            @lg.PhuThu?.ToString("N0") đ
-                                        </div>
+                                        <div><i class="bi bi-plus text-secondary"></i> @lg.TenLg: @lg.PhuThu?.ToString("N0") đ</div>
                                     }
                                 }
                             }
-
-                            <div class="text-muted mt-2">
-                                Giá vé = Giá cơ bản + phụ phí ghế + phụ phí định dạng
-                            </div>
+                        </div>
+                        <div class="text-muted mt-2 fst-italic" style="font-size: 0.8rem;">
+                            * Giá vé = Giá cơ bản + Phụ phí ghế + Phụ phí định dạng
                         </div>
                     }
                 </div>
             </div>
         </div>
-        <div class="col-3 align-content-center">
-            <div class="m-2 d-flex flex-column align-items-center">
-                <div class="seat booked"
-                     style="pointer-events:none;opacity:0.5; width: 150px">
-                    Đã Đặt
-                </div>
-                <div class="seat selected" style="width: 150px">
-                    Đang Chọn
-                </div>
-                <div class="seat" style="width: 150px">
-                    Ghế THƯỜNG
-                </div>
-                <div class="seat vip" style="width: 150px">
-                    Ghế VIP
-                </div>
-                <div class="seat doi" style="width: 150px">
-                    Ghế ĐÔI
-                </div>
-            </div>
-        </div>
     </div>
 </div>
+
 <script>
+    // JS ĐÃ ĐƯỢC GIỮ NGUYÊN ĐỂ XỬ LÝ SPLIT 2 ID GHẾ ĐÔI
     let gheChon = @Html.Raw(Json.Serialize(ViewBag.GheCuaToi ?? new List<int>()));
 
     function chonGhe(el) {
         if (el.classList.contains("booked")) return;
 
-        let id = parseInt(el.dataset.id);
+        // Lấy danh sách ID (nếu là ghế đơn sẽ có 1 phần tử, ghế đôi sẽ có 2)
+        let ids = el.dataset.id.split(',').map(id => parseInt(id.trim()));
 
-        if (gheChon.includes(id)) {
-            gheChon = gheChon.filter(x => x != id);
+        // Kiểm tra xem block ghế này đã được chọn chưa
+        let isSelected = gheChon.includes(ids[0]);
+
+        if (isSelected) {
+            // Xoá TẤT CẢ các ID của block này khỏi mảng gheChon
+            gheChon = gheChon.filter(x => !ids.includes(x));
             el.classList.remove("selected");
         } else {
-            gheChon.push(id);
+            // Thêm TẤT CẢ các ID của block này vào mảng
+            gheChon.push(...ids);
             el.classList.add("selected");
         }
     }
 
     function tiepTuc() {
         if (gheChon.length === 0) {
-            alert("Chọn ít nhất 1 ghế!");
+            alert("Vui lòng chọn ít nhất 1 ghế trước khi tiếp tục!");
             return;
         }
 
         let masc = "@ViewBag.MaSc";
-
         window.location.href = `/HoaDon/DichVu?masc=${masc}&gheIds=${gheChon.join(",")}`;
     }
 </script>
