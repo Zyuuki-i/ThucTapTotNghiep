@@ -112,6 +112,6 @@ namespace CinemaVN.Areas.Staff.Controllers
 
     public class QrRequest
     {
-        public string QrCode { get; set; }
+        public string? QrCode { get; set; }
     }
 }

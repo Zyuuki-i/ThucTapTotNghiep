@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CinemaVN.Models;
+using CinemaVN.HauModels;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CinemaVN.Models;
 using QRCoder;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace CinemaVN.Areas.Staff.Controllers
 {
@@ -14,11 +15,10 @@ namespace CinemaVN.Areas.Staff.Controllers
     {
         private readonly CinemaVNContext _db;
 
-        public BanVeController(CinemaVNContext db)
+        public BanVeController(CinemaVNContext db, IConfiguration config)
         {
             _db = db;
         }
-
         public IActionResult Index()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -231,7 +231,7 @@ namespace CinemaVN.Areas.Staff.Controllers
                         _db.ChiTietDichVus.Add(new ChiTietDichVu
                         {
                             MaHd = hoaDon.MaHd,
-                            MaDv = dv.MaDV,
+                            MaDv = dv.MaDv,
                             SoLuong = dv.SoLuong,
                             DonGia = dv.DonGia
                         });
@@ -296,21 +296,154 @@ namespace CinemaVN.Areas.Staff.Controllers
             PngByteQRCode qrCode = new PngByteQRCode(qrCodeData);
             return File(qrCode.GetGraphic(20), "image/png");
         }
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> ThanhToanMoMo([FromBody] BanVeVM req)
+        {
+            if (req == null || req.DanhSachMaGhe == null || !req.DanhSachMaGhe.Any())
+                return Json(new { success = false, message = "Dữ liệu không hợp lệ hoặc chưa chọn ghế!" });
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!" });
+
+            var nhanVien = await _db.NguoiDungs.FirstOrDefaultAsync(u => u.MaNd == userId);
+            if (nhanVien == null) return Json(new { success = false, message = "Không tìm thấy thông tin nhân viên!" });
+
+            using (var transaction = await _db.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var hoadon = new HoaDon
+                    {
+                        MaNd = nhanVien.MaNd,
+                        MaCn = nhanVien.MaCn, 
+                        MaKm = req.MaKhuyenMai, 
+                        NgayLap = DateTime.Now,
+                        TongTien = req.TongTienSauGiam,
+                        TrangThai = 0
+                    };
+
+                    _db.HoaDons.Add(hoadon);
+                    await _db.SaveChangesAsync();
+
+                    decimal giaMoiGhe = req.TongTienSauGiam / req.DanhSachMaGhe.Count;
+
+                    foreach (var maGhe in req.DanhSachMaGhe)
+                    {
+                        var ve = new Ve
+                        {
+                            MaHd = hoadon.MaHd,
+                            MaSc = req.MaSuatChieu,
+                            MaGhe = maGhe,
+                            Gia = giaMoiGhe,
+                            TrangThai = 0 
+                        };
+                        _db.Ves.Add(ve);
+                    }
+
+                    if (req.DanhSachDichVu != null && req.DanhSachDichVu.Any())
+                    {
+                        foreach (var dv in req.DanhSachDichVu)
+                        {
+                            var ctdv = new ChiTietDichVu
+                            {
+                                MaHd = hoadon.MaHd,
+                                MaDv = dv.MaDv, 
+                                SoLuong = dv.SoLuong,
+                                DonGia = dv.DonGia
+                            };
+                            _db.ChiTietDichVus.Add(ctdv);
+                        }
+                    }
+
+                    await _db.SaveChangesAsync();
+
+
+                    string orderId = "HD" + hoadon.MaHd + "_" + DateTime.Now.Ticks;
+
+                    string fakePayUrl = $"/Staff/BanVe/MoMoMockup?orderId={orderId}";
+                    await transaction.CommitAsync();
+                    return Json(new { success = true, payUrl = fakePayUrl });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+                }
+            }
+        }
+
+        [HttpGet]
+        public IActionResult MoMoMockup(string orderId)
+        {
+            ViewBag.OrderId = orderId;
+            return View();
+
+        }
+        [HttpPost]
+        public async Task<IActionResult> SaveMoMoPayment([FromBody] MoMoResult result)
+        {
+            if (result != null && result.resultCode == 0)
+            {
+                var maHdStr = result.orderId.Split('_')[0].Replace("HD", "");
+                if (int.TryParse(maHdStr, out int maHd))
+                {
+                    var hoadon = await _db.HoaDons.FindAsync(maHd);
+                    if (hoadon != null && hoadon.TrangThai == 0)
+                    {
+                        hoadon.TrangThai = 1; 
+
+                        var ves = await _db.Ves.Where(v => v.MaHd == maHd).ToListAsync();
+                        foreach (var ve in ves)
+                        {
+                            ve.TrangThai = 1; 
+                        }
+
+                        await _db.SaveChangesAsync();
+                    }
+                }
+            }
+            return Ok(); 
+        }
     }
     public class PaymentRequest
     {
         public int MaSuatChieu { get; set; }
-        public List<int> DanhSachMaGhe { get; set; }
-        public List<DichVuRequest> DanhSachDichVu { get; set; }
+        public List<int>? DanhSachMaGhe { get; set; } = new List<int>();
+        public List<DichVuSelected>? DanhSachDichVu { get; set; } = new List<DichVuSelected>();
         public int? MaKhachHang { get; set; }
         public int? MaKhuyenMai { get; set; }
         public decimal TongTienSauGiam { get; set; }
     }
 
-    public class DichVuRequest
+    public class BanVeVM
     {
-        public int MaDV { get; set; }
+        public int MaSuatChieu { get; set; }
+        public List<int> DanhSachMaGhe { get; set; }
+        public List<DichVuSelected> DanhSachDichVu { get; set; }
+        public int? MaKhachHang { get; set; }
+        public int? MaKhuyenMai { get; set; }
+        public decimal TongTienSauGiam { get; set; }
+    }
+
+    public class DichVuSelected
+    {
+        public int MaDv { get; set; }
         public int SoLuong { get; set; }
         public decimal DonGia { get; set; }
+    }
+
+    public class MoMoResponse
+    {
+        public string payUrl { get; set; }
+        public int resultCode { get; set; }
+        public string message { get; set; }
+    }
+
+    public class MoMoResult
+    {
+        public string orderId { get; set; }
+        public int resultCode { get; set; }
     }
 }

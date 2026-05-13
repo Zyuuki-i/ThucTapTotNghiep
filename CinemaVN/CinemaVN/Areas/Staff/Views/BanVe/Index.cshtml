@@ -210,11 +210,11 @@
                         </span>
                     </div>
 
-                    <button class="btn btn-danger w-100 py-3 fs-5 fw-bold shadow-sm mb-2" onclick="thanhToan('TIENMAT')">
+                    <button class="btn btn-danger w-100 py-3 fs-5 fw-bold shadow-sm mb-2" onclick="thanhToan('cash')">
                         <i class="bi bi-cash-stack me-2"></i>TIỀN MẶT
                     </button>
-                    <button class="btn w-100 py-2 fw-bold text-white shadow-sm" style="background-color: #a50064;" onclick="thanhToan('MOMO')">
-                        <i class="bi bi-wallet2 me-2"></i>MOMO (Bảo trì)
+                    <button class="btn w-100 py-2 fw-bold text-white shadow-sm" style="background-color: #a50064;" onclick="thanhToan('momo')">
+                        <i class="bi bi-wallet2 me-2"></i>MOMO 
                     </button>
                 </div>
             </div>
@@ -570,39 +570,43 @@
     }
 
     function thanhToan(method) {
-        if(method !== 'TIENMAT') { Swal.fire('Lỗi', 'Chỉ hỗ trợ tiền mặt!', 'warning'); return; }
-        if(bill.maSC === 0) { Swal.fire('Lỗi', 'Chưa chọn suất chiếu!', 'warning'); return; }
-        if(bill.dsGhe.length === 0) { Swal.fire('Lỗi', 'Chưa chọn ghế!', 'warning'); return; }
+    if(bill.maSC === 0 || bill.dsGhe.length === 0) {
+    Swal.fire('Lỗi', 'Vui lòng chọn suất chiếu và ghế!', 'warning');
+    return;
+    }
 
-        Swal.fire({ title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-        let reqData = {
-            MaSuatChieu: bill.maSC,
-            DanhSachMaGhe: bill.dsGhe.map(g => g.ma),
-            DanhSachDichVu: bill.dsDV, 
-            MaKhachHang: bill.maKH,
-            MaKhuyenMai: bill.maKM, 
-            TongTienSauGiam: bill.tongTien
-        };
+    let reqData = {
+    MaSuatChieu: bill.maSC,
+    DanhSachMaGhe: bill.dsGhe.map(g => g.ma),
+    DanhSachDichVu: bill.dsDV,
+    MaKhachHang: bill.maKH,
+    MaKhuyenMai: bill.maKM,
+    TongTienSauGiam: bill.tongTien
+    };
 
-        fetch(`/Staff/BanVe/ThanhToanTienMat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reqData)
-        })
-        .then(res => res.json())
-        .then(data => {
-            Swal.close();
-            if(data.success) {
-                inHoaDon(data.maHD, data.diemThuong);
-            } else {
-                Swal.fire('Thất bại', data.message, 'error');
-            }
-        })
-        .catch(err => {
-            Swal.close();
-            Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error');
-        });
+    let targetUrl = method === 'momo' ? `/Staff/BanVe/ThanhToanMoMo` : `/Staff/BanVe/ThanhToanTienMat`;
+
+    fetch(targetUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(reqData)
+    })
+    .then(res => res.json())
+    .then(data => {
+    if(data.success) {
+    if (method === 'momo') {
+    window.location.href = data.payUrl; // Chuyển sang màn hình quét mã QR
+    } else {
+    Swal.close();
+    inHoaDon(data.maHD, data.diemThuong); // Tiền mặt thì in luôn
+    }
+    } else {
+    Swal.fire('Thất bại', data.message, 'error');
+    }
+    })
+    .catch(err => Swal.fire('Lỗi', 'Không thể kết nối', 'error'));
     }
 
     function inHoaDon(maHD, diem) {
@@ -656,6 +660,30 @@
             
         printWin.document.write(html);
         setTimeout(() => location.reload(), 1500);
+    }
+
+    function payWithMoMo(maHd) {
+    // 1. Gọi API tới Controller
+    $.ajax({
+    url: '/Manage/BanVe/ThanhToanMoMo',
+    type: 'POST',
+    data: { maHd: maHd },
+    success: function (res) {
+    if (res.success) {
+    // 2. Nếu thành công, chuyển hướng sang trang MoMo để quét mã QR
+    window.location.href = res.payUrl;
+
+    // HOẶC: Nếu muốn hiện QR ngay trên Modal tại rạp:
+    // $('#momoModalIframe').attr('src', res.payUrl);
+    // $('#momoModal').modal('show');
+    } else {
+    alert("Lỗi MoMo: " + res.message);
+    }
+    },
+    error: function () {
+    alert("Không thể kết nối với cổng thanh toán MoMo.");
+    }
+    });
     }
 </script>
 <style>

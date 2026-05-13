@@ -1,5 +1,5 @@
 ﻿using CinemaVN.DatModels;
-using CinemaVN.Models; // Đảm bảo namespace models của bạn đúng
+using CinemaVN.Models; 
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
